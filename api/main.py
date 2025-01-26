@@ -17,10 +17,14 @@ from bson import ObjectId
 from typing import List
 import sys
 import os
+import certifi
+
 sys.path.insert(0, '../')
 
 app = FastAPI()
 app.include_router(router) 
+
+ca = certifi.where()
 
 config = {
     "ATLAS_URI": os.getenv("ATLAS_URI"),
@@ -44,7 +48,7 @@ app.add_middleware(
 @app.on_event("startup")
 def startup_db_client():
     """Initializes the database client when the application starts"""
-    app.mongodb_client = MongoClient(config["ATLAS_URI"])
+    app.mongodb_client = MongoClient(config["ATLAS_URI"], tlsCAFile = ca)
     app.database = app.mongodb_client[config["DB_NAME"]]
 
 
