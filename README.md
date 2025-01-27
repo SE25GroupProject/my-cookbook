@@ -36,6 +36,12 @@
 </div>
 <br><br>
 
+# New Demo!
+[![New Demo!](https://img.youtube.com/vi/IluD4IUT5kM/0.jpg)](https://www.youtube.com/watch?v=IluD4IUT5kM)
+
+
+<br><br>
+
 # 🍳 What is CookBook?  
 
 CookBook is your **ultimate AI-powered kitchen assistant** that makes cooking stress-free, fun, and delicious! 🎉  
