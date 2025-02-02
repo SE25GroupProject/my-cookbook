@@ -1,6 +1,3 @@
-
-![Mugdha Joshi  SoundHarya Khanapur Jing Huang](https://github.com/user-attachments/assets/a6cd60a1-6e18-4395-94a6-6a63fa030f94)
-
 <div align="center">
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
