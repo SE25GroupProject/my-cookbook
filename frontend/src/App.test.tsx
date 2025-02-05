@@ -15,12 +15,7 @@ jest.mock('axios', () => ({
 }))
 
 import React from 'react'
-import {
-  getByTestId,
-  getByLabelText,
-  render,
-  screen,
-} from '@testing-library/react'
+import { render } from '@testing-library/react'
 import App from './App'
 
 test('has header component', () => {
