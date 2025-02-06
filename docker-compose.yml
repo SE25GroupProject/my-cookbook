@@ -20,7 +20,13 @@ services:
       - "3000:3000"
     networks:
       - fastapi-network
+    volumes:
+      - ./frontend/src:/app/src
+      - nodemodules:/usr/local/apps/myapp/dev/node_modules/
 
 networks:
   fastapi-network:
     driver: bridge
+
+volumes:
+  nodemodules: {}
