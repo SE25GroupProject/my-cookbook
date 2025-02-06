@@ -19,14 +19,16 @@ from groq import Groq
 from pydantic import BaseModel, conint, conlist, PositiveInt
 import logging
 from models import Recipe, RecipeListRequest, RecipeListResponse, RecipeListRequest2,RecipeQuery
-# from models import User
+from db.objects import User
+from db.database import Database_Connection
+
 # from models import User
 
 load_dotenv()  # Load environment variables
 app = FastAPI()
 users_db = {}
-app = FastAPI()
-users_db = {}
+db = Database_Connection()
+
 
 # Check if the environment variable is loaded correctly
 print(os.getenv("GROQ_API_KEY"))
@@ -188,6 +190,27 @@ async def recommend_recipes(query: RecipeQuery = Body(...)):
         logger.error(f"Unexpected error in recommend_recipes: {str(e)}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred")
     
+@app.post("/signup")
+async def signup(username: str, password: str):
+    # Creating a new user
+    user: User = User(username, password)
+    if db.get_user(username) is not None:
+        raise HTTPException(status_code=400, detail="User with that username already exists")
+    db.add_user(user)
+
+    return {"message": "Succesfully Signed Up"}
+
+@app.post("/login")
+async def login(username: str, password: str):
+    user: User = db.get_user(username)
+    if user is None:
+        raise HTTPException(status_code=400, detail="There is no user with that username")
+    
+    if user.Password == password:
+        return {"message": "Successfully Signed In"}
+    
+    return {"message": "Incorrect Username or Password"}
+
 # @app.post("/signup")
 # async def signup(user: User):
 #     if user.email in users_db:
