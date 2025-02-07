@@ -200,7 +200,7 @@ async def signup(username: str, password: str):
 
     return {"message": "Succesfully Signed Up"}
 
-@app.post("/login")
+@app.get("/login")
 async def login(username: str, password: str):
     user: User = db.get_user(username)
     if user is None:
@@ -211,45 +211,11 @@ async def login(username: str, password: str):
     
     return {"message": "Incorrect Username or Password"}
 
-# @app.post("/signup")
-# async def signup(user: User):
-#     if user.email in users_db:
-#         raise HTTPException(status_code=400, detail="User already exists")
-    
-#     # Store user data in memory (simple in-memory storage)
-#     users_db[user.email] = user.password
-#     return {"message": "Signup successful"}
 
-# @app.post("/login")
-# async def login(user: User):
-#     # Check if the email exists in the in-memory dictionary
-#     if user.email not in users_db:
-#         raise HTTPException(status_code=400, detail="Incorrect email or password")
+@app.get("/getUser/{username}")
+async def getUser(username: str) -> dict:
+    user: User = db.get_user(username)
+    if user is None:
+        raise HTTPException(status_code=400, detail="There is no user with that username")
     
-#     # Check if the entered password matches the stored password
-#     if users_db[user.email] != user.password:
-#         raise HTTPException(status_code=400, detail="Incorrect email or password")
-    
-#     return {"message": "Login successful"}
-
-    
-# @app.post("/signup")
-# async def signup(user: User):
-#     if user.email in users_db:
-#         raise HTTPException(status_code=400, detail="User already exists")
-    
-#     # Store user data in memory (simple in-memory storage)
-#     users_db[user.email] = user.password
-#     return {"message": "Signup successful"}
-
-# @app.post("/login")
-# async def login(user: User):
-#     # Check if the email exists in the in-memory dictionary
-#     if user.email not in users_db:
-#         raise HTTPException(status_code=400, detail="Incorrect email or password")
-    
-#     # Check if the entered password matches the stored password
-#     if users_db[user.email] != user.password:
-#         raise HTTPException(status_code=400, detail="Incorrect email or password")
-    
-#     return {"message": "Login successful"}
+    return {"message": user.to_dict()}
