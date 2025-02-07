@@ -81,13 +81,19 @@ const shareOnPlatform = (recipeUrl: string, platform: 'slack' | 'discord') => {
 
 const CopyUrlModal = ({ open, onClose, url, platform }: any) => {
   const handleCopy = () => {
-    navigator.clipboard.writeText(url)
+    navigator.clipboard?.writeText(url)
     onClose()
     shareOnPlatform(url, platform)
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth
+      data-testid="CopyModal"
+    >
       <DialogTitle>Copy URL</DialogTitle>
       <DialogContent>
         <TextField
@@ -195,14 +201,13 @@ const RecipeInformationWrapped = () => {
       using the recipe id as soon as the compnent gets loaded up */
   useEffect(() => {
     dispatch(getRecipeInfoInitiator('http://localhost:8000/recipe/' + id))
-    console.log('recipe dispatched')
     return () => {
       // state cleanup here
     }
   }, [])
 
   if (recipeInfo.isGetRecipeInfoLoading) {
-    return <div data-testid="RecipeInfo-comp-43"> Loading ... </div>
+    return <div data-testid="RecipeInfoLoading"> Loading ... </div>
   } else if (recipeInfo.isGetRecipeInfoSuccess) {
     const recipe = recipeInfo.getRecipeInfoData // The recipe object containing all necessary information
     const recipeDetailsforLLM = `
@@ -297,7 +302,7 @@ const RecipeInformationWrapped = () => {
           paddingTop: '20px',
           background: theme.background,
         }}
-        data-testid="RecipeInfo-comp-43"
+        data-testid="RecipeInfo"
       >
         {openModal && (
           <CopyUrlModal
@@ -423,10 +428,10 @@ const RecipeInformationWrapped = () => {
                 <Typography variant="subtitle1" gutterBottom>
                   {recipe?.ingredients?.map((ele: any, idx: number) => {
                     return (
-                      <>
+                      <span key={idx}>
+                        {idx > 0 && ', '}
                         {ele}
-                        {recipe?.ingredients?.length - 1 === idx ? `` : `, `}
-                      </>
+                      </span>
                     )
                   })}
                 </Typography>
@@ -443,8 +448,8 @@ const RecipeInformationWrapped = () => {
                     <Typography variant="body1" gutterBottom>
                       {Array.from({
                         length: Math.floor(Number(recipe?.rating)),
-                      }).map((ele: any) => {
-                        return <StarIcon fontSize="small" />
+                      }).map((ele: any, idx: number) => {
+                        return <StarIcon key={idx} fontSize="small" />
                       })}
                     </Typography>
                   </Typography>
@@ -663,7 +668,7 @@ const RecipeInformationWrapped = () => {
                   >
                     <Typography variant="h6">
                       Step {idx + 1}:
-                      <Typography variant="subtitle1" gutterBottom>
+                      <Typography variant="body1" gutterBottom>
                         {inst}
                       </Typography>
                     </Typography>
@@ -696,16 +701,21 @@ const RecipeInformationWrapped = () => {
                       color: theme.color, // Card text color
                     }}
                   >
+                    <label htmlFor="ai-input" id="ai-input"></label>
                     <input
                       type="text"
                       value={input}
                       onChange={handleInputChange}
                       className="input-textbox"
+                      id="ai-input"
+                      placeholder="Type your customization..."
                     />
                     {input.length > 0 && (
                       <button
                         onClick={handleSubmit}
                         className="submit-button"
+                        id="ai-submit"
+                        data-testid="ai-submit"
                       ></button>
                     )}
                   </div>
@@ -737,6 +747,7 @@ const RecipeInformationWrapped = () => {
                       <img
                         src={imageLink}
                         alt={`Cannot display pic ${idx + 1}`}
+                        key={idx}
                       />
                     )
                   })}
