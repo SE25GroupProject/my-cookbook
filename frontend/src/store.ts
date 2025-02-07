@@ -14,7 +14,7 @@ this file. If not, please write to: help.cookbook@gmail.com
  * It initializes and combines all the reducers and the async middleware functionalities for API
  * @author Priyanka Ambawane - dearpriyankasa@gmail.com
  */
-import { createStore, applyMiddleware } from 'redux'
+import { configureStore } from '@reduxjs/toolkit'
 import createSagaMiddleware from 'redux-saga'
 import combineReducer from './features/features.reducer'
 import combinedSagas from './features/features.saga'
@@ -23,8 +23,16 @@ import combinedSagas from './features/features.saga'
 const sagaMiddleware = createSagaMiddleware()
 
 export default function applicationStore() {
-  // create the application store
-  const store = createStore(combineReducer, applyMiddleware(sagaMiddleware))
+  // create the application store using configureStore
+  const store = configureStore({
+    reducer: combineReducer,
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware().concat(sagaMiddleware),
+  })
+
+  // run the sagas
   sagaMiddleware.run(combinedSagas)
+
   return store
 }
+

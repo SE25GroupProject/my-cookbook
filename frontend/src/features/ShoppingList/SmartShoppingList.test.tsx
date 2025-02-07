@@ -18,10 +18,10 @@ jest.mock('axios', () => ({
 global.HTMLCanvasElement.prototype.getContext = jest.fn().mockReturnValue({})
 
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import SmartShoppingList from './SmartShoppingList'
 import axios from 'axios'
-
+import { ThemeProvider } from '../Themes/themeContext'
 
 // Cast axios as a jest.Mocked object
 const mockedAxios = axios as jest.Mocked<typeof axios>
@@ -41,13 +41,27 @@ describe('SmartShoppingList Component', () => {
     jest.clearAllMocks()
   })
 
-  test('renders the component and displays the title', () => {
-    render(<SmartShoppingList />)
+  test('renders the component and displays the title', async () => {
+    await act(async () => {
+      render(
+        <ThemeProvider>
+          <SmartShoppingList />
+        </ThemeProvider>
+      )
+    })
+
     expect(screen.getByText('Smart Shopping List')).toBeInTheDocument()
   })
 
-  test('renders the add item fields', () => {
-    render(<SmartShoppingList />)
+  test('renders the add item fields', async () => {
+    await act(async () => {
+      render(
+        <ThemeProvider>
+          <SmartShoppingList />
+        </ThemeProvider>
+      )
+    })
+
     expect(screen.getByLabelText('Add a shopping item')).toBeInTheDocument()
     expect(screen.getByLabelText('Quantity')).toBeInTheDocument()
     expect(screen.getByText('Add Item')).toBeInTheDocument()
@@ -134,7 +148,13 @@ describe('SmartShoppingList Component', () => {
   // })
 
   test('exports the list to PDF', async () => {
-    render(<SmartShoppingList />)
+    await act(async () => {
+      render(
+        <ThemeProvider>
+          <SmartShoppingList />
+        </ThemeProvider>
+      )
+    })
 
     fireEvent.click(screen.getByText('Export List'))
 

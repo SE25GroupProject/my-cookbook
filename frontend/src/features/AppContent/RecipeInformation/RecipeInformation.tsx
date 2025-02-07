@@ -17,7 +17,7 @@ this file. If not, please write to: help.cookbook@gmail.com
  */
 import {
   IconButton,
-  Grid,
+  Grid2,
   Paper,
   Stack,
   Typography,
@@ -40,16 +40,7 @@ import noImage from './no-image.png'
 import { FaWhatsapp, FaSlack, FaDiscord } from 'react-icons/fa'
 import axios from 'axios'
 import { useTheme } from '../../Themes/themeContext'
-import { useNavigate } from 'react-router-dom'; 
-
-
-let triviaPaperStyles = {
-  backgroundColor: '#f2f4f4',
-  marginTop: '20px',
-  padding: '20px',
-  marginLeft: '30px',
-  marginRight: '30px',
-}
+import { useNavigate } from 'react-router-dom'
 
 const store = applicationStore()
 
@@ -90,13 +81,19 @@ const shareOnPlatform = (recipeUrl: string, platform: 'slack' | 'discord') => {
 
 const CopyUrlModal = ({ open, onClose, url, platform }: any) => {
   const handleCopy = () => {
-    navigator.clipboard.writeText(url)
+    navigator.clipboard?.writeText(url)
     onClose()
     shareOnPlatform(url, platform)
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth
+      data-testid="CopyModal"
+    >
       <DialogTitle>Copy URL</DialogTitle>
       <DialogContent>
         <TextField
@@ -127,9 +124,9 @@ const CopyUrlModal = ({ open, onClose, url, platform }: any) => {
 }
 
 const RecipeInformationWrapped = () => {
-  const { theme } = useTheme();
-  const navigate = useNavigate(); // For redirecting to Meal Plan page
-  const [mealPlan, setMealPlan] = useState<any[]>([]); // Local state for meal plan
+  const { theme } = useTheme()
+  const navigate = useNavigate() // For redirecting to Meal Plan page
+  const [mealPlan, setMealPlan] = useState<any[]>([]) // Local state for meal plan
   let { id } = useParams()
   const dispatch = useDispatch()
   const [input, setInput] = useState('')
@@ -137,7 +134,15 @@ const RecipeInformationWrapped = () => {
   const [showInput, setShowInput] = useState(false)
   const [openModal, setOpenModal] = useState<boolean>(false)
   const [selectedPlatform, setSelectedPlatform] = useState('slack')
-  const [selectedDayIndex, setSelectedDayIndex] = useState(0);
+  const [selectedDayIndex, setSelectedDayIndex] = useState(0)
+
+  let triviaPaperStyles = {
+    background: theme.background,
+    marginTop: '20px',
+    padding: '20px',
+    marginLeft: '30px',
+    marginRight: '30px',
+  }
 
   const handleShareClick = (urlId: string, platform: 'slack' | 'discord') => {
     setOpenModal(true)
@@ -155,34 +160,41 @@ const RecipeInformationWrapped = () => {
   // accesses the state of the component from the app's store
   const recipeInfo = useSelector((state: any) => state.getRecipeInfoAppState)
   const [isSpeaking, setIsSpeaking] = useState(false)
-  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [selectedVoice, setSelectedVoice] = useState<SpeechSynthesisVoice | null>(null);
+  const [availableVoices, setAvailableVoices] = useState<
+    SpeechSynthesisVoice[]
+  >([])
+  const [selectedVoice, setSelectedVoice] =
+    useState<SpeechSynthesisVoice | null>(null)
 
   useEffect(() => {
     // Load available voices
     const loadVoices = () => {
-      const voices = window.speechSynthesis.getVoices();
-      setAvailableVoices(voices);
-      if (voices.length > 0) {
-        setSelectedVoice(voices[0]); // Default to the first voice
+      if (window.speechSynthesis) {
+        const voices = window.speechSynthesis.getVoices()
+        setAvailableVoices(voices)
+        if (voices.length > 0) {
+          setSelectedVoice(voices[0]) // Default to the first voice
+        }
       }
-    };
+    }
 
     // Ensure voices are loaded
-    loadVoices();
-    if (typeof window.speechSynthesis.onvoiceschanged !== 'undefined') {
-      window.speechSynthesis.onvoiceschanged = loadVoices;
+    loadVoices()
+    if (window.speechSynthesis) {
+      if (typeof window.speechSynthesis.onvoiceschanged !== 'undefined') {
+        window.speechSynthesis.onvoiceschanged = loadVoices
+      }
     }
-  }, []);
+  }, [])
 
   const speakInstructions = (instruction: string) => {
     if (!isSpeaking && selectedVoice) {
       const synth = window.speechSynthesis
       const utterance = new SpeechSynthesisUtterance(instruction)
-      utterance.voice = selectedVoice;
-      utterance.onend = () => setIsSpeaking(false);
-      synth.speak(utterance);
-      setIsSpeaking(true);
+      utterance.voice = selectedVoice
+      utterance.onend = () => setIsSpeaking(false)
+      synth.speak(utterance)
+      setIsSpeaking(true)
     }
   }
   /* the effect hook below does an api call to get the recipe details
@@ -195,12 +207,12 @@ const RecipeInformationWrapped = () => {
   }, [])
 
   if (recipeInfo.isGetRecipeInfoLoading) {
-    return <div data-testid="RecipeInfo-comp-43"> Loading ... </div>
+    return <div data-testid="RecipeInfoLoading"> Loading ... </div>
   } else if (recipeInfo.isGetRecipeInfoSuccess) {
     const recipe = recipeInfo.getRecipeInfoData // The recipe object containing all necessary information
     const recipeDetailsforLLM = `
       Name: ${recipe.name}
-      Ingredients: ${recipe.ingredients.join(', ')}
+      Ingredients: ${recipe.ingredients ? recipe.ingredients.join(', ') : []}
       Rating: ${recipe.rating}
       Prep Time: ${recipe.prepTime}
       Sugar: ${recipe.sugar}g
@@ -211,7 +223,7 @@ const RecipeInformationWrapped = () => {
       Cook Time: ${recipe.cookTime}
       Cholesterol: ${recipe.cholesterol}mg/dl
       Fat: ${recipe.fat}g
-      Instructions: ${recipe.instructions.join(' ')}
+      Instructions: ${recipe.instructions ? recipe.instructions.join(' ') : []}
     `
     const handleSubmit = async () => {
       try {
@@ -255,24 +267,42 @@ const RecipeInformationWrapped = () => {
 
     const handleAddToMealPlan = async (recipee: any, dayIndex: number) => {
       try {
-        const responsee = await axios.post("http://localhost:8000/recipe/meal-plan/", {
-          day: dayIndex,
-          recipe: recipee,
-        });
-        console.log(responsee.data.message); // Success message
-        alert(`${recipee.name} added to the meal plan for ${
-          ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][dayIndex]
-        }!`);
+        const responsee = await axios.post(
+          'http://localhost:8000/recipe/meal-plan/',
+          {
+            day: dayIndex,
+            recipe: recipee,
+          }
+        )
+        console.log(responsee.data.message) // Success message
+        alert(
+          `${recipee.name} added to the meal plan for ${
+            [
+              'Monday',
+              'Tuesday',
+              'Wednesday',
+              'Thursday',
+              'Friday',
+              'Saturday',
+              'Sunday',
+            ][dayIndex]
+          }!`
+        )
       } catch (error) {
-        console.error("Error saving meal plan:", error);
-        alert("Failed to save the meal plan. Please try again.");
+        console.error('Error saving meal plan:', error)
+        alert('Failed to save the meal plan. Please try again.')
       }
-    };
+    }
 
     return (
       <div
-        style={{ width: '100vw', color: theme.color, paddingTop: '20px', background: theme.background }}
-        data-testid="RecipeInfo-comp-43"
+        style={{
+          width: '100vw',
+          color: theme.color,
+          paddingTop: '20px',
+          background: theme.background,
+        }}
+        data-testid="RecipeInfo"
       >
         {openModal && (
           <CopyUrlModal
@@ -282,99 +312,131 @@ const RecipeInformationWrapped = () => {
             platform={selectedPlatform}
           />
         )}
-       <Typography variant="h4" gutterBottom className="recipe-header">
-  {recipe.name}
-</Typography>
-<div style={{ marginTop: '10px' }}>
-<select
-style={{
-  backgroundColor: theme.headerColor,
-  color: theme.color,
-  border: `1px solid ${theme.headerColor}`,
-  borderRadius: '4px',
-  padding: '8px 12px',
-  marginRight: '10px',
-  fontSize: '16px',
-  transition: 'transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease',
-  cursor: 'pointer',
-}}
-  onChange={(e) => setSelectedDayIndex(Number(e.target.value))}
-  value={selectedDayIndex}
->
-  {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day, index) => (
-    <option key={index} value={index} style={{
-      backgroundColor: theme.background,
-      color: theme.color,
-      fontSize: '16px',
-    }}>
-      {day}
-    </option>
-  ))}
-</select>
-  <Button
-    variant="contained"
-    style={{
-      backgroundColor: theme.headerColor,
-      color: theme.color,
-      marginRight: '10px',
-      transition: 'transform 0.2s ease, background-color 0.2s ease',
-    }}
-    onMouseEnter={(e) =>
-      (e.currentTarget.style.backgroundColor = theme.background)
-    }
-    onMouseLeave={(e) =>
-      (e.currentTarget.style.backgroundColor = theme.headerColor)
-    }
-    onClick={() => handleAddToMealPlan(recipe, selectedDayIndex)}
-  >
-    Add to Meal Plan
-  </Button>
-  <Button
-    variant="outlined"
-    style={{
-      borderColor: theme.headerColor,
-      color: theme.headerColor,
-      transition: 'transform 0.2s ease, border-color 0.2s ease',
-    }}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.color = theme.color;
-      e.currentTarget.style.borderColor = theme.color;
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.color = theme.headerColor;
-      e.currentTarget.style.borderColor = theme.headerColor;
-    }}
-    onClick={() => navigate('/meal')}
-  >
-    Go to Meal Plan
-  </Button>
-</div>
+        <Typography variant="h4" gutterBottom className="recipe-header">
+          {recipe.name}
+        </Typography>
+        <div style={{ marginTop: '10px' }}>
+          <select
+            style={{
+              backgroundColor: theme.headerColor,
+              color: theme.color,
+              border: `1px solid ${theme.headerColor}`,
+              borderRadius: '4px',
+              padding: '8px 12px',
+              marginRight: '10px',
+              fontSize: '16px',
+              transition:
+                'transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease',
+              cursor: 'pointer',
+            }}
+            onChange={(e) => setSelectedDayIndex(Number(e.target.value))}
+            value={selectedDayIndex}
+          >
+            {[
+              'Monday',
+              'Tuesday',
+              'Wednesday',
+              'Thursday',
+              'Friday',
+              'Saturday',
+              'Sunday',
+            ].map((day, index) => (
+              <option
+                key={index}
+                value={index}
+                style={{
+                  backgroundColor: theme.background,
+                  color: theme.color,
+                  fontSize: '16px',
+                }}
+              >
+                {day}
+              </option>
+            ))}
+          </select>
+          <Button
+            variant="contained"
+            style={{
+              backgroundColor: theme.headerColor,
+              color: theme.color,
+              marginRight: '10px',
+              transition: 'transform 0.2s ease, background-color 0.2s ease',
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = theme.background)
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = theme.headerColor)
+            }
+            onClick={() => handleAddToMealPlan(recipe, selectedDayIndex)}
+          >
+            Add to Meal Plan
+          </Button>
+          <Button
+            variant="outlined"
+            style={{
+              borderColor: theme.headerColor,
+              color: theme.headerColor,
+              transition: 'transform 0.2s ease, border-color 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = theme.color
+              e.currentTarget.style.borderColor = theme.color
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = theme.headerColor
+              e.currentTarget.style.borderColor = theme.headerColor
+            }}
+            onClick={() => navigate('/meal')}
+          >
+            Go to Meal Plan
+          </Button>
+        </div>
 
-        
-        <div style={{ float: 'left', width: '30vw',color: theme.color , background: theme.background}}>
+        <div
+          style={{
+            float: 'left',
+            width: '30vw',
+            color: theme.color,
+            background: theme.background,
+          }}
+        >
           <Paper elevation={24} style={triviaPaperStyles}>
-            <Grid container spacing={3} style={{ background: theme.background, color: theme.color,  }}>
-              <Grid item xs={12} style={{ textAlign: 'center', color: theme.color, background: theme.background}}>
+            <Grid2
+              container
+              spacing={3}
+              style={{ background: theme.background, color: theme.color }}
+            >
+              <Grid2
+                size={{ xs: 12 }}
+                style={{
+                  textAlign: 'center',
+                  color: theme.color,
+                  background: theme.background,
+                }}
+              >
                 <Typography variant="h5" gutterBottom>
                   Summary
                 </Typography>
-              </Grid>
-              <Grid item xs={12} textAlign={'left'} style={{ background: theme.background, color: theme.color,  }}>
-                <Typography variant="h6">
-                  Ingredients:
-                  <Typography variant="subtitle1" gutterBottom>
-                    {recipe?.ingredients?.map((ele: any, idx: number) => {
-                      return (
-                        <>
-                          {ele}
-                          {recipe?.ingredients?.length - 1 === idx ? `` : `, `}
-                        </>
-                      )
-                    })}
-                  </Typography>
+              </Grid2>
+              <Grid2
+                size={{ xs: 12 }}
+                textAlign={'left'}
+                style={{ background: theme.background, color: theme.color }}
+              >
+                <Typography variant="h6">Ingredients:</Typography>
+                <Typography variant="subtitle1" gutterBottom>
+                  {recipe?.ingredients?.map((ele: any, idx: number) => {
+                    return (
+                      <span key={idx}>
+                        {idx > 0 && ', '}
+                        {ele}
+                      </span>
+                    )
+                  })}
                 </Typography>
-              </Grid>
-              <Grid item xs={6}>
+              </Grid2>
+              <Grid2 size={{ xs: 6 }}>
                 <Stack
                   direction="column"
                   spacing={2}
@@ -383,41 +445,41 @@ style={{
                 >
                   <Typography variant="h6">
                     Rating:
-                    <Typography variant="subtitle1" gutterBottom>
+                    <Typography variant="body1" gutterBottom>
                       {Array.from({
                         length: Math.floor(Number(recipe?.rating)),
-                      }).map((ele: any) => {
-                        return <StarIcon fontSize="small" />
+                      }).map((ele: any, idx: number) => {
+                        return <StarIcon key={idx} fontSize="small" />
                       })}
                     </Typography>
                   </Typography>
                   <Typography variant="h6">
                     Prep Time:
-                    <Typography variant="subtitle1" gutterBottom>
+                    <Typography variant="body1" gutterBottom>
                       {recipe?.prepTime}
                     </Typography>
                   </Typography>
                   <Typography variant="h6">
                     Sugar:
-                    <Typography variant="subtitle1" gutterBottom>
+                    <Typography variant="body1" gutterBottom>
                       {recipe?.sugar}g
                     </Typography>
                   </Typography>
                   <Typography variant="h6">
                     Carbs:
-                    <Typography variant="subtitle1" gutterBottom>
+                    <Typography variant="body1" gutterBottom>
                       {recipe?.carbs}g
                     </Typography>
                   </Typography>
                   <Typography variant="h6">
                     Proteins:
-                    <Typography variant="subtitle1" gutterBottom>
+                    <Typography variant="body1" gutterBottom>
                       {recipe?.protein}g
                     </Typography>
                   </Typography>
                 </Stack>
-              </Grid>
-              <Grid item xs={6}>
+              </Grid2>
+              <Grid2 size={{ xs: 6 }}>
                 <Stack
                   direction="column"
                   spacing={2}
@@ -426,44 +488,42 @@ style={{
                 >
                   <Typography variant="h6">
                     Cuisine:
-                    <Typography variant="subtitle1" gutterBottom>
+                    <Typography variant="body1" gutterBottom>
                       {recipe?.category}
                     </Typography>
                   </Typography>
                   <Typography variant="h6">
                     Servings:
-                    <Typography variant="subtitle1" gutterBottom>
+                    <Typography variant="body1" gutterBottom>
                       {recipe?.servings}
                     </Typography>
                   </Typography>
                   <Typography variant="h6">
                     Cook Time:
-                    <Typography variant="subtitle1" gutterBottom>
+                    <Typography variant="body1" gutterBottom>
                       {recipe?.cookTime}
                     </Typography>
                   </Typography>
                   <Typography variant="h6">
                     Cholestrol:
-                    <Typography variant="subtitle1" gutterBottom>
+                    <Typography variant="body1" gutterBottom>
                       {recipe?.cholesterol}mg/dl
                     </Typography>
                   </Typography>
                   <Typography variant="h6">
                     Fats:
-                    <Typography variant="subtitle1" gutterBottom>
+                    <Typography variant="body1" gutterBottom>
                       {recipe?.fat}g
                     </Typography>
                   </Typography>
                 </Stack>
-              </Grid>
-              <Grid
-                item
-                xs={12}
+              </Grid2>
+              <Grid2
+                size={{ xs: 12 }}
                 style={{
                   marginTop: '20px',
                   display: 'flex',
                   justifyContent: 'space-between',
-                  
                 }}
               >
                 <button
@@ -540,20 +600,18 @@ style={{
                   />
                   Discord
                 </button>
-              </Grid>
-
-            </Grid>
+              </Grid2>
+            </Grid2>
           </Paper>
         </div>
-        <div style={{ float: 'left', width: '40vw', marginTop: '15px' , }}>
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
+        <div style={{ float: 'left', width: '40vw', marginTop: '15px' }}>
+          <Grid2 container spacing={3}>
+            <Grid2 size={{ xs: 12 }}>
               <Stack
                 direction="column"
                 spacing={2}
                 paddingBottom="20px"
                 textAlign={'left'}
-                
               >
                 <div className="helper-text" style={{ color: theme.color }}>
                   Tap on any step below to hear the instructions read aloud.
@@ -561,47 +619,56 @@ style={{
                   pause or repeat any step!
                 </div>
                 <div style={{ marginBottom: '20px' }}>
-        <label htmlFor="voiceSelector" style={{ marginRight: '10px' }}>
-          Select Voice:
-        </label>
-        <select
-          id="voiceSelector"
-          style={{ backgroundColor: theme.headerColor, 
-            color: theme.color, 
-            borderColor: theme.color,
-            padding: '10px 20px',
-            borderRadius: '5px',
-            boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-            transition: 'transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease',
-  cursor: 'pointer', }}
-          onChange={(e) => {
-            const selected = availableVoices.find((voice) => voice.name === e.target.value);
-            setSelectedVoice(selected || null);
-          }}
-          value={selectedVoice?.name || ''}
-        >
-          {availableVoices.map((voice) => (
-            <option key={voice.name} value={voice.name}>
-              {voice.name} ({voice.lang})
-            </option>
-          ))}
-        </select>
-      </div>
-                {recipe?.instructions.map((inst: string, idx: number) => (
+                  <label
+                    htmlFor="voiceSelector"
+                    style={{ marginRight: '10px' }}
+                  >
+                    Select Voice:
+                  </label>
+                  <select
+                    id="voiceSelector"
+                    style={{
+                      backgroundColor: theme.headerColor,
+                      color: theme.color,
+                      borderColor: theme.color,
+                      padding: '10px 20px',
+                      borderRadius: '5px',
+                      boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+                      transition:
+                        'transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease',
+                      cursor: 'pointer',
+                    }}
+                    onChange={(e) => {
+                      const selected = availableVoices.find(
+                        (voice) => voice.name === e.target.value
+                      )
+                      setSelectedVoice(selected || null)
+                    }}
+                    value={selectedVoice?.name || ''}
+                  >
+                    {availableVoices.map((voice) => (
+                      <option key={voice.name} value={voice.name}>
+                        {voice.name} ({voice.lang})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {recipe?.instructions?.map((inst: string, idx: number) => (
                   <div
-                  style={{  backgroundColor: theme.background, // Card background from theme
-                    color: theme.color, // Card text color
-                    borderColor: theme.headerColor,
-                    borderWidth: '2px', // Set the desired border thickness
-                    borderStyle: 'solid',
-                   }}
-                                      key={idx}
+                    style={{
+                      backgroundColor: theme.background, // Card background from theme
+                      color: theme.color, // Card text color
+                      borderColor: theme.headerColor,
+                      borderWidth: '2px', // Set the desired border thickness
+                      borderStyle: 'solid',
+                    }}
+                    key={idx}
                     className="step"
                     onClick={() => speakInstructions(inst)}
                   >
                     <Typography variant="h6">
                       Step {idx + 1}:
-                      <Typography variant="subtitle1" gutterBottom>
+                      <Typography variant="body1" gutterBottom>
                         {inst}
                       </Typography>
                     </Typography>
@@ -618,25 +685,37 @@ style={{
                   onClick={handleButtonClick}
                   variant="contained"
                   color="primary"
-                  style={{ width: '200px', color:theme.color, background: theme.headerColor }}
+                  style={{
+                    width: '200px',
+                    color: theme.color,
+                    background: theme.headerColor,
+                  }}
                 >
                   CUSTOMIZE
                 </Button>
                 {showInput && (
-                  <div className="input-group"  style={{  backgroundColor: theme.headerColor, // Card background from theme
-                    color: theme.color, // Card text color
-                    
-                   }} >
+                  <div
+                    className="input-group"
+                    style={{
+                      backgroundColor: theme.headerColor, // Card background from theme
+                      color: theme.color, // Card text color
+                    }}
+                  >
+                    <label htmlFor="ai-input" id="ai-input"></label>
                     <input
                       type="text"
                       value={input}
                       onChange={handleInputChange}
                       className="input-textbox"
+                      id="ai-input"
+                      placeholder="Type your customization..."
                     />
                     {input.length > 0 && (
                       <button
                         onClick={handleSubmit}
                         className="submit-button"
+                        id="ai-submit"
+                        data-testid="ai-submit"
                       ></button>
                     )}
                   </div>
@@ -645,10 +724,17 @@ style={{
                   {formatText(response)}
                 </Typography>
               </Stack>
-            </Grid>
-          </Grid>
+            </Grid2>
+          </Grid2>
         </div>
-        <div style={{ float: 'left', width: '30vw' , color: theme.color, background:theme.headerColor}}>
+        <div
+          style={{
+            float: 'left',
+            width: '30vw',
+            color: theme.color,
+            background: theme.headerColor,
+          }}
+        >
           {recipe?.images?.length > 0 && recipe?.images[0] !== '' ? (
             <Typography variant="subtitle1" gutterBottom>
               <Stack direction="column" spacing={2} padding="25px">
@@ -661,6 +747,7 @@ style={{
                       <img
                         src={imageLink}
                         alt={`Cannot display pic ${idx + 1}`}
+                        key={idx}
                       />
                     )
                   })}

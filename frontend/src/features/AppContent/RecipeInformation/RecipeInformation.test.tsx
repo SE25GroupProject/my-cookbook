@@ -1,369 +1,420 @@
-/*
-Copyright (C) 2022 SE CookBook
-You may use, distribute and modify this code under the
-terms of the MIT license.
-You should have received a copy of the MIT license with
-this file. If not, please write to: help.cookbook@gmail.com
-*/
-
-import React from 'react';
-import { render, waitFor, fireEvent } from '@testing-library/react';
-import RecipeInformation from './RecipeInformation';
-
-test('shows recipe information correctly', () => {
-    const { getByTestId } = render(<RecipeInformation />);
-    expect(getByTestId("RecipeInfo-comp-43")).toBeInTheDocument();
-});
-
-// Additional tests
-
-test('renders recipe title', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Recipe Title/i)).toBeInTheDocument();
-});
-
-test('renders recipe image', () => {
-    const { getByAltText } = render(<RecipeInformation />);
-    expect(getByAltText(/Recipe Image/i)).toBeInTheDocument();
-});
-
-test('renders ingredients section', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Ingredients/i)).toBeInTheDocument();
-});
-
-test('renders instructions section', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Instructions/i)).toBeInTheDocument();
-});
-
-test('renders share on WhatsApp button', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Share using WhatsApp/i)).toBeInTheDocument();
-});
-
-test('share button triggers WhatsApp sharing', () => {
-    window.open = jest.fn();
-    const { getByText } = render(<RecipeInformation />);
-    const shareButton = getByText(/Share using WhatsApp/i);
-    shareButton.click();
-    expect(window.open).toHaveBeenCalledWith(expect.stringContaining('https://api.whatsapp.com/send?text='), '_blank');
-});
-
-test('renders rating component', () => {
-    const { getByTestId } = render(<RecipeInformation />);
-    expect(getByTestId("rating-comp")).toBeInTheDocument();
-});
-
-test('renders preparation time', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Preparation Time/i)).toBeInTheDocument();
-});
-
-test('renders servings information', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Servings/i)).toBeInTheDocument();
-});
-
-test('renders author information', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Author/i)).toBeInTheDocument();
-});
-
-test('renders category information', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Category/i)).toBeInTheDocument();
-});
-
-test('renders cuisine type', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Cuisine/i)).toBeInTheDocument();
-});
-
-test('renders difficulty level', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Difficulty/i)).toBeInTheDocument();
-});
-
-test('renders nutrition facts', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Nutrition Facts/i)).toBeInTheDocument();
-});
-
-test('renders cooking method', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Cooking Method/i)).toBeInTheDocument();
-});
-
-test('renders tags section', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Tags/i)).toBeInTheDocument();
-});
-
-test('renders source information', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Source/i)).toBeInTheDocument();
-});
-
-test('renders date added', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Date Added/i)).toBeInTheDocument();
-});
-
-test('renders last updated date', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Last Updated/i)).toBeInTheDocument();
-});
-
-test('renders comments section', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Comments/i)).toBeInTheDocument();
-});
-
-test('renders related recipes section', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Related Recipes/i)).toBeInTheDocument();
-});
-
-test('renders favorite button', () => {
-    const { getByTestId } = render(<RecipeInformation />);
-    expect(getByTestId("favorite-button")).toBeInTheDocument();
-});
-
-test('favorite button toggles favorite state', () => {
-    const { getByTestId } = render(<RecipeInformation />);
-    const favoriteButton = getByTestId("favorite-button");
-    expect(favoriteButton).toHaveAttribute('aria-pressed', 'false');
-    favoriteButton.click();
-    expect(favoriteButton).toHaveAttribute('aria-pressed', 'true');
-});
-
-test('renders video tutorial if available', () => {
-    const { queryByTestId } = render(<RecipeInformation />);
-    expect(queryByTestId("video-tutorial")).toBeInTheDocument();
-});
-
-test('renders no video message if video not available', () => {
-    const { getByText } = render(<RecipeInformation />);
-    // Assuming the component shows this text when no video is available
-    expect(getByText(/No video tutorial available/i)).toBeInTheDocument();
-});
-
-test('renders allergens information', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Allergens/i)).toBeInTheDocument();
-});
-
-test('renders estimated cost', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Estimated Cost/i)).toBeInTheDocument();
-});
-
-// Additional tests
-
-test('renders recipe title', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Recipe Title/i)).toBeInTheDocument();
-});
-
-test('renders recipe image', () => {
-    const { getByAltText } = render(<RecipeInformation />);
-    expect(getByAltText(/Recipe Image/i)).toBeInTheDocument();
-});
-
-test('renders ingredients section', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Ingredients/i)).toBeInTheDocument();
-});
-
-test('renders instructions section', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Instructions/i)).toBeInTheDocument();
-});
-
-test('renders share on WhatsApp button', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Share using WhatsApp/i)).toBeInTheDocument();
-});
-
-test('share button triggers WhatsApp sharing', () => {
-    window.open = jest.fn();
-    const { getByText } = render(<RecipeInformation />);
-    const shareButton = getByText(/Share using WhatsApp/i);
-    shareButton.click();
-    expect(window.open).toHaveBeenCalledWith(expect.stringContaining('https://api.whatsapp.com/send?text='), '_blank');
-});
-
-test('renders rating component', () => {
-    const { getByTestId } = render(<RecipeInformation />);
-    expect(getByTestId("rating-comp")).toBeInTheDocument();
-});
-
-test('renders preparation time', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Preparation Time/i)).toBeInTheDocument();
-});
-
-test('renders servings information', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Servings/i)).toBeInTheDocument();
-});
-
-test('renders author information', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Author/i)).toBeInTheDocument();
-});
-
-test('renders category information', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Category/i)).toBeInTheDocument();
-});
-
-test('renders cuisine type', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Cuisine/i)).toBeInTheDocument();
-});
-
-test('renders difficulty level', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Difficulty/i)).toBeInTheDocument();
-});
-
-test('renders nutrition facts', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Nutrition Facts/i)).toBeInTheDocument();
-});
-
-test('renders cooking method', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Cooking Method/i)).toBeInTheDocument();
-});
-
-test('renders tags section', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Tags/i)).toBeInTheDocument();
-});
-
-test('renders source information', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Source/i)).toBeInTheDocument();
-});
-
-test('renders date added', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Date Added/i)).toBeInTheDocument();
-});
-
-test('renders last updated date', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Last Updated/i)).toBeInTheDocument();
-});
-
-test('renders comments section', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Comments/i)).toBeInTheDocument();
-});
-
-test('renders related recipes section', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Related Recipes/i)).toBeInTheDocument();
-});
-
-test('renders favorite button', () => {
-    const { getByTestId } = render(<RecipeInformation />);
-    expect(getByTestId("favorite-button")).toBeInTheDocument();
-});
-
-test('favorite button toggles favorite state', () => {
-    const { getByTestId } = render(<RecipeInformation />);
-    const favoriteButton = getByTestId("favorite-button");
-    expect(favoriteButton).toHaveAttribute('aria-pressed', 'false');
-    favoriteButton.click();
-    expect(favoriteButton).toHaveAttribute('aria-pressed', 'true');
-});
-
-test('renders video tutorial if available', () => {
-    const { queryByTestId } = render(<RecipeInformation />);
-    expect(queryByTestId("video-tutorial")).toBeInTheDocument();
-});
-
-test('renders no video message if video not available', () => {
-    const { getByText } = render(<RecipeInformation />);
-    // Assuming the component shows this text when no video is available
-    expect(getByText(/No video tutorial available/i)).toBeInTheDocument();
-});
-
-test('renders allergens information', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Allergens/i)).toBeInTheDocument();
-});
-
-test('renders estimated cost', () => {
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Estimated Cost/i)).toBeInTheDocument();
-});
-
-test('formats bold text correctly', () => {
-    const { container } = render(<RecipeInformation />);
-    const boldText = container.querySelector('strong');
-    expect(boldText).toBeInTheDocument();
-    expect(boldText).toHaveTextContent('Bold Text');
-});
-
-test('formats list items correctly', () => {
-    const { container } = render(<RecipeInformation />);
-    const listItems = container.querySelectorAll('li');
-    expect(listItems.length).toBe(2);
-    expect(listItems[0]).toHaveTextContent('List Item 1');
-    expect(listItems[1]).toHaveTextContent('List Item 2');
-});
-
-test('formats regular text correctly', () => {
-    const { container } = render(<RecipeInformation />);
-    const paragraphs = container.querySelectorAll('p');
-    expect(paragraphs.length).toBe(2); // One for bold text, one for regular text
-    expect(paragraphs[1]).toHaveTextContent('Regular text.');
-});
-
-// Accessibility Test: Ensure all images have alt text
-test('all images have alt text', () => {
-    const { getAllByRole } = render(<RecipeInformation />);
-    const images = getAllByRole('img');
-    images.forEach(img => expect(img).toHaveAttribute('alt'));
-});
-
-// Responsive Design Test: Component renders correctly on mobile
-test('renders correctly on mobile', () => {
-    global.innerWidth = 500; // Simulate mobile width
-    const { getByTestId } = render(<RecipeInformation />);
-    expect(getByTestId("RecipeInfo-comp-43")).toBeInTheDocument();
-    global.innerWidth = 1024; // Reset to default after test
-});
-
-// Error Handling Test: Simulate a network error
-test('displays error message on network failure', () => {
-    jest.spyOn(global, 'fetch').mockImplementation(() => 
-        Promise.reject(new Error('Network error'))
-    );
-    const { getByText } = render(<RecipeInformation />);
-    expect(getByText(/Failed to load recipe data/i)).toBeInTheDocument();
-});
-
-// Loading State Test: Verify loading spinner is shown
-test('shows loading spinner while fetching data', () => {
-    const { getByTestId } = render(<RecipeInformation />);
-    expect(getByTestId("loading-spinner")).toBeInTheDocument();
-});
-
-// Interaction Test: Hover over an element
-test('shows tooltip on hover over help icon', () => {
-    const { getByTestId } = render(<RecipeInformation />);
-    fireEvent.mouseOver(getByTestId("help-icon"));
-    expect(getByTestId("tooltip")).toBeInTheDocument();
-});
-
-// Performance Test: Component loads within time frame
-test('loads within acceptable time frame', async () => {
-    const { getByTestId } = render(<RecipeInformation />);
-    await waitFor(() => expect(getByTestId("RecipeInfo-comp-43")).toBeInTheDocument(), { timeout: 1000 });
-});
+import {
+  act,
+  fireEvent,
+  getByPlaceholderText,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react'
+import axios from 'axios'
+import { BrowserRouter } from 'react-router-dom'
+import { ThemeProvider } from '../../Themes/themeContext'
+import * as ACTION_TYPES from './getRecipeInformation.actionTypes'
+
+jest.mock('axios')
+const mockedAxios = axios as jest.Mocked<typeof axios>
+
+const getRecipeInfoInitiatorMock = () => {
+  return {
+    type: ACTION_TYPES.LOADING_GET_RECIPE_INFORMATION,
+    payload: 'http://localhost:8000/recipe/20919',
+  }
+}
+
+const getRecipeInfoSuccessMock = (data: any) => {
+  return {
+    type: ACTION_TYPES.SUCCESS_GET_RECIPE_INFORMATION,
+    payload: data,
+  }
+}
+
+const getRecipeInfoFailureMock = (error: any) => {
+  return {
+    type: ACTION_TYPES.FAILURE_GET_RECIPE_INFORMATION,
+    payload: error,
+  }
+}
+
+jest.mock('./getRecipeInformation.action.ts', () => ({
+  getRecipeInfoInitiator: getRecipeInfoInitiatorMock,
+  getRecipeInfoSuccess: getRecipeInfoSuccessMock,
+  getRecipeInfoFailure: getRecipeInfoFailureMock,
+}))
+
+import RecipeInformation from './RecipeInformation'
+
+describe('Recipe Display Tests', () => {
+  test('Show Recipe Loading', () => {
+    render(
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
+        <ThemeProvider>
+          <RecipeInformation />
+        </ThemeProvider>
+      </BrowserRouter>
+    )
+
+    const recipeInfo = screen.queryByTestId('RecipeInfo')
+    expect(screen.getByTestId('RecipeInfoLoading')).toBeInTheDocument()
+    expect(recipeInfo).not.toBeInTheDocument()
+  })
+
+  test('Recipe Rendered in appropriate timeframe', async () => {
+    render(
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
+        <ThemeProvider>
+          <RecipeInformation />
+        </ThemeProvider>
+      </BrowserRouter>
+    )
+
+    await waitFor(
+      () => {
+        const recipeInfoLoader = screen.queryByTestId('RecipeInfoLoading')
+
+        expect(recipeInfoLoader).not.toBeInTheDocument()
+        expect(screen.getByTestId('RecipeInfo')).toBeInTheDocument()
+      },
+      { timeout: 1000 }
+    )
+  })
+
+  test('Recipe Name is being displayed', async () => {
+    render(
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
+        <ThemeProvider>
+          <RecipeInformation />
+        </ThemeProvider>
+      </BrowserRouter>
+    )
+
+    expect(await screen.findByRole('heading', { level: 4 })).toBeInTheDocument()
+  })
+
+  test('Recipe image is being displayed', async () => {
+    render(
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
+        <ThemeProvider>
+          <RecipeInformation />
+        </ThemeProvider>
+      </BrowserRouter>
+    )
+    expect(await screen.findByRole('img')).toBeInTheDocument()
+  })
+
+  test('Recipe ingredients section is being displayed', async () => {
+    render(
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
+        <ThemeProvider>
+          <RecipeInformation />
+        </ThemeProvider>
+      </BrowserRouter>
+    )
+    expect(await screen.findByText(/Ingredients/i)).toBeInTheDocument()
+  })
+
+  test('Recipe instructions section is being displayed', async () => {
+    render(
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
+        <ThemeProvider>
+          <RecipeInformation />
+        </ThemeProvider>
+      </BrowserRouter>
+    )
+    expect(await screen.findByText(/Instructions/i)).toBeInTheDocument()
+  })
+
+  test('Sharing buttons are being displayed', async () => {
+    render(
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
+        <ThemeProvider>
+          <RecipeInformation />
+        </ThemeProvider>
+      </BrowserRouter>
+    )
+    expect(await screen.findByText(/WhatsApp/i)).toBeInTheDocument()
+    expect(await screen.findByText(/Slack/i)).toBeInTheDocument()
+    expect(await screen.findByText(/Discord/i)).toBeInTheDocument()
+  })
+
+  test('WhatsApp button triggers Whatsapp sharing', async () => {
+    window.open = jest.fn()
+
+    render(
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
+        <ThemeProvider>
+          <RecipeInformation />
+        </ThemeProvider>
+      </BrowserRouter>
+    )
+
+    const shareButton = await screen.findByText(/WhatsApp/i)
+    shareButton.click()
+    expect(window.open).toHaveBeenCalledWith(
+      expect.stringContaining('https://api.whatsapp.com/send?text='),
+      '_blank'
+    )
+  })
+
+  test('Discord button triggers Discord sharing', async () => {
+    window.open = jest.fn()
+
+    render(
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
+        <ThemeProvider>
+          <RecipeInformation />
+        </ThemeProvider>
+      </BrowserRouter>
+    )
+    // Expect the modal to be closed
+    var copyModal = screen.queryByTestId('CopyModal')
+    expect(copyModal).not.toBeInTheDocument()
+
+    // Open the modal
+    const shareButton = await screen.findByText(/Discord/i)
+    act(() => {
+      shareButton.click()
+    })
+
+    // Expect the modal to open
+    expect(await screen.findByTestId('CopyModal')).toBeInTheDocument()
+
+    // Click the copy button
+    const copyButton = await screen.findByRole('button', { name: /Copy/i })
+    act(() => {
+      copyButton.click()
+    })
+
+    // Expect the modal to be closed again
+    var copyModal = screen.queryByTestId('CopyModal')
+    expect(copyModal).not.toBeInTheDocument()
+
+    // expect it to beshared
+    expect(window.open).toHaveBeenCalledWith(
+      expect.stringContaining('https://discord.com/channels/@me?message='),
+      '_blank'
+    )
+  })
+
+  test('Slac button triggers Slack sharing', async () => {
+    window.open = jest.fn()
+
+    render(
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
+        <ThemeProvider>
+          <RecipeInformation />
+        </ThemeProvider>
+      </BrowserRouter>
+    )
+    // Expect the modal to be closed
+    var copyModal = screen.queryByTestId('CopyModal')
+    expect(copyModal).not.toBeInTheDocument()
+
+    // Open the modal
+    const shareButton = await screen.findByText(/Slack/i)
+    act(() => {
+      shareButton.click()
+    })
+
+    // Expect the modal to open
+    expect(await screen.findByTestId('CopyModal')).toBeInTheDocument()
+
+    // Click the copy button
+    const copyButton = await screen.findByRole('button', { name: /Copy/i })
+    act(() => {
+      copyButton.click()
+    })
+
+    // Expect the modal to be closed again
+    var copyModal = screen.queryByTestId('CopyModal')
+    expect(copyModal).not.toBeInTheDocument()
+
+    // expect it to beshared
+    expect(window.open).toHaveBeenCalledWith(
+      expect.stringContaining('https://slack.com/intl/en-us/share?text='),
+      '_blank'
+    )
+  })
+
+  test('Recipe Rating section is being displayed', async () => {
+    render(
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
+        <ThemeProvider>
+          <RecipeInformation />
+        </ThemeProvider>
+      </BrowserRouter>
+    )
+    expect(await screen.findByText(/Rating/i)).toBeInTheDocument()
+  })
+
+  test('Recipe Prep Time section is being displayed', async () => {
+    render(
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
+        <ThemeProvider>
+          <RecipeInformation />
+        </ThemeProvider>
+      </BrowserRouter>
+    )
+    expect(await screen.findByText(/Prep Time/i)).toBeInTheDocument()
+  })
+
+  test('Recipe Servings section is being displayed', async () => {
+    render(
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
+        <ThemeProvider>
+          <RecipeInformation />
+        </ThemeProvider>
+      </BrowserRouter>
+    )
+    expect(await screen.findByText(/Servings/i)).toBeInTheDocument()
+  })
+
+  test('Recipe Cuisine section is being displayed', async () => {
+    render(
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
+        <ThemeProvider>
+          <RecipeInformation />
+        </ThemeProvider>
+      </BrowserRouter>
+    )
+    expect(await screen.findByText(/Cuisine/i)).toBeInTheDocument()
+  })
+})
+
+describe('Text Formatting', () => {
+  test('formats text correctly', async () => {
+    mockedAxios.post.mockResolvedValue({
+      data: {
+        response:
+          'this is **bold**. \n* This is an item\n* This is a second\n ',
+      },
+    })
+    render(
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
+        <ThemeProvider>
+          <RecipeInformation />
+        </ThemeProvider>
+      </BrowserRouter>
+    )
+    // Hit customize Button
+    const customizeBtn = await screen.findByText('CUSTOMIZE')
+
+    act(() => {
+      customizeBtn.click()
+    })
+
+    // Query AI
+    const aiInput = await screen.findByPlaceholderText(
+      'Type your customization...'
+    )
+
+    act(() => {
+      fireEvent.change(aiInput, {
+        target: { value: 'test value' },
+      })
+      const aiSubmit = screen.getByTestId('ai-submit')
+      aiSubmit.click()
+    })
+
+    const strongText = await screen.findByRole('strong')
+
+    expect(strongText).toBeInTheDocument()
+    expect(strongText).toHaveTextContent('bold')
+
+    const listItems = await screen.findAllByRole('listitem')
+
+    expect(listItems).toHaveLength(2)
+  })
+
+  test('all images have alt text', async () => {
+    render(
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
+        <ThemeProvider>
+          <RecipeInformation />
+        </ThemeProvider>
+      </BrowserRouter>
+    )
+
+    const images = await screen.findAllByRole('img')
+    images.forEach((img) => expect(img).toHaveAttribute('alt'))
+  })
+})
