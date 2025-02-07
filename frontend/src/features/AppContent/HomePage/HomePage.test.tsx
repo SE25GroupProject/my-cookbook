@@ -8,56 +8,103 @@ this file. If not, please write to: help.cookbook@gmail.com
 
 */
 
-import React from 'react';
-import { getByDisplayValue, getByLabelText, getByTitle, render, screen } from '@testing-library/react';
-import HomePage from './HomePage';
+import React from 'react'
+import {
+  getByDisplayValue,
+  getByLabelText,
+  getByTitle,
+  render,
+  screen,
+} from '@testing-library/react'
+import HomePage from './HomePage'
+import { ThemeProvider } from '../../Themes/themeContext'
 
 test('images being showed correctly', () => {
-    const {getByAltText} = render(<HomePage />);
-    expect(getByAltText("first image")).toBeInTheDocument();
-});
+  const { getByAltText } = render(
+    <ThemeProvider>
+      <HomePage />
+    </ThemeProvider>
+  )
+  expect(getByAltText('first image')).toBeInTheDocument()
+})
 
 test('images being showed correctly', () => {
-  const {getByAltText} = render(<HomePage />);
-  expect(getByAltText("second image")).toBeInTheDocument();
-});
+  const { getByAltText } = render(
+    <ThemeProvider>
+      <HomePage />
+    </ThemeProvider>
+  )
+  expect(getByAltText('second image')).toBeInTheDocument()
+})
 
 test('images being showed correctly', () => {
-  const {getByAltText} = render(<HomePage />);
-  expect(getByAltText("third image")).toBeInTheDocument();
-});
+  const { getByAltText } = render(
+    <ThemeProvider>
+      <HomePage />
+    </ThemeProvider>
+  )
+  expect(getByAltText('third image')).toBeInTheDocument()
+})
 
 test('images being showed correctly', () => {
-  const {getByAltText} = render(<HomePage />);
-  expect(getByAltText("fourth image")).toBeInTheDocument();
-});
+  const { getByAltText } = render(
+    <ThemeProvider>
+      <HomePage />
+    </ThemeProvider>
+  )
+  expect(getByAltText('fourth image')).toBeInTheDocument()
+})
 
 test('images being showed correctly', () => {
-  const {getByAltText} = render(<HomePage />);
-  expect(getByAltText("fifth image")).toBeInTheDocument();
-});
+  const { getByAltText } = render(
+    <ThemeProvider>
+      <HomePage />
+    </ThemeProvider>
+  )
+  expect(getByAltText('fifth image')).toBeInTheDocument()
+})
 
 test('images being showed correctly', () => {
-  const {getByAltText} = render(<HomePage />);
-  expect(getByAltText("sixth image")).toBeInTheDocument();
-});
+  const { getByAltText } = render(
+    <ThemeProvider>
+      <HomePage />
+    </ThemeProvider>
+  )
+  expect(getByAltText('sixth image')).toBeInTheDocument()
+})
 
 test('images being showed correctly', () => {
-  const {getByAltText} = render(<HomePage />);
-  expect(getByAltText("seventh image")).toBeInTheDocument();
-});
+  const { getByAltText } = render(
+    <ThemeProvider>
+      <HomePage />
+    </ThemeProvider>
+  )
+  expect(getByAltText('seventh image')).toBeInTheDocument()
+})
 
 test('images being showed correctly', () => {
-  const {getByAltText} = render(<HomePage />);
-  expect(getByAltText("eighth image")).toBeInTheDocument();
-});
+  const { getByAltText } = render(
+    <ThemeProvider>
+      <HomePage />
+    </ThemeProvider>
+  )
+  expect(getByAltText('eighth image')).toBeInTheDocument()
+})
 
 test('images being showed correctly', () => {
-  const {getByAltText} = render(<HomePage />);
-  expect(getByAltText("nineth image")).toBeInTheDocument();
-});
+  const { getByAltText } = render(
+    <ThemeProvider>
+      <HomePage />
+    </ThemeProvider>
+  )
+  expect(getByAltText('nineth image')).toBeInTheDocument()
+})
 
 test('images being showed correctly', () => {
-  const {getByAltText} = render(<HomePage />);
-  expect(getByAltText("tenth image")).toBeInTheDocument();
-});
+  const { getByAltText } = render(
+    <ThemeProvider>
+      <HomePage />
+    </ThemeProvider>
+  )
+  expect(getByAltText('tenth image')).toBeInTheDocument()
+})
