@@ -1,7 +1,7 @@
 """Used to hold the information about the database and commands used with it"""
 
 import sqlite3
-from objects import User
+from db.objects import User
 
 class Database_Connection():
     """Used as a singleton to access the database"""
