@@ -21,12 +21,19 @@ import { useTheme } from '../Themes/themeContext'
  */
 
 const Header = () => {
-  const { theme } = useTheme();
+  const { theme } = useTheme()
   return (
-    <section className="header" style={{ backgroundColor: theme.background, color: theme.color }}>
+    <section
+      className="header"
+      style={{ backgroundColor: theme.background, color: theme.color }}
+    >
       <section className="header-top">
         <section className="header-top__logo">
-          <a href="/" className="header-logo" style={{ color: theme.headerColor }}>
+          <a
+            href="/"
+            className="header-logo"
+            style={{ color: theme.headerColor }}
+          >
             C o o k B o o k
           </a>
         </section>

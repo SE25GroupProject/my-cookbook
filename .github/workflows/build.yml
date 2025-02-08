@@ -32,15 +32,9 @@ jobs:
       - name: Install dependencies (frontend)
         working-directory: ./frontend
         run: |
-          npm install --legacy-peer-deps
+          npm install
 
-      - name: Run tests (always pass)
+      - name: Run tests
         working-directory: ./frontend
         run: |
           npm test -- --maxWorkers=2
-
-      - name: Build frontend
-        working-directory: ./frontend
-        run: |
-          npm install ajv@^6.0.0 ajv-keywords --legacy-peer-deps 
-          npm run build || true

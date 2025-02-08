@@ -21,14 +21,14 @@ import Contact from './HomePage/ContactPage'
 import FAQPage from './HomePage/FAQPage'
 import RecipeInformation from './RecipeInformation/RecipeInformation'
 import RecipeList from './RecipeList/RecipeList'
-import Login from "./HomePage/Login"; 
-import Profile from "./HomePage/Profile";
-import Signup from "./HomePage/Signup";
+import Login from './HomePage/Login'
+import Profile from './HomePage/Profile'
+import Signup from './HomePage/Signup'
 
 import MealPage from './HomePage/MealPage'
 
 import SmartShoppingList from '../ShoppingList/SmartShoppingList'
-
+import RecipeForm from '../UserRecipes/RecipeForm'
 
 const AppContent = () => {
   return (
@@ -42,15 +42,16 @@ const AppContent = () => {
       <Route path="/faq" element={<FAQPage />} />
       <Route path="/shoppinglist" element={<SmartShoppingList />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/create-recipe" element={<RecipeForm />} />
 
-        {/* Route for Login */}
-        <Route path="/login" element={<Login />} />
+      {/* Route for Login */}
+      <Route path="/login" element={<Login />} />
 
-        {/* Route for Profile */}
-        <Route path="/profile" element={<Profile />} />
+      {/* Route for Profile */}
+      <Route path="/profile" element={<Profile />} />
 
-        {/* Optional: Route for Home */}
-        <Route path="/" element={<HomePage />} />
+      {/* Optional: Route for Home */}
+      <Route path="/" element={<HomePage />} />
     </Routes>
   )
 }

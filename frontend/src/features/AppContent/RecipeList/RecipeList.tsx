@@ -10,7 +10,7 @@ this file. If not, please write to: help.cookbook@gmail.com
 
 import React, { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import StarIcon from '@mui/icons-material/Star'
 import {
   Typography,
@@ -32,6 +32,16 @@ import { getRecipeListInitiator } from './getRecipeList.action'
 import './RecipeList.css'
 import { RECIPE_CATEGORIES, RECIPE_COOKTIME } from './recipeCategories'
 import { useTheme } from '../../Themes/themeContext'
+import {
+  NutritionMax,
+  RecipeListIngredientsRequest,
+  RecipeListNutritionRequest,
+  RecipeListResponse,
+} from '../../api/types'
+import {
+  useGetRecipeListByIngredientsMutation,
+  useGetRecipeListByNutritionMutation,
+} from './RecipeListSlice'
 
 /**
  * File name: RecipeList.tsx
@@ -49,8 +59,14 @@ interface RecipeListData {
   rating: string
 }
 
+interface RecipeListProps {
+  ingredients: String[] | null
+  nutrition: NutritionMax | null
+}
+
 const RecipeList = () => {
   const { theme } = useTheme()
+  const { state } = useLocation()
 
   const dispatch = useDispatch()
   const navigateTo = useNavigate()
@@ -66,9 +82,14 @@ const RecipeList = () => {
   const [selectedCookTime, setSelectedCookTime] = useState<string>('')
   const [hidden, setHidden] = useState<boolean>(false)
 
-  const getRecipeListState = useSelector(
-    (state: any) => state.getRecipeListAppState
-  )
+  const [getListByIngredients, { isLoading: ingredientsLoading }] =
+    useGetRecipeListByIngredientsMutation()
+  const [getListByNutrition, { isLoading: nutritionLoading }] =
+    useGetRecipeListByNutritionMutation()
+
+  // const getRecipeListState = useSelector(
+  //   (state: any) => state.getRecipeListAppState
+  // )
 
   function convertToMinutes(timeString: string) {
     timeString = timeString.replace(/\s+/g, '').replace('<', '')
@@ -78,18 +99,17 @@ const RecipeList = () => {
       const minutes = match[2]
         ? parseInt(match[2], 10)
         : match[3]
-        ? parseInt(match[3], 10)
-        : 0
+          ? parseInt(match[3], 10)
+          : 0
       return hours * 60 + minutes
     } else {
       return 0
     }
   }
 
-  useEffect(() => {
-    let recipes = getRecipeListState.getRecipeListData['recipes']
-    if (Array.isArray(recipes)) {
-      recipes.forEach((item: any, index: number) => {
+  function unwrapResponse(response: RecipeListResponse) {
+    if (Array.isArray(response.recipes)) {
+      response.recipes.forEach((item: any, index: number) => {
         setRecipeList((list) =>
           list.concat({
             id: item._id,
@@ -102,19 +122,75 @@ const RecipeList = () => {
           })
         )
       })
-      setTotalCount(getRecipeListState.getRecipeListData['count'])
-      setPage(getRecipeListState.getRecipeListData['page'])
     }
-    return () => {
-      setRecipeList([])
-      setTotalCount(0)
-      setPage(1)
+    setTotalCount(response.count)
+  }
+
+  function RequestList() {
+    console.log(state)
+    if (state?.ingredients) {
+      let request: RecipeListIngredientsRequest = {
+        ingredients: state.ingredients,
+        page: page,
+      }
+      getListByIngredients(request)
+        .unwrap()
+        .then((response: RecipeListResponse) => {
+          unwrapResponse(response)
+        })
+        .catch((err) => console.log(err))
     }
-  }, [getRecipeListState.getRecipeListData, selectedCategory])
+
+    if (state?.nutrition) {
+      let request: RecipeListNutritionRequest = {
+        caloriesUp: state.nutrition.caloriesUp,
+        fatUp: state.nutrition.fatUp,
+        sugerUp: state.nutrition.sugerUp,
+        proUp: state.nutrition.proUp,
+        page: page,
+      }
+      getListByNutrition(request)
+        .unwrap()
+        .then((response: RecipeListResponse) => {
+          unwrapResponse(response)
+        })
+        .catch((err) => console.log(err))
+    }
+  }
 
   useEffect(() => {
-    setLoading(getRecipeListState.isGetRecipeListLoading)
-  }, [getRecipeListState])
+    RequestList()
+  }, [])
+
+  // useEffect(() => {
+  //   let recipes = getRecipeListState.getRecipeListData['recipes']
+  //   if (Array.isArray(recipes)) {
+  //     recipes.forEach((item: any, index: number) => {
+  //       setRecipeList((list) =>
+  //         list.concat({
+  //           id: item._id,
+  //           name: item.name,
+  //           description: item.description,
+  //           cookTime: item.cookTime,
+  //           prepTime: item.prepTime,
+  //           category: item.category,
+  //           rating: item.rating,
+  //         })
+  //       )
+  //     })
+  //     setTotalCount(getRecipeListState.getRecipeListData['count'])
+  //     setPage(getRecipeListState.getRecipeListData['page'])
+  //   }
+  //   return () => {
+  //     setRecipeList([])
+  //     setTotalCount(0)
+  //     setPage(1)
+  //   }
+  // }, [getRecipeListState.getRecipeListData, selectedCategory])
+
+  // useEffect(() => {
+  //   setLoading(getRecipeListState.isGetRecipeListLoading)
+  // }, [getRecipeListState])
 
   useEffect(() => {
     if (selectedCategory) {
@@ -151,15 +227,20 @@ const RecipeList = () => {
     event: React.ChangeEvent<unknown>,
     value: number
   ) => {
-    const ingredientsArray = JSON.parse(
-      sessionStorage.getItem('ingredients') || '[]'
-    )
-    dispatch(
-      getRecipeListInitiator('http://localhost:8000/recipe/search/', {
-        ingredients: ingredientsArray,
-        page: value,
-      })
-    )
+    // const ingredientsArray = JSON.parse(
+    //   sessionStorage.getItem('ingredients') || '[]'
+    // )
+    // dispatch(
+    //   getRecipeListInitiator('http://localhost:8000/recipe/search/', {
+    //     ingredients: ingredientsArray,
+    //     page: value,
+    //   })
+    // )
+
+    setPage(value)
+
+    RequestList()
+
     setSelectedCategory('')
   }
 

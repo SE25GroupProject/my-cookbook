@@ -23,6 +23,9 @@ services:
     volumes:
       - ./frontend/src:/app/src
       - nodemodules:/usr/local/apps/myapp/dev/node_modules/
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
 
 networks:
   fastapi-network:

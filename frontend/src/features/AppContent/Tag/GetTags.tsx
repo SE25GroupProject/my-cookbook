@@ -70,7 +70,7 @@ interface ChipData {
   label: string
 }
 const GetTags = () => {
-  const { theme } = useTheme();
+  const { theme } = useTheme()
   const dispatch = useDispatch()
   const navigateTo = useNavigate()
   const [expanded, setExpanded] = React.useState<string | false>('panel1')
@@ -98,30 +98,32 @@ const GetTags = () => {
       let ingredientsArray: Array<string> = []
       ingredientsArray.push(name.toLocaleLowerCase())
       if (ingredientsArray.length > 0) {
-        sessionStorage.setItem('ingredients', JSON.stringify(ingredientsArray))
-        dispatch(
-          getRecipeListInitiator('http://localhost:8000/recipe/search/', {
-            ingredients: ingredientsArray,
-            page: 1,
-          })
-        )
-        navigateTo('/recipe-list')
+        // sessionStorage.setItem('ingredients', JSON.stringify(ingredientsArray))
+        // dispatch(
+        //   getRecipeListInitiator('http://localhost:8000/recipe/search/', {
+        //     ingredients: ingredientsArray,
+        //     page: 1,
+        //   })
+        // )
+        navigateTo('/recipe-list', { state: { ingredients: ingredientsArray } })
       }
     }
 
     return (
       <Button
-        sx={{ m: 0.5, backgroundColor: theme.headerColor, // Theme button background
+        sx={{
+          m: 0.5,
+          backgroundColor: theme.headerColor, // Theme button background
           color: theme.color, // Theme button text color
           '&:hover': {
             backgroundColor: theme.background, // Theme button hover background
-          }, }}
+          },
+        }}
         size="small"
         key={key}
         onClick={onSubmit}
         type="submit"
         variant="contained"
-        
       >
         {' '}
         {name}{' '}
@@ -134,22 +136,20 @@ const GetTags = () => {
     let ingredientsArray: Array<string> = []
     ingredientsArray.push('butter'.toLocaleLowerCase())
     if (ingredientsArray.length > 0) {
-      sessionStorage.setItem('ingredients', JSON.stringify(ingredientsArray))
-      dispatch(
-        getRecipeListInitiator('http://localhost:8000/recipe/search/', {
-          ingredients: ingredientsArray,
-          page: 1,
-        })
-      )
-      navigateTo('/recipe-list')
+      // sessionStorage.setItem('ingredients', JSON.stringify(ingredientsArray))
+      // dispatch(
+      //   getRecipeListInitiator('http://localhost:8000/recipe/search/', {
+      //     ingredients: ingredientsArray,
+      //     page: 1,
+      //   })
+      // )
+      navigateTo('/recipe-list', { state: { ingredients: ingredientsArray } })
     }
   }
-  const handleChange = (panel: string) => (
-    event: React.SyntheticEvent,
-    newExpanded: boolean
-  ) => {
-    setExpanded(newExpanded ? panel : false)
-  }
+  const handleChange =
+    (panel: string) => (event: React.SyntheticEvent, newExpanded: boolean) => {
+      setExpanded(newExpanded ? panel : false)
+    }
   //  let buttonStyles = {
   //   backgroundColor: '#f2f4f4',
   //   marginTop: '20px',

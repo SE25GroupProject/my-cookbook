@@ -14,11 +14,17 @@ this file. If not, please write to: help.cookbook@gmail.com
  * that contains the data of the application
  * @author Priyanka Ambawane - dearpriyankasa@gmail.com
  */
-import { combineReducers } from 'redux';
-import getIngredientsAppState from "../features/GetIngredients/getIngredients.reducer";
-import getRecipeInfoAppState from './AppContent/RecipeInformation/getRecipeInformation.reducer';
-import getRecipeListAppState from './AppContent/RecipeList/getRecipeList.reducer';
-import getTagListAppState from "./AppContent/Tag/getTags.reducer";
-const combineReducer = combineReducers({ getIngredientsAppState, getRecipeListAppState, getRecipeInfoAppState, getTagListAppState })
- 
-export default combineReducer;
+import { combineReducers } from 'redux'
+import getIngredientsAppState from '../features/GetIngredients/getIngredients.reducer'
+import getRecipeInfoAppState from './AppContent/RecipeInformation/getRecipeInformation.reducer'
+import getRecipeListAppState from './AppContent/RecipeList/getRecipeList.reducer'
+import getTagListAppState from './AppContent/Tag/getTags.reducer'
+import { apiSlice } from './api/apiSlice'
+const combineReducer = combineReducers({
+  getIngredientsAppState,
+  getRecipeListAppState,
+  getRecipeInfoAppState,
+  getTagListAppState,
+})
+
+export default combineReducer
