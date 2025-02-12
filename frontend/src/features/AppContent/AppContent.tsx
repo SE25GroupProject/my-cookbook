@@ -28,7 +28,7 @@ import Signup from './HomePage/Signup'
 import MealPage from './HomePage/MealPage'
 
 import SmartShoppingList from '../ShoppingList/SmartShoppingList'
-import RecipeForm from '../UserRecipes/RecipeForm'
+import RecipeForm from './UserRecipes/RecipeForm'
 
 const AppContent = () => {
   return (
@@ -43,6 +43,7 @@ const AppContent = () => {
       <Route path="/shoppinglist" element={<SmartShoppingList />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/create-recipe" element={<RecipeForm />} />
+      <Route path="/edit-recipe/:id" element={<RecipeForm />} />
 
       {/* Route for Login */}
       <Route path="/login" element={<Login />} />

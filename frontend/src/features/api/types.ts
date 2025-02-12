@@ -30,7 +30,7 @@ export interface Recipe {
   sugar: number
   protein: number
   servings: number
-  instruction: string[]
+  instructions: string[]
 }
 
 export class RecipeObject implements Recipe {
@@ -56,12 +56,12 @@ export class RecipeObject implements Recipe {
   sugar!: number
   protein!: number
   servings!: number
-  instruction!: string[]
+  instructions!: string[]
 }
 export interface NutritionMax {
   caloriesUp: number
   fatUp: number
-  sugerUp: number
+  sugUp: number
   proUp: number
 }
 
@@ -73,7 +73,7 @@ export interface RecipeListIngredientsRequest {
 export interface RecipeListNutritionRequest {
   caloriesUp: number
   fatUp: number
-  sugerUp: number
+  sugUp: number
   proUp: number
   page: number
 }
