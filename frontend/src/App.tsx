@@ -15,7 +15,7 @@ this file. If not, please write to: help.cookbook@gmail.com
  * Header and Search component remain static and app contents change according to the state of the application
  * @author Priyanka Ambawane - dearpriyankasa@gmail.com
  */
-import React from 'react'
+import React, { useState } from 'react'
 import { Provider } from 'react-redux'
 import { BrowserRouter } from 'react-router-dom'
 import applicationStore from './store'
@@ -28,12 +28,19 @@ import CustomizedAccordions from './features/AppContent/NutritionFilter/Customiz
 import { ThemeProvider, useTheme } from './features/Themes/themeContext'
 import Login from './features/AppContent/HomePage/Login'
 import Profile from './features/AppContent/HomePage/Profile'
+import { Button } from '@mui/material'
+import { FaAngleDoubleDown, FaAngleDoubleUp } from 'react-icons/fa'
 
 const store = applicationStore()
 
 // Separate function for the main application content
 const AppContentLayout: React.FC = () => {
   const { theme } = useTheme()
+  const [searchOpen, setSearchOpen] = useState(false)
+
+  const toggleSearchBar = () => {
+    setSearchOpen(!searchOpen)
+  }
 
   return (
     <div
@@ -47,26 +54,39 @@ const AppContentLayout: React.FC = () => {
       >
         <Header />
       </div>
-      <div
-        className="search-helper"
-        data-testid="search-comp-43"
-        style={{ backgroundColor: theme.background }}
-      >
-        <GetIngredients />
-      </div>
-      <div
-        className="search-helper"
-        data-testid="header-comp-44"
-        style={{ backgroundColor: theme.background }}
-      >
-        <GetTags />
-      </div>
-      <div
-        className="search-helper"
-        data-testid="header-comp-45"
-        style={{ backgroundColor: theme.background }}
-      >
-        <CustomizedAccordions />
+      <div className="search-bar-container">
+        <div className={`search-bar ${searchOpen ? '' : 'hidden'}`}>
+          <div
+            className="search-helper"
+            data-testid="search-comp-43"
+            style={{ backgroundColor: theme.background }}
+          >
+            <GetIngredients />
+          </div>
+          <div
+            className="search-helper"
+            data-testid="header-comp-44"
+            style={{ backgroundColor: theme.background }}
+          >
+            <GetTags />
+          </div>
+          <div
+            className="search-helper"
+            data-testid="header-comp-45"
+            style={{ backgroundColor: theme.background }}
+          >
+            <CustomizedAccordions />
+          </div>
+        </div>
+        <div className="search-expand">
+          <Button onClick={toggleSearchBar}>
+            {searchOpen ? (
+              <FaAngleDoubleUp fontSize={24} color={theme.color} />
+            ) : (
+              <FaAngleDoubleDown fontSize={24} color={theme.color} />
+            )}
+          </Button>
+        </div>
       </div>
       <div
         className="App-body"

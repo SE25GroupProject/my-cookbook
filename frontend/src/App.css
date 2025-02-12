@@ -33,7 +33,8 @@ this file. If not, please write to: help.cookbook@gmail.com
   flex-direction: column;
   overflow-y: hidden;
   color: white;
-  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande',
+    'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }
 
 .App-searchComponent {
@@ -55,11 +56,28 @@ this file. If not, please write to: help.cookbook@gmail.com
   align-items: center;
   justify-content: flex-start;
   font-size: calc(10px + 2vmin);
-  overflow: hidden;
 }
 
 .App-link {
   color: #61dafb;
+}
+
+.search-bar-container {
+  position: absolute;
+  top: 90px;
+  left: 0;
+  right: 0;
+  z-index: 10;
+}
+
+.search-bar {
+  overflow: hidden;
+  max-height: 400px;
+  transition: max-height 300ms ease-in-out;
+}
+
+.search-bar.hidden {
+  max-height: 0;
 }
 
 @keyframes App-logo-spin {
