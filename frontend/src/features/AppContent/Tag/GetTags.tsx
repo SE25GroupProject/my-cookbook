@@ -16,10 +16,8 @@ this file. If not, please write to: help.cookbook@gmail.com
  * @author Priyanka Ambawane - dearpriyankasa@gmail.c               om
  */
 import React, { useState, useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { Box, Button, Chip, Grid, Stack, TextField } from '@mui/material'
-import { getRecipeListInitiator } from '../RecipeList/getRecipeList.action'
 import { styled } from '@mui/material/styles'
 import MuiAccordion, { AccordionProps } from '@mui/material/Accordion'
 import MuiAccordionSummary, {
@@ -71,7 +69,6 @@ interface ChipData {
 }
 const GetTags = () => {
   const { theme } = useTheme()
-  const dispatch = useDispatch()
   const navigateTo = useNavigate()
   const [expanded, setExpanded] = React.useState<string | false>('panel1')
   const [chipData, setChipData] = useState<readonly ChipData[]>([])
@@ -93,18 +90,11 @@ const GetTags = () => {
     'potato',
     'turkey',
   ]
-  const getReciptButton = (name: string, key: number) => {
+  const getRecipeButton = (name: string, key: number) => {
     const onSubmit = () => {
       let ingredientsArray: Array<string> = []
       ingredientsArray.push(name.toLocaleLowerCase())
       if (ingredientsArray.length > 0) {
-        // sessionStorage.setItem('ingredients', JSON.stringify(ingredientsArray))
-        // dispatch(
-        //   getRecipeListInitiator('http://localhost:8000/recipe/search/', {
-        //     ingredients: ingredientsArray,
-        //     page: 1,
-        //   })
-        // )
         navigateTo('/recipe-list', { state: { ingredients: ingredientsArray } })
       }
     }
@@ -136,13 +126,6 @@ const GetTags = () => {
     let ingredientsArray: Array<string> = []
     ingredientsArray.push('butter'.toLocaleLowerCase())
     if (ingredientsArray.length > 0) {
-      // sessionStorage.setItem('ingredients', JSON.stringify(ingredientsArray))
-      // dispatch(
-      //   getRecipeListInitiator('http://localhost:8000/recipe/search/', {
-      //     ingredients: ingredientsArray,
-      //     page: 1,
-      //   })
-      // )
       navigateTo('/recipe-list', { state: { ingredients: ingredientsArray } })
     }
   }
@@ -150,15 +133,8 @@ const GetTags = () => {
     (panel: string) => (event: React.SyntheticEvent, newExpanded: boolean) => {
       setExpanded(newExpanded ? panel : false)
     }
-  //  let buttonStyles = {
-  //   backgroundColor: '#f2f4f4',
-  //   marginTop: '20px',
-  //   padding: '20px',
-  //   marginLeft: '30px',
-  //   marginRight: '30px'
-  // }
 
-  return <div>{receiptList.map((v, i) => getReciptButton(v, i))}</div>
+  return <div>{receiptList.map((v, i) => getRecipeButton(v, i))}</div>
 }
 
 export default GetTags

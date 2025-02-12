@@ -23,8 +23,6 @@ import { Autocomplete, Box, Button, Chip, Grid, TextField } from '@mui/material'
 import { useForm, Controller } from 'react-hook-form'
 import Send from '@mui/icons-material/Send'
 import HighlightOffIcon from '@mui/icons-material/HighlightOff'
-import { getIngredientsInitiator } from './getIngredients.action'
-import { getRecipeListInitiator } from '../AppContent/RecipeList/getRecipeList.action'
 import { useTheme } from '../Themes/themeContext'
 import { useGetIngredientSuggestionsQuery } from './IngredientsSlice'
 
@@ -86,23 +84,6 @@ const GetIngredients = () => {
   const [queryValue, setQueryValue] = useState('')
   const [skip, setSkip] = useState(true)
 
-  // accesses the state of the component from the app's store
-  // const getIngredientsState = useSelector(
-  //   (state: any) => state.getIngredientsAppState
-  // )
-
-  // useEffect(() => {
-  //   let ingredients = getIngredientsState.getIngredientsData
-  //   if (Array.isArray(ingredients)) {
-  //     ingredients.forEach((item: string, index: number) => {
-  //       setListData((list) => list.concat({ key: item, label: item }))
-  //     })
-  //   }
-  //   return () => {
-  //     setListData([])
-  //   }
-  // }, [getIngredientsState.getIngredientsData])
-
   const { data: ingredients } = useGetIngredientSuggestionsQuery(queryValue, {
     skip: skip,
   })
@@ -148,16 +129,10 @@ const GetIngredients = () => {
       ingredientsArray.push(chip.label.toLocaleLowerCase())
     )
     if (ingredientsArray.length > 0) {
-      // sessionStorage.setItem('ingredients', JSON.stringify(ingredientsArray))
-      // dispatch(
-      //   getRecipeListInitiator('http://localhost:8000/recipe/search/', {
-      //     ingredients: ingredientsArray,
-      //     page: 1,
-      //   })
-      // )
-      console.log('to recipe list')
-      console.log(ingredientsArray)
-      navigateTo('/recipe-list', { state: { ingredients: ingredientsArray } })
+      navigateTo('/recipe-list', {
+        state: { ingredients: ingredientsArray },
+        replace: true,
+      })
     }
   }
 

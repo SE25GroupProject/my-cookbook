@@ -9,7 +9,6 @@ this file. If not, please write to: help.cookbook@gmail.com
 */
 
 import React, { useState, useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
 import { useLocation, useNavigate } from 'react-router-dom'
 import StarIcon from '@mui/icons-material/Star'
 import {
@@ -27,8 +26,6 @@ import {
   Box,
   FormHelperText,
 } from '@mui/material'
-import { getRecipeInfoInitiator } from '../RecipeInformation/getRecipeInformation.action'
-import { getRecipeListInitiator } from './getRecipeList.action'
 import './RecipeList.css'
 import { RECIPE_CATEGORIES, RECIPE_COOKTIME } from './recipeCategories'
 import { useTheme } from '../../Themes/themeContext'
@@ -68,7 +65,6 @@ const RecipeList = () => {
   const { theme } = useTheme()
   const { state } = useLocation()
 
-  const dispatch = useDispatch()
   const navigateTo = useNavigate()
 
   const [recipeList, setRecipeList] = useState<readonly RecipeListData[]>([])
@@ -86,10 +82,6 @@ const RecipeList = () => {
     useGetRecipeListByIngredientsMutation()
   const [getListByNutrition, { isLoading: nutritionLoading }] =
     useGetRecipeListByNutritionMutation()
-
-  // const getRecipeListState = useSelector(
-  //   (state: any) => state.getRecipeListAppState
-  // )
 
   function convertToMinutes(timeString: string) {
     timeString = timeString.replace(/\s+/g, '').replace('<', '')
@@ -109,6 +101,7 @@ const RecipeList = () => {
 
   function unwrapResponse(response: RecipeListResponse) {
     if (Array.isArray(response.recipes)) {
+      setRecipeList([])
       response.recipes.forEach((item: any, index: number) => {
         setRecipeList((list) =>
           list.concat({
@@ -145,7 +138,7 @@ const RecipeList = () => {
       let request: RecipeListNutritionRequest = {
         caloriesUp: state.nutrition.caloriesUp,
         fatUp: state.nutrition.fatUp,
-        sugerUp: state.nutrition.sugerUp,
+        sugUp: state.nutrition.sugUp,
         proUp: state.nutrition.proUp,
         page: page,
       }
@@ -160,37 +153,7 @@ const RecipeList = () => {
 
   useEffect(() => {
     RequestList()
-  }, [])
-
-  // useEffect(() => {
-  //   let recipes = getRecipeListState.getRecipeListData['recipes']
-  //   if (Array.isArray(recipes)) {
-  //     recipes.forEach((item: any, index: number) => {
-  //       setRecipeList((list) =>
-  //         list.concat({
-  //           id: item._id,
-  //           name: item.name,
-  //           description: item.description,
-  //           cookTime: item.cookTime,
-  //           prepTime: item.prepTime,
-  //           category: item.category,
-  //           rating: item.rating,
-  //         })
-  //       )
-  //     })
-  //     setTotalCount(getRecipeListState.getRecipeListData['count'])
-  //     setPage(getRecipeListState.getRecipeListData['page'])
-  //   }
-  //   return () => {
-  //     setRecipeList([])
-  //     setTotalCount(0)
-  //     setPage(1)
-  //   }
-  // }, [getRecipeListState.getRecipeListData, selectedCategory])
-
-  // useEffect(() => {
-  //   setLoading(getRecipeListState.isGetRecipeListLoading)
-  // }, [getRecipeListState])
+  }, [state])
 
   useEffect(() => {
     if (selectedCategory) {
@@ -219,7 +182,6 @@ const RecipeList = () => {
   }, [selectedCategory, selectedCookTime, recipeList])
 
   const gotoRecipe = (id: string) => {
-    dispatch(getRecipeInfoInitiator('http://localhost:8000/recipe/' + id))
     navigateTo('/recipe-details/' + id)
   }
 
@@ -227,16 +189,6 @@ const RecipeList = () => {
     event: React.ChangeEvent<unknown>,
     value: number
   ) => {
-    // const ingredientsArray = JSON.parse(
-    //   sessionStorage.getItem('ingredients') || '[]'
-    // )
-    // dispatch(
-    //   getRecipeListInitiator('http://localhost:8000/recipe/search/', {
-    //     ingredients: ingredientsArray,
-    //     page: value,
-    //   })
-    // )
-
     setPage(value)
 
     RequestList()

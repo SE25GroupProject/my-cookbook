@@ -15,13 +15,7 @@ this file. If not, please write to: help.cookbook@gmail.com
  * @author Priyanka Ambawane - dearpriyankasa@gmail.com
  */
 import { applyMiddleware, configureStore, Tuple } from '@reduxjs/toolkit'
-import createSagaMiddleware from 'redux-saga'
-import combineReducer from './features/features.reducer'
-import combinedSagas from './features/features.saga'
 import { apiSlice } from './features/api/apiSlice'
-
-// initializes async functionality for the API calls
-// const sagaMiddleware = createSagaMiddleware()
 
 export default function applicationStore() {
   // create the application store using configureStore
@@ -30,9 +24,5 @@ export default function applicationStore() {
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware().concat(apiSlice.middleware),
   })
-
-  // run the sagas
-  // sagaMiddleware.run(combinedSagas)
-
   return store
 }
