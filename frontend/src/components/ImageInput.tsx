@@ -15,6 +15,7 @@ import {
   Typography,
   Pagination,
   IconButton,
+  Tooltip,
 } from '@mui/material'
 // import Card from "@material-ui/core/Card";
 // import Button from "@material-ui/core/Button";
@@ -47,7 +48,7 @@ import {
   UseFormRegister,
 } from 'react-hook-form'
 import { Recipe } from '../features/api/types'
-import { DeleteOutline, Replay } from '@mui/icons-material'
+import { ClearAll, DeleteOutline, Replay } from '@mui/icons-material'
 
 interface ImageInputProps {
   images: Array<string> | undefined | null
@@ -163,18 +164,22 @@ const ImageInput = (props: ImageInputProps) => {
     >
       {/* <Card className="img-card" sx={{ m: 2 }}> */}
       <Grid2 container direction="column" alignItems="center">
-        <IconButton
-          sx={{ position: 'absolute', top: 0, left: 0 }}
-          onClick={removeCurrentImage}
-        >
-          <Replay />
-        </IconButton>
-        <IconButton
-          sx={{ position: 'absolute', top: 40, left: 0 }}
-          onClick={removeAllImages}
-        >
-          <DeleteOutline />
-        </IconButton>
+        <Tooltip title="Delete Current Image">
+          <IconButton
+            sx={{ position: 'absolute', top: 0, left: 0 }}
+            onClick={removeCurrentImage}
+          >
+            <DeleteOutline />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Delete All Images">
+          <IconButton
+            sx={{ position: 'absolute', top: 40, left: 0 }}
+            onClick={removeAllImages}
+          >
+            <ClearAll />
+          </IconButton>
+        </Tooltip>
         <label htmlFor="contained-button-file" style={{ margin: 10 }}>
           <Button component="span">
             <Grid2>
@@ -239,6 +244,7 @@ const ImageInput = (props: ImageInputProps) => {
               onChange={handlePageChange}
               boundaryCount={1}
               siblingCount={0}
+              aria-label="image-pagination"
             />
           ) : (
             <></>
