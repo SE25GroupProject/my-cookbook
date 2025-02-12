@@ -67,12 +67,9 @@ const ImageInput = (props: ImageInputProps) => {
       window.HTMLInputElement.prototype,
       'value'
     )?.set
-    console.log(currentFiles)
     inputValSetter?.call(input, currentFiles)
     const event = new Event('input', { bubbles: true })
     input?.dispatchEvent(event)
-
-    console.log('triggering!')
   }
 
   const handleUploadClickDeprecated = (
@@ -106,7 +103,6 @@ const ImageInput = (props: ImageInputProps) => {
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     var file = event.currentTarget.files?.item(0)
-
     if (!file) return
 
     const reader = new FileReader()
@@ -126,15 +122,19 @@ const ImageInput = (props: ImageInputProps) => {
   }
 
   const removeCurrentImage = () => {
-    let currentFiles = files.filter((file) => {
-      return file != selectedFile
+    if (page === 0) return
+
+    var currentIdx = page - 1
+    let currentFiles = files.filter((file, idx) => {
+      return idx != currentIdx
     })
 
     setFiles(currentFiles)
     setValue('images', currentFiles)
 
     if (files.length != 0) {
-      setSelectedFile(files[page])
+      setPage(1)
+      setSelectedFile(currentFiles[0])
     } else {
       setPage(0)
       setSelectedFile('')
@@ -195,6 +195,7 @@ const ImageInput = (props: ImageInputProps) => {
                     maxHeight: '100%',
                   }}
                   src={selectedFile}
+                  alt={`Image ${page}`}
                 />
               ) : (
                 <Box sx={{ mx: 2, my: 9 }}>
@@ -211,6 +212,7 @@ const ImageInput = (props: ImageInputProps) => {
               id="contained-button-file"
               type="file"
               onChange={handleImageUpload}
+              aria-label="Upload Image Input"
             />
 
             {/* <Controller
@@ -244,7 +246,8 @@ const ImageInput = (props: ImageInputProps) => {
               onChange={handlePageChange}
               boundaryCount={1}
               siblingCount={0}
-              aria-label="image-pagination"
+              // role="menu"
+              // aria-label="image-pagination"
             />
           ) : (
             <></>
