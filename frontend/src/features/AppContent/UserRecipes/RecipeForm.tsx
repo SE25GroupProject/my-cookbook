@@ -290,7 +290,7 @@ const RecipeForm = () => {
   }
 
   return (
-    <Container maxWidth="lg" style={{ paddingTop: '20px' }}>
+    <Container maxWidth="lg">
       {isLoading ? (
         <Typography variant="body1">Loading...</Typography>
       ) : (

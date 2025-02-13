@@ -9,18 +9,21 @@ import {
   Paper,
   Popover,
   Stack,
+  Tab,
   Tooltip,
   Typography,
 } from '@mui/material'
 import ImageInput from '../../../components/ImageInput'
 import { Form, FormProvider, useForm } from 'react-hook-form'
 import avatar from './photos/default-avatar.png'
+import { TabContext, TabList, TabPanel } from '@mui/lab'
 
 const Profile = () => {
   const auth = useAuth()
   const formMethods = useForm()
   const { handleSubmit, getValues } = formMethods
   const [imgAnchorEl, setImgAnchorEl] = useState<HTMLButtonElement | null>(null)
+  const [tabValue, setTabValue] = useState('1')
 
   // Sample user details
   const [profilePhoto, setProfilePhoto] = useState('')
@@ -52,6 +55,10 @@ const Profile = () => {
 
   const handleClosePopup = () => {
     setImgAnchorEl(null)
+  }
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
+    setTabValue(newValue)
   }
 
   return (
@@ -120,6 +127,29 @@ const Profile = () => {
               {auth?.user.username}'s Profile
             </Typography>
           </Stack>
+
+          <TabContext value={tabValue}>
+            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+              <TabList
+                onChange={handleTabChange}
+                aria-label="lab API tabs example"
+                variant="fullWidth"
+              >
+                <Tab label="My Posts" value="1" />
+                <Tab label="My Favorites" value="2" />
+                <Tab label="My Recipes" value="3" />
+              </TabList>
+            </Box>
+            <TabPanel value="1" sx={{ p: 2 }}>
+              Post List
+            </TabPanel>
+            <TabPanel value="2" sx={{ p: 2 }}>
+              My Favorites List
+            </TabPanel>
+            <TabPanel value="3" sx={{ p: 2 }}>
+              My Recipes List
+            </TabPanel>
+          </TabContext>
         </Stack>
       </Paper>
 
