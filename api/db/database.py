@@ -14,13 +14,13 @@ class Database_Connection():
     
     def __init__(self):
         """Handles initializing the class"""
-        self.conn = sqlite3.connect('cookbook.db')
+        self.conn = sqlite3.connect('db/cookbook.db')
         self.cursor = self.conn.cursor()
 
         # Checking if the tables exist
-        userTable = self.cursor.execute("SELECT tableName FROM sqlite_master WHERE type='table' AND tableName='Users'").fetchone()
+        userTable = self.cursor.execute("SELECT tbl_name FROM sqlite_master WHERE type='table' AND tbl_name='Users'").fetchone()
         if userTable is None:
-            with open("my_script.sql", "r") as sql_file:
+            with open("db/createUserTable.sql", "r") as sql_file:
                 sql_script = sql_file.read()
                 self.cursor.executescript(sql_script)
                 self.conn.commit()
