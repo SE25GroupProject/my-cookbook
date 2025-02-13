@@ -51,7 +51,9 @@ const Signup = () => {
           </Stack>
 
           <Box>
-            <Button onClick={handleSignup}>Signup</Button>
+            <Button variant="outlined" onClick={handleSignup}>
+              Sign up
+            </Button>
           </Box>
           <Typography variant="body1">
             Already a user? <Link href="/login">Login here</Link>
