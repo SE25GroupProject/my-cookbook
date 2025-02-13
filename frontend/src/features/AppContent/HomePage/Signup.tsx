@@ -2,18 +2,22 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../Authentication/AuthProvider'
 import { UserCred } from '../../api/types'
-
-const Signup: React.FC = () => {
+import {
+  Alert,
+  Box,
+  Button,
+  Container,
+  Link,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material'
+const Signup = () => {
   const auth = useAuth()
 
   const [email, setEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')
-  const [error, setError] = useState<string>('')
-  const navigate = useNavigate()
-
-  // Simple in-memory user store
-  // let savedEmail = localStorage.getItem('userEmail')
-  // let savedPassword = localStorage.getItem('userPassword')
 
   const handleSignup = () => {
     const user: UserCred = {
@@ -21,46 +25,40 @@ const Signup: React.FC = () => {
       password: password,
     }
     auth?.signupAction(user)
-    // Check if user already exists
-    // if (savedEmail && savedPassword) {
-    //   if (savedEmail === email) {
-    //     setError('User already exists!')
-    //     return
-    //   }
-    // }
-
-    // Save the new user data to local storage
-    // localStorage.setItem('userEmail', email);
-    // localStorage.setItem('userPassword', password);
-    // alert('Signup successful!');
-    // navigate('/login'); // Redirect to login page
   }
 
   return (
-    <div>
-      <h2>Signup</h2>
-      <div>
-        <input
-          type="email"
-          placeholder="Enter email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-      </div>
-      <div>
-        <input
-          type="password"
-          placeholder="Enter password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-      </div>
-      {error && <p>{error}</p>}
-      <button onClick={handleSignup}>Signup</button>
-      <p>
-        Already a user? <a href="/login">Login here</a>
-      </p>
-    </div>
+    <Container maxWidth="sm">
+      <Paper elevation={3} sx={{ p: 4 }}>
+        <Stack spacing={6}>
+          <Stack spacing={2}>
+            <Typography variant="h3">Signup</Typography>
+            {auth?.error && (
+              <Alert severity="error" variant="outlined">
+                {auth.error}
+              </Alert>
+            )}
+            <TextField
+              value={email}
+              label="Enter Email"
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <TextField
+              value={[password]}
+              label="Enter Password"
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </Stack>
+
+          <Box>
+            <Button onClick={handleSignup}>Signup</Button>
+          </Box>
+          <Typography variant="body1">
+            Already a user? <Link href="/login">Login here</Link>
+          </Typography>
+        </Stack>
+      </Paper>
+    </Container>
   )
 }
 

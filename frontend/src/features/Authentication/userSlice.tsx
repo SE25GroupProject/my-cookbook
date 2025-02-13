@@ -5,7 +5,7 @@ export const userSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     login: builder.mutation<UserInfo, UserCred>({
       query: (user) => ({
-        url: '/login',
+        url: '/user/login',
         method: 'POST',
         body: user,
         headers: {
@@ -17,7 +17,7 @@ export const userSlice = apiSlice.injectEndpoints({
     }),
     signup: builder.mutation<UserInfo, UserCred>({
       query: (user) => ({
-        url: '/signup',
+        url: '/user/signup',
         method: 'POST',
         body: user,
         headers: {
@@ -29,7 +29,7 @@ export const userSlice = apiSlice.injectEndpoints({
     }),
     getUser: builder.query<UserInfo, string>({
       query: (username) => ({
-        url: `/getUser/${username}`,
+        url: `/user/getUser/${username}`,
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*',

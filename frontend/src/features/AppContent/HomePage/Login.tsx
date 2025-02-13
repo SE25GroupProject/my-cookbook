@@ -2,18 +2,17 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../Authentication/AuthProvider'
 import { UserCred } from '../../api/types'
+import { Alert } from '@mui/material'
 
-const Login: React.FC = () => {
+export interface LoginParam {
+  intendedRoute: string
+}
+
+const Login = () => {
   const auth = useAuth()
 
   const [email, setEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')
-  const [error, setError] = useState<string>('')
-  const navigate = useNavigate()
-
-  // Fetch saved email and password from localStorage
-  // const savedEmail = localStorage.getItem('userEmail');
-  // const savedPassword = localStorage.getItem('userPassword');
 
   const handleLogin = () => {
     const user: UserCred = {
@@ -21,18 +20,16 @@ const Login: React.FC = () => {
       password: password,
     }
     auth?.loginAction(user)
-    // Compare entered email and password with saved ones
-    // if (savedEmail === email && savedPassword === password) {
-    //   alert('Login successful!');
-    //   navigate('/profile'); // Redirect to profile page
-    // } else {
-    //   setError('Incorrect email or password');
-    // }
   }
 
   return (
     <div>
       <h2>Login</h2>
+      {auth?.error && (
+        <Alert severity="error" variant="outlined">
+          {auth.error}
+        </Alert>
+      )}
       <div>
         <input
           type="email"
@@ -49,7 +46,7 @@ const Login: React.FC = () => {
           onChange={(e) => setPassword(e.target.value)}
         />
       </div>
-      {error && <p>{error}</p>}
+
       <button onClick={handleLogin}>Login</button>
       <p>
         Don't have an account? <a href="/signup">Signup here</a>

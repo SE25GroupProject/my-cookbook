@@ -15,6 +15,7 @@ import { useTheme } from '../Themes/themeContext'
 import themes from '../Themes/themes'
 import {
   AppBar,
+  Box,
   Button,
   Grid2,
   Link,
@@ -59,7 +60,12 @@ function Navbar() {
   }
 
   const CloseAccountMenu = () => {
-    setInfoEl(null)
+    setAccountEl(null)
+  }
+
+  const handleLogout = () => {
+    CloseAccountMenu()
+    auth?.logOut()
   }
 
   return (
@@ -145,12 +151,17 @@ function Navbar() {
         open={Boolean(accountEl)}
         onClose={CloseAccountMenu}
       >
-        {auth?.user ? (
-          <Link underline="none" color="inherit" href="/profile">
-            <MenuItem onClick={CloseAccountMenu}>Contact Us</MenuItem>
-          </Link>
+        {auth?.userSignedIn ? (
+          <Box>
+            <Link underline="none" color="inherit" href="/profile">
+              <MenuItem onClick={CloseAccountMenu}>Profile</MenuItem>
+            </Link>
+            <Button onClick={handleLogout}>
+              <MenuItem onClick={CloseAccountMenu}>Log Out</MenuItem>
+            </Button>
+          </Box>
         ) : (
-          <>
+          <Box>
             <Link underline="none" color="inherit" href="/signup">
               <MenuItem onClick={CloseAccountMenu}>Sign Up</MenuItem>
             </Link>
@@ -158,7 +169,7 @@ function Navbar() {
             <Link underline="none" color="inherit" href="/login">
               <MenuItem onClick={CloseAccountMenu}>Log In</MenuItem>
             </Link>
-          </>
+          </Box>
         )}
       </Menu>
       {/* <a href="/meal" className="navbar-item" style={{ color: theme.color }}>
