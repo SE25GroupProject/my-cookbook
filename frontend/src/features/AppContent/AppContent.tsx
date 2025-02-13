@@ -30,6 +30,7 @@ import MealPage from './MealPlan/MealPage'
 import SmartShoppingList from './ShoppingList/SmartShoppingList'
 import RecipeForm from './UserRecipes/RecipeForm'
 import { PrivateRoute } from './Authentication/AuthProvider'
+import SocialMedia from './SocialMedia/SocialMedia'
 
 export interface SearchBarProps {
   toggleSearchBar: (forceState: boolean | null) => void
@@ -39,6 +40,7 @@ const AppContent = ({ toggleSearchBar }: SearchBarProps) => {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
+      <Route path="/feed" element={<SocialMedia />} />
       <Route
         path="/recipe-list"
         element={<RecipeList toggleSearchBar={toggleSearchBar} />}

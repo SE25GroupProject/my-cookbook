@@ -113,7 +113,7 @@ function Navbar() {
         open={Boolean(nextMealEl)}
         onClose={CloseNextMealMenu}
       >
-        <Link underline="none" color="inherit" href="/">
+        <Link underline="none" color="inherit" href="/feed">
           <MenuItem onClick={CloseNextMealMenu}>The Feed</MenuItem>
         </Link>
 
