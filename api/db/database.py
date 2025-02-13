@@ -5,6 +5,10 @@ from db.objects import User
 
 class Database_Connection():
     """Used as a singleton to access the database"""
+
+    def convert_user(val):
+        username, password = list(map(str, val.split(b";")))
+        return User(username, password)
     
     def __new__(self):
         """Handles ensuring that this class is a singleton"""
@@ -28,17 +32,25 @@ class Database_Connection():
     def add_user(self, user: User) -> bool:
         """Adds a new user to the database"""
         try:
-            commandString: str = "INSERT INTO Users (Username, Password) VALUES (%s, %s)"
-            self.cursor.execute(commandString, user.Username, user.Password)
+            commandString: str = "INSERT INTO Users (Username, Password) VALUES (?, ?)"
+            self.cursor.execute(commandString, (user.Username, user.Password,))
             self.conn.commit()
-            return True
+
+            getIdCommand: str = "SELECT UserId FROM Users WHERE Username = ?"
+            self.cursor.execute(getIdCommand, (user.Username,))
+            userid: int = self.cursor.fetchone()
+            return userid[0]
         except:
             return False
         
     def get_user(self, username: str) -> User:
         """Gets a user based on their username"""
-        commandString: str = "SELECT * FROM Users WHERE USERNAME = %s"
-        self.cursor.execute(commandString, username)
-        user: User = self.cursor.fetchone()
-        return user
+        try: 
+            commandString: str = "SELECT * FROM Users WHERE Username = ?"
+            self.cursor.execute(commandString, (username,))
+            res = self.cursor.fetchone()
+            user: User = User(res[1], res[2], res[0])
+            return user
+        except:
+            return None
     

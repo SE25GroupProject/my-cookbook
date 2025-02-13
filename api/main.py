@@ -7,9 +7,9 @@ You should have received a copy of the MIT license with
 this file. If not, please write to: help.cookbook@gmail.com
 
 """
-
+ 
 from fastapi.middleware.cors import CORSMiddleware
-from routes import router
+from routes import router, userRouter
 from pymongo import MongoClient
 from fastapi import FastAPI, HTTPException
 from models import ShoppingListItem
@@ -50,6 +50,7 @@ def startup_db_client():
     """Initializes the database client when the application starts"""
     app.mongodb_client = MongoClient(config["ATLAS_URI"], tlsCAFile = ca)
     app.database = app.mongodb_client[config["DB_NAME"]]
+    
 
 
 @app.on_event("shutdown")
@@ -59,6 +60,7 @@ def shutdown_db_client():
 
 
 app.include_router(router, tags=["recipes"], prefix="/recipe")
+app.include_router(userRouter, tags=["user"], prefix="/user")
 
 """ This api functions is for shopping list."""
 

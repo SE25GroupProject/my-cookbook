@@ -11,6 +11,8 @@ services:
       - ./api/.env
     networks:
       - fastapi-network
+    volumes:
+      - ./api:/app
 
   frontend:
     build:
