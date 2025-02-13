@@ -226,12 +226,13 @@ const RecipeForm = () => {
 
   const handleIngredientRemove = (index: number) => {
     const fullIndex = ingPage * ingPerPage + index
+    const newIngList = ingredients.filter((ing, idx) => {
+      return idx != fullIndex
+    })
+    setIngredients(newIngList)
 
-    setIngredients(
-      ingredients.filter((ing, idx) => {
-        return idx != fullIndex
-      })
-    )
+    if (ingPage != 0 && ingPage * ingPerPage + 1 > newIngList.length)
+      setIngPage(ingPage - 1)
   }
 
   const handleIngChangePage = (
@@ -304,7 +305,7 @@ const RecipeForm = () => {
           </Typography>
           <Paper
             elevation={6}
-            sx={{ height: { xs: 300, sm: 340, md: 420, lg: 575, xl: 680 } }}
+            sx={{ height: { xs: 300, sm: 340, md: 575, xl: 680 } }}
           >
             <FormProvider {...formMethods}>
               <Box
@@ -502,6 +503,11 @@ const RecipeForm = () => {
                                   <IconButton
                                     onClick={handleIngredientAdd}
                                     edge="end"
+                                    aria-label="Add New Ingredient"
+                                    disabled={
+                                      ingToAdd.length === 0 ||
+                                      ingredients.includes(ingToAdd)
+                                    }
                                   >
                                     <AddCircleOutline />
                                   </IconButton>
@@ -512,10 +518,12 @@ const RecipeForm = () => {
                               sx={{ mb: 2 }}
                               value={ingToAdd}
                               onChange={handleIngChangeAddInput}
+                              aria-label="Add Ingredient Input"
                             />
                             <Stack spacing={1} sx={{ minHeight: 142 }}>
                               {currIngs.map((currIng, index) => (
-                                <Box
+                                <Container
+                                  aria-label={`Ingredient ${ingPage * ingPerPage + index}`}
                                   key={index}
                                   sx={{
                                     px: 2,
@@ -542,7 +550,7 @@ const RecipeForm = () => {
                                   >
                                     <DeleteOutline />
                                   </IconButton>
-                                </Box>
+                                </Container>
                               ))}
                             </Stack>
 
@@ -878,12 +886,14 @@ const RecipeForm = () => {
                                 onClick={(e) =>
                                   handleOpenEditStepPopup(null, index)
                                 }
+                                aria-label={`Edit Step ${index}`}
                               >
                                 <Edit />
                               </IconButton>
                               <IconButton
                                 sx={{ borderRadius: 0 }}
                                 onClick={(e) => handleStepRemove(index)}
+                                aria-label={`Delete Step ${index}`}
                               >
                                 <DeleteOutline />
                               </IconButton>
@@ -942,7 +952,10 @@ const RecipeForm = () => {
                           rowsPerPageOptions={[]}
                         />
                       </Grid2>
-                      <IconButton onClick={handleOpenAddStepPopup}>
+                      <IconButton
+                        onClick={handleOpenAddStepPopup}
+                        aria-label="Add New Step"
+                      >
                         <AddCircleOutline color="primary" />
                       </IconButton>
                       <Button type="submit" variant="contained">
