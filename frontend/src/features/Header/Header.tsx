@@ -12,6 +12,8 @@ import React from 'react'
 import './Header.css'
 import Navbar from '../Navbar/Navbar'
 import { useTheme } from '../Themes/themeContext'
+import { AppBar, Divider, Link, Toolbar, Typography } from '@mui/material'
+import { MenuBook } from '@mui/icons-material'
 /**
  * File name: Header.tsx
  * Functional component displaying the top navigation bar.
@@ -23,36 +25,38 @@ import { useTheme } from '../Themes/themeContext'
 const Header = () => {
   const { theme } = useTheme()
   return (
-    <section
-      className="header"
-      style={{ backgroundColor: theme.background, color: theme.color }}
-    >
-      <section className="header-top">
-        <section className="header-top__logo">
-          <a
-            href="/"
-            className="header-logo"
-            style={{ color: theme.headerColor }}
-          >
+    // <section
+    //   className="header"
+    //   style={{ backgroundColor: theme.background, color: theme.color }}
+    // >
+
+    <AppBar sx={{ background: theme.background }}>
+      <Toolbar>
+        {/* <section className="header-top"> */}
+        {/* <section className="header-top__logo"> */}
+        <Typography
+          variant="h1"
+          component="div"
+          sx={{ flexGrow: 1, fontFamily: 'RobotoThin' }}
+          textAlign="left"
+        >
+          <Link underline="none" href="/" sx={{ color: theme.headerColor }}>
             C o o k B o o k
-          </a>
-        </section>
-        <section className="header-top__navbar" data-testid="nav-comp-43">
+          </Link>
+        </Typography>
+
+        <Divider />
+        {/* </section> */}
+        <Navbar />
+        {/* <section className="header-top__navbar" data-testid="nav-comp-43">
           <section className="header-top__navigation">
-            <Navbar />
+            
           </section>
           <hr className="header-top__seperator" />
-        </section>
-      </section>
-      {/* <section className="header-bottom">
-        <section className="header-bottom__phone">
-          99999999999
-        </section>
-        <section className="header-bottom__email">
-          shop.info@gmail.com
-        </section>
-      </section> */}
-    </section>
+        </section> */}
+        {/* </section> */}
+      </Toolbar>
+    </AppBar>
   )
 }
 

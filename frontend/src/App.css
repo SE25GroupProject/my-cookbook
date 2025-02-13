@@ -64,7 +64,7 @@ this file. If not, please write to: help.cookbook@gmail.com
 
 .search-bar-container {
   position: absolute;
-  top: 90px;
+  top: 110px;
   left: 0;
   right: 0;
   z-index: 10;
@@ -78,6 +78,10 @@ this file. If not, please write to: help.cookbook@gmail.com
 
 .search-bar.hidden {
   max-height: 0;
+}
+
+.search-expand {
+  text-align: right;
 }
 
 @keyframes App-logo-spin {

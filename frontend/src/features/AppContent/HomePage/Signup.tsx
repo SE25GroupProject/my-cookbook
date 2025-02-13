@@ -1,31 +1,40 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../Authentication/AuthProvider'
+import { UserCred } from '../../api/types'
 
 const Signup: React.FC = () => {
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [error, setError] = useState<string>('');
-  const navigate = useNavigate();
+  const auth = useAuth()
+
+  const [email, setEmail] = useState<string>('')
+  const [password, setPassword] = useState<string>('')
+  const [error, setError] = useState<string>('')
+  const navigate = useNavigate()
 
   // Simple in-memory user store
-  let savedEmail = localStorage.getItem('userEmail');
-  let savedPassword = localStorage.getItem('userPassword');
+  // let savedEmail = localStorage.getItem('userEmail')
+  // let savedPassword = localStorage.getItem('userPassword')
 
   const handleSignup = () => {
-    // Check if user already exists
-    if (savedEmail && savedPassword) {
-      if (savedEmail === email) {
-        setError('User already exists!');
-        return;
-      }
+    const user: UserCred = {
+      username: email,
+      password: password,
     }
+    auth?.signupAction(user)
+    // Check if user already exists
+    // if (savedEmail && savedPassword) {
+    //   if (savedEmail === email) {
+    //     setError('User already exists!')
+    //     return
+    //   }
+    // }
 
     // Save the new user data to local storage
-    localStorage.setItem('userEmail', email);
-    localStorage.setItem('userPassword', password);
-    alert('Signup successful!');
-    navigate('/login'); // Redirect to login page
-  };
+    // localStorage.setItem('userEmail', email);
+    // localStorage.setItem('userPassword', password);
+    // alert('Signup successful!');
+    // navigate('/login'); // Redirect to login page
+  }
 
   return (
     <div>
@@ -48,9 +57,11 @@ const Signup: React.FC = () => {
       </div>
       {error && <p>{error}</p>}
       <button onClick={handleSignup}>Signup</button>
-      <p>Already a user? <a href="/login">Login here</a></p>
+      <p>
+        Already a user? <a href="/login">Login here</a>
+      </p>
     </div>
-  );
-};
+  )
+}
 
-export default Signup;
+export default Signup

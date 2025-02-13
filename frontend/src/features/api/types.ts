@@ -1,11 +1,11 @@
 export interface User {
   id: number
-  name: string
+  username: string
   password: string
 }
 
-type UserCred = Pick<User, 'name' | 'password'>
-type UserInfo = Pick<User, 'id' | 'name'>
+export type UserCred = Pick<User, 'username' | 'password'>
+export type UserInfo = Pick<User, 'id' | 'username'>
 
 export interface Recipe {
   id: string | number

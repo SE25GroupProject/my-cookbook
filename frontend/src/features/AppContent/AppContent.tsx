@@ -29,6 +29,7 @@ import MealPage from './HomePage/MealPage'
 
 import SmartShoppingList from '../ShoppingList/SmartShoppingList'
 import RecipeForm from './UserRecipes/RecipeForm'
+import { PrivateRoute } from '../Authentication/AuthProvider'
 
 const AppContent = () => {
   return (
@@ -36,23 +37,30 @@ const AppContent = () => {
       <Route path="/" element={<HomePage />} />
       <Route path="/recipe-list" element={<RecipeList />} />
       <Route path="/recipe-details/:id" element={<RecipeInformation />} />
-      <Route path="/meal" element={<MealPage />} />
       <Route path="/about" element={<About />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/faq" element={<FAQPage />} />
-      <Route path="/shoppinglist" element={<SmartShoppingList />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/create-recipe" element={<RecipeForm />} />
-      <Route path="/edit-recipe/:id" element={<RecipeForm />} />
 
       {/* Route for Login */}
       <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
 
-      {/* Route for Profile */}
-      <Route path="/profile" element={<Profile />} />
-
-      {/* Optional: Route for Home */}
-      <Route path="/" element={<HomePage />} />
+      {/* Routes if you are logged in*/}
+      <Route element={<PrivateRoute />}>
+        <Route path="/profile" element={<Profile />} />
+      </Route>
+      <Route element={<PrivateRoute />}>
+        <Route path="/meal" element={<MealPage />} />
+      </Route>
+      <Route element={<PrivateRoute />}>
+        <Route path="/shoppinglist" element={<SmartShoppingList />} />
+      </Route>
+      <Route element={<PrivateRoute />}>
+        <Route path="/create-recipe" element={<RecipeForm />} />
+      </Route>
+      <Route element={<PrivateRoute />}>
+        <Route path="/edit-recipe/:id" element={<RecipeForm />} />
+      </Route>
     </Routes>
   )
 }

@@ -28,8 +28,9 @@ import CustomizedAccordions from './features/AppContent/NutritionFilter/Customiz
 import { ThemeProvider, useTheme } from './features/Themes/themeContext'
 import Login from './features/AppContent/HomePage/Login'
 import Profile from './features/AppContent/HomePage/Profile'
-import { Button } from '@mui/material'
+import { Button, Stack, Typography } from '@mui/material'
 import { FaAngleDoubleDown, FaAngleDoubleUp } from 'react-icons/fa'
+import AuthProvider from './features/Authentication/AuthProvider'
 
 const store = applicationStore()
 
@@ -79,11 +80,25 @@ const AppContentLayout: React.FC = () => {
           </div>
         </div>
         <div className="search-expand">
-          <Button onClick={toggleSearchBar}>
+          <Button
+            onClick={toggleSearchBar}
+            variant="outlined"
+            sx={{ borderColor: theme.color }}
+          >
+            <Typography
+              color={theme.color}
+              variant="h6"
+              sx={{
+                textTransform: 'initial',
+                mr: 2,
+              }}
+            >
+              Search A Recipe
+            </Typography>
             {searchOpen ? (
-              <FaAngleDoubleUp fontSize={24} color={theme.color} />
+              <FaAngleDoubleUp fontSize={20} color={theme.color} />
             ) : (
-              <FaAngleDoubleDown fontSize={24} color={theme.color} />
+              <FaAngleDoubleDown fontSize={20} color={theme.color} />
             )}
           </Button>
         </div>
@@ -110,7 +125,9 @@ const App: React.FC = () => {
         }}
       >
         <ThemeProvider>
-          <AppContentLayout />
+          <AuthProvider>
+            <AppContentLayout />
+          </AuthProvider>
         </ThemeProvider>
       </BrowserRouter>
     </Provider>

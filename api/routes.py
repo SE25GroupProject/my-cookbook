@@ -191,25 +191,25 @@ async def recommend_recipes(query: RecipeQuery = Body(...)):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred")
     
 @app.post("/signup")
-async def signup(username: str, password: str):
+async def signup(user: User = Body(...)):
     # Creating a new user
-    user: User = User(username, password)
-    if db.get_user(username) is not None:
+    # user: User = user
+    if db.get_user(user.Username) is not None:
         raise HTTPException(status_code=400, detail="User with that username already exists")
     db.add_user(user)
 
-    return {"message": "Succesfully Signed Up"}
+    return {"id": user.UserId, "username": user.Username}
 
-@app.get("/login")
-async def login(username: str, password: str):
-    user: User = db.get_user(username)
+@app.post("/login")
+async def login(incomingUser: User = Body(...)):
+    user: User = db.get_user(incomingUser.Username)
     if user is None:
         raise HTTPException(status_code=400, detail="There is no user with that username")
     
-    if user.Password == password:
-        return {"message": "Successfully Signed In"}
+    if user.Password == incomingUser.Password:
+        return {"id": user.UserId, "username": user.Username}
     
-    return {"message": "Incorrect Username or Password"}
+    return "Incorrect Username or Password"
 
 
 @app.get("/getUser/{username}")
@@ -218,4 +218,4 @@ async def getUser(username: str) -> dict:
     if user is None:
         raise HTTPException(status_code=400, detail="There is no user with that username")
     
-    return {"message": user.to_dict()}
+    return user
