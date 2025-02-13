@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../../Authentication/AuthProvider'
+import { useAuth } from './AuthProvider'
 import { UserCred } from '../../api/types'
 import {
   Alert,

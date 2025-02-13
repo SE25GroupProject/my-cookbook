@@ -21,15 +21,15 @@ import Contact from './HomePage/ContactPage'
 import FAQPage from './HomePage/FAQPage'
 import RecipeInformation from './RecipeInformation/RecipeInformation'
 import RecipeList from './RecipeList/RecipeList'
-import Login from './HomePage/Login'
-import Profile from './HomePage/Profile'
-import Signup from './HomePage/Signup'
+import Login from './Authentication/Login'
+import Profile from './Authentication/Profile'
+import Signup from './Authentication/Signup'
 
-import MealPage from './HomePage/MealPage'
+import MealPage from './MealPlan/MealPage'
 
-import SmartShoppingList from '../ShoppingList/SmartShoppingList'
+import SmartShoppingList from './ShoppingList/SmartShoppingList'
 import RecipeForm from './UserRecipes/RecipeForm'
-import { PrivateRoute } from '../Authentication/AuthProvider'
+import { PrivateRoute } from './Authentication/AuthProvider'
 
 export interface SearchBarProps {
   toggleSearchBar: (forceState: boolean | null) => void

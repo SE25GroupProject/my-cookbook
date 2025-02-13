@@ -23,7 +23,7 @@ import { Autocomplete, Box, Button, Chip, Grid, TextField } from '@mui/material'
 import { useForm, Controller } from 'react-hook-form'
 import Send from '@mui/icons-material/Send'
 import HighlightOffIcon from '@mui/icons-material/HighlightOff'
-import { useTheme } from '../Themes/themeContext'
+import { useTheme } from '../../Themes/themeContext'
 import { useGetIngredientSuggestionsQuery } from './IngredientsSlice'
 
 interface ChipData {

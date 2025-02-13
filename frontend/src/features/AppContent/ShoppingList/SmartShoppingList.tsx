@@ -19,7 +19,7 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete'
 import { jsPDF } from 'jspdf'
 import shoppingListImage from './image/shopping-list.jpg'
-import { useTheme } from '../Themes/themeContext'
+import { useTheme } from '../../Themes/themeContext'
 
 interface ShoppingItem {
   _id: string
@@ -30,7 +30,7 @@ interface ShoppingItem {
 }
 
 const SmartShoppingList: React.FC = () => {
-  const { theme } = useTheme();
+  const { theme } = useTheme()
   const [listItems, setListItems] = useState<ShoppingItem[]>([])
   const [newItem, setNewItem] = useState<string>('')
   const [quantity, setQuantity] = useState<number>(1)

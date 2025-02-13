@@ -10,8 +10,8 @@ this file. If not, please write to: help.cookbook@gmail.com
 
 import React from 'react'
 import './Header.css'
-import Navbar from '../Navbar/Navbar'
-import { useTheme } from '../Themes/themeContext'
+import Navbar from './Navbar/Navbar'
+import { useTheme } from '../../Themes/themeContext'
 import { AppBar, Box, Divider, Link, Toolbar, Typography } from '@mui/material'
 import { MenuBook } from '@mui/icons-material'
 /**

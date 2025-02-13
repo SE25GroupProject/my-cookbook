@@ -1,7 +1,7 @@
 // Credit - https://dev.to/miracool/how-to-manage-user-authentication-with-react-js-3ic5
 
 import { useContext, createContext, ReactNode, useState } from 'react'
-import { User, UserCred, UserInfo } from '../api/types'
+import { User, UserCred, UserInfo } from '../../api/types'
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useLoginMutation, useSignupMutation } from './userSlice'
 

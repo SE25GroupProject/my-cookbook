@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import './Profile.css' // Optional, for styling
-import { useAuth } from '../../Authentication/AuthProvider'
+import { useAuth } from './AuthProvider'
 import {
   Box,
   Button,
@@ -15,7 +15,7 @@ import {
 } from '@mui/material'
 import ImageInput from '../../../components/ImageInput'
 import { Form, FormProvider, useForm } from 'react-hook-form'
-import avatar from './photos/default-avatar.png'
+import avatar from '../images/default-avatar.png'
 import { TabContext, TabList, TabPanel } from '@mui/lab'
 
 const Profile = () => {

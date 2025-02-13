@@ -20,14 +20,14 @@ import { Provider } from 'react-redux'
 import { BrowserRouter } from 'react-router-dom'
 import applicationStore from './store'
 import './App.css'
-import GetIngredients from './features/GetIngredients/GetIngredients'
-import Header from './features/Header/Header'
+import GetIngredients from './features/AppContent/GetIngredients/GetIngredients'
+import Header from './features/AppContent/Header/Header'
 import AppContent from './features/AppContent/AppContent'
 import GetTags from './features/AppContent/Tag/GetTags'
 import CustomizedAccordions from './features/AppContent/NutritionFilter/CustomizedAccordions'
 import { ThemeProvider, useTheme } from './features/Themes/themeContext'
-import Login from './features/AppContent/HomePage/Login'
-import Profile from './features/AppContent/HomePage/Profile'
+import Login from './features/AppContent/Authentication/Login'
+import Profile from './features/AppContent/Authentication/Profile'
 import {
   Box,
   Button,
@@ -38,8 +38,8 @@ import {
   Typography,
 } from '@mui/material'
 import { FaAngleDoubleDown, FaAngleDoubleUp } from 'react-icons/fa'
-import AuthProvider from './features/Authentication/AuthProvider'
-import curlyArrow from './features/AppContent/HomePage/photos/curly-arrow.png'
+import AuthProvider from './features/AppContent/Authentication/AuthProvider'
+import curlyArrow from './features/AppContent/images/curly-arrow.png'
 
 const store = applicationStore()
 

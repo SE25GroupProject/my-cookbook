@@ -17,7 +17,7 @@ this file. If not, please write to: help.cookbook@gmail.com
 */
 
 import Navbar from './Navbar'
-import { ThemeProvider } from '../Themes/themeContext'
+import { ThemeProvider } from '../../../Themes/themeContext'
 
 test('shows Home link in Navbar', () => {
   render(

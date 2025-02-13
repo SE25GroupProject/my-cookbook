@@ -17,7 +17,7 @@ import {
   screen,
 } from '@testing-library/react'
 import Header from './Header'
-import { ThemeProvider } from '../Themes/themeContext'
+import { ThemeProvider } from '../../Themes/themeContext'
 
 test('shows header correctly', () => {
   const { getByText } = render(

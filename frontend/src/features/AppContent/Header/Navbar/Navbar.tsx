@@ -11,8 +11,8 @@ this file. If not, please write to: help.cookbook@gmail.com
 import React, { useState } from 'react'
 
 import './Navbar.css'
-import { useTheme } from '../Themes/themeContext'
-import themes from '../Themes/themes'
+import { useTheme } from '../../../Themes/themeContext'
+import themes from '../../../Themes/themes'
 import {
   AppBar,
   Box,
@@ -26,7 +26,7 @@ import {
   Toolbar,
 } from '@mui/material'
 import { KeyboardArrowDown } from '@mui/icons-material'
-import { useAuth } from '../Authentication/AuthProvider'
+import { useAuth } from '../../Authentication/AuthProvider'
 /**
  * File name: Navbar.tsx
  * Task - Home, About, Contact options available for the user on the Navigation Bar.

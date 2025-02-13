@@ -21,7 +21,7 @@ import React from 'react'
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import SmartShoppingList from './SmartShoppingList'
 import axios from 'axios'
-import { ThemeProvider } from '../Themes/themeContext'
+import { ThemeProvider } from '../../Themes/themeContext'
 
 // Cast axios as a jest.Mocked object
 const mockedAxios = axios as jest.Mocked<typeof axios>
