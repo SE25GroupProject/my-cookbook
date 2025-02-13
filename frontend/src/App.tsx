@@ -28,7 +28,7 @@ import CustomizedAccordions from './features/AppContent/NutritionFilter/Customiz
 import { ThemeProvider, useTheme } from './features/Themes/themeContext'
 import Login from './features/AppContent/HomePage/Login'
 import Profile from './features/AppContent/HomePage/Profile'
-import { Button, Stack, Typography } from '@mui/material'
+import { Button, Stack, Toolbar, Typography } from '@mui/material'
 import { FaAngleDoubleDown, FaAngleDoubleUp } from 'react-icons/fa'
 import AuthProvider from './features/Authentication/AuthProvider'
 
@@ -39,8 +39,8 @@ const AppContentLayout: React.FC = () => {
   const { theme } = useTheme()
   const [searchOpen, setSearchOpen] = useState(false)
 
-  const toggleSearchBar = () => {
-    setSearchOpen(!searchOpen)
+  const toggleSearchBar = (forceState: boolean | null) => {
+    setSearchOpen(forceState ?? !searchOpen)
   }
 
   return (
@@ -48,13 +48,7 @@ const AppContentLayout: React.FC = () => {
       className="App"
       style={{ backgroundColor: theme.background, color: theme.color }}
     >
-      <div
-        className="App-header"
-        data-testid="header-comp-43"
-        style={{ backgroundColor: theme.background }}
-      >
-        <Header />
-      </div>
+      <Header />
       <div className="search-bar-container">
         <div className={`search-bar ${searchOpen ? '' : 'hidden'}`}>
           <div
@@ -81,7 +75,7 @@ const AppContentLayout: React.FC = () => {
         </div>
         <div className="search-expand">
           <Button
-            onClick={toggleSearchBar}
+            onClick={(e) => toggleSearchBar(null)}
             variant="outlined"
             sx={{ borderColor: theme.color }}
           >
@@ -108,7 +102,7 @@ const AppContentLayout: React.FC = () => {
         data-testid="body-comp-43"
         style={{ backgroundColor: theme.background }}
       >
-        <AppContent />
+        <AppContent toggleSearchBar={toggleSearchBar} />
       </div>
     </div>
   )
@@ -124,11 +118,11 @@ const App: React.FC = () => {
           v7_startTransition: true,
         }}
       >
-        <ThemeProvider>
-          <AuthProvider>
+        <AuthProvider>
+          <ThemeProvider>
             <AppContentLayout />
-          </AuthProvider>
-        </ThemeProvider>
+          </ThemeProvider>
+        </AuthProvider>
       </BrowserRouter>
     </Provider>
   )

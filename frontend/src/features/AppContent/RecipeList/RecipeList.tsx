@@ -39,7 +39,7 @@ import {
   useGetRecipeListByIngredientsMutation,
   useGetRecipeListByNutritionMutation,
 } from './RecipeListSlice'
-
+import { SearchBarProps } from '../AppContent'
 /**
  * File name: RecipeList.tsx
  * Task - This component displays a list of recipes based on the ingredients inputed.
@@ -61,7 +61,7 @@ interface RecipeListProps {
   nutrition: NutritionMax | null
 }
 
-const RecipeList = () => {
+const RecipeList = ({ toggleSearchBar }: SearchBarProps) => {
   const { theme } = useTheme()
   const { state } = useLocation()
 
@@ -82,6 +82,10 @@ const RecipeList = () => {
     useGetRecipeListByIngredientsMutation()
   const [getListByNutrition, { isLoading: nutritionLoading }] =
     useGetRecipeListByNutritionMutation()
+
+  useEffect(() => {
+    toggleSearchBar(false)
+  }, [recipeList])
 
   function convertToMinutes(timeString: string) {
     timeString = timeString.replace(/\s+/g, '').replace('<', '')

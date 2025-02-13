@@ -31,11 +31,18 @@ import SmartShoppingList from '../ShoppingList/SmartShoppingList'
 import RecipeForm from './UserRecipes/RecipeForm'
 import { PrivateRoute } from '../Authentication/AuthProvider'
 
-const AppContent = () => {
+export interface SearchBarProps {
+  toggleSearchBar: (forceState: boolean | null) => void
+}
+
+const AppContent = ({ toggleSearchBar }: SearchBarProps) => {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
-      <Route path="/recipe-list" element={<RecipeList />} />
+      <Route
+        path="/recipe-list"
+        element={<RecipeList toggleSearchBar={toggleSearchBar} />}
+      />
       <Route path="/recipe-details/:id" element={<RecipeInformation />} />
       <Route path="/about" element={<About />} />
       <Route path="/contact" element={<Contact />} />

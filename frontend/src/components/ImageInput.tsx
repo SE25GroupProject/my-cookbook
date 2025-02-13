@@ -52,6 +52,8 @@ import { ClearAll, DeleteOutline, Replay } from '@mui/icons-material'
 
 interface ImageInputProps {
   images: Array<string> | undefined | null
+  multiple: boolean
+  onChange: (() => void) | null
 }
 
 const ImageInput = (props: ImageInputProps) => {
@@ -72,34 +74,34 @@ const ImageInput = (props: ImageInputProps) => {
     input?.dispatchEvent(event)
   }
 
-  const handleUploadClickDeprecated = (
-    event: React.ChangeEvent<HTMLInputElement>,
-    onChange: (...event: any[]) => void
-  ) => {
-    if (Array.isArray(event.target.value)) {
-      onChange([...event.target.value])
-      return
-    }
+  // const handleUploadClickDeprecated = (
+  //   event: React.ChangeEvent<HTMLInputElement>,
+  //   onChange: (...event: any[]) => void
+  // ) => {
+  //   if (Array.isArray(event.target.value)) {
+  //     onChange([...event.target.value])
+  //     return
+  //   }
 
-    var file = event.currentTarget.files?.item(0)
+  //   var file = event.currentTarget.files?.item(0)
 
-    if (!file) return
+  //   if (!file) return
 
-    const reader = new FileReader()
+  //   const reader = new FileReader()
 
-    reader.onloadend = () => {
-      if (reader.result && typeof reader.result === 'string') {
-        setFiles([...files, reader.result])
-        onChange([...files, reader.result])
+  //   reader.onloadend = () => {
+  //     if (reader.result && typeof reader.result === 'string') {
+  //       setFiles([...files, reader.result])
+  //       onChange([...files, reader.result])
 
-        if (!selectedFile) {
-          setSelectedFile(reader.result)
-          setPage(1)
-        }
-      }
-    }
-    reader.readAsDataURL(file)
-  }
+  //       if (!selectedFile) {
+  //         setSelectedFile(reader.result)
+  //         setPage(1)
+  //       }
+  //     }
+  //   }
+  //   reader.readAsDataURL(file)
+  // }
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     var file = event.currentTarget.files?.item(0)
@@ -109,12 +111,22 @@ const ImageInput = (props: ImageInputProps) => {
 
     reader.onloadend = () => {
       if (reader.result && typeof reader.result === 'string') {
-        setFiles([...files, reader.result])
-        setValue('images', [...files, reader.result])
+        if (props.multiple) {
+          setFiles([...files, reader.result])
+          setValue('images', [...files, reader.result])
+        } else {
+          setFiles([reader.result])
+          setSelectedFile(reader.result)
+          setValue('images', [reader.result])
+        }
 
         if (!selectedFile) {
           setSelectedFile(reader.result)
           setPage(1)
+        }
+
+        if (props.onChange) {
+          props.onChange()
         }
       }
     }
@@ -156,7 +168,7 @@ const ImageInput = (props: ImageInputProps) => {
   return (
     <Box
       sx={{
-        width: '100%',
+        // width: '100%',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'flex-end',
@@ -198,7 +210,9 @@ const ImageInput = (props: ImageInputProps) => {
                   alt={`Image ${page}`}
                 />
               ) : (
-                <Box sx={{ mx: 2, my: 9 }}>
+                <Box
+                // sx={{ mx: 2, my: 9 }}
+                >
                   <Typography variant="subtitle1">
                     {' '}
                     Upload an image.{' '}
@@ -236,7 +250,7 @@ const ImageInput = (props: ImageInputProps) => {
             /> */}
           </Button>
 
-          {files.length > 0 ? (
+          {files.length > 0 && props.multiple ? (
             <Pagination
               page={page}
               count={files.length}

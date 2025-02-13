@@ -326,8 +326,11 @@ const RecipeForm = () => {
                         elevation={3}
                         sx={{
                           textAlign: 'center',
-                          height: '100%',
+                          height: '200px',
                           position: 'relative',
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
                         }}
                       >
                         <Tooltip
@@ -338,7 +341,11 @@ const RecipeForm = () => {
                             <HelpOutline></HelpOutline>
                           </IconButton>
                         </Tooltip>
-                        <ImageInput images={recipe ? recipe.images : null} />
+                        <ImageInput
+                          images={recipe ? recipe.images : null}
+                          multiple={true}
+                          onChange={null}
+                        />
                       </Paper>
                       <Paper
                         elevation={3}
