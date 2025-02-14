@@ -1,4 +1,10 @@
-import { Send } from '@mui/icons-material'
+import {
+  Send,
+  ThumbDown,
+  ThumbDownAlt,
+  ThumbDownOutlined,
+  ThumbUp,
+} from '@mui/icons-material'
 import {
   Autocomplete,
   Box,
@@ -21,6 +27,7 @@ import InfiniteScroll from 'react-infinite-scroll-component'
 import ImageInput from '../../../components/ImageInput'
 import { FormProvider, useForm } from 'react-hook-form'
 import { useAuth } from '../Authentication/AuthProvider'
+import { useFixScroll } from './FixScroll'
 
 interface Post {
   recipeId: number
@@ -37,6 +44,7 @@ interface PostRecipe {
 const SocialMedia = () => {
   const auth = useAuth()
   const formMethods = useForm()
+
   const { handleSubmit, getValues } = formMethods
 
   const [posts, setPosts] = useState<Post[]>([
@@ -204,30 +212,29 @@ const SocialMedia = () => {
   const [newPostText, setNewPostText] = useState('')
 
   const postsPerPage = 10
-  const [currentPosts, setCurrentPosts] = useState<Post[]>([])
-  const [hasMore, setHasMore] = useState(true)
 
-  useEffect(() => {
-    let postsToDisplay = posts.splice(
+  const [currentPosts, setCurrentPosts] = useState<Post[]>(
+    [...posts].splice(
       0,
       posts.length < postsPerPage ? posts.length : postsPerPage
     )
-    setCurrentPosts(currentPosts.concat(postsToDisplay))
-  }, [])
+  )
+  const [hasMore, setHasMore] = useState(true)
 
   const fetchData = () => {
     console.log('fetching!')
-    var postCopy = [...posts]
-    var postsToDisplay = postCopy.splice(
-      0,
-      posts.length < postsPerPage ? posts.length : postsPerPage
-    )
-    setPosts(postCopy)
 
-    console.log(posts.length)
-    if (!posts) {
+    if (posts.length == currentPosts.length) {
       setHasMore(false)
     }
+
+    var postCopy = [...posts]
+    var postsToDisplay = postCopy.splice(
+      currentPosts.length,
+      posts.length < postsPerPage ? posts.length : postsPerPage
+    )
+
+    console.log(posts.length)
 
     // a fake async api call like which sends
     // 20 more records in .5 secs
@@ -235,6 +242,8 @@ const SocialMedia = () => {
       setCurrentPosts(currentPosts.concat(postsToDisplay))
     }, 1500)
   }
+
+  useFixScroll(hasMore, fetchData)
 
   const handleClickRecipe = (recipeId: number) => {
     console.log('Recipe Id: ', recipeId)
@@ -252,6 +261,7 @@ const SocialMedia = () => {
       console.log(post)
 
       setPosts([...posts, post])
+      setCurrentPosts([post, ...posts])
 
       setChosenRecipe(null)
       setNewPostText('')
@@ -269,7 +279,7 @@ const SocialMedia = () => {
   }
 
   return (
-    <Container maxWidth="md">
+    <Container maxWidth="md" sx={{ pt: 2 }}>
       <Stack spacing={2}>
         <Paper sx={{ p: 2, borderRadius: 8 }}>
           <Stack spacing={1}>
@@ -370,7 +380,7 @@ const SocialMedia = () => {
         <Box sx={{ overflow: 'hidden' }}>
           <Box
             id="scrollableDiv"
-            sx={{ height: 500, width: '102%', overflow: 'auto', pr: '20px' }}
+            sx={{ height: 490, width: '102%', overflow: 'auto', pr: '20px' }}
           >
             <InfiniteScroll
               dataLength={currentPosts.length}
@@ -385,11 +395,14 @@ const SocialMedia = () => {
               scrollableTarget="scrollableDiv"
             >
               {currentPosts.map((post, index) => (
-                <Paper sx={{ mb: 4, height: '200px' }} key={index}>
-                  <Grid2 container height="100%">
+                <Paper
+                  sx={{ mb: 2, height: '175px', borderRadius: 8 }}
+                  key={index}
+                >
+                  <Grid2 container height="100%" columns={16}>
                     <Grid2
                       container
-                      size={3}
+                      size={4}
                       direction={'column'}
                       alignItems="center"
                       justifyContent="center"
@@ -411,15 +424,41 @@ const SocialMedia = () => {
                       ) : (
                         <></>
                       )}
+                    </Grid2>
+                    <Grid2 container size={1}>
                       <Divider orientation="vertical" />
                     </Grid2>
-
-                    <Grid2 size={8} paddingY="30px">
+                    <Grid2
+                      container
+                      alignItems="center"
+                      size={8}
+                      paddingY="30px"
+                    >
                       <Typography variant="body1" textAlign="left">
                         {post.content}
                       </Typography>
                     </Grid2>
-                    <Grid2 size={1}></Grid2>
+                    <Grid2 size={1} container justifyContent="flex-end">
+                      <Divider orientation="vertical" />
+                    </Grid2>
+                    <Grid2
+                      container
+                      direction="column"
+                      size={2}
+                      alignItems="center"
+                      justifyContent="space-evenly"
+                    >
+                      <Grid2 size={6}>
+                        <IconButton>
+                          <ThumbUp />
+                        </IconButton>
+                      </Grid2>
+                      <Grid2 size={6}>
+                        <IconButton>
+                          <ThumbDownOutlined />
+                        </IconButton>
+                      </Grid2>
+                    </Grid2>
                   </Grid2>
                 </Paper>
               ))}

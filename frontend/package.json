@@ -15,6 +15,7 @@
     "@types/node": "^22.13.1",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
+    "ahooks": "^3.8.4",
     "concurrently": "^9.1.2",
     "dotenv": "^16.4.7",
     "eslint": "^9.19.0",
@@ -83,5 +84,11 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "overrides": {
+    "ahooks": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    }
   }
 }
