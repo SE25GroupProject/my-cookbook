@@ -28,8 +28,9 @@ import ImageInput from '../../../components/ImageInput'
 import { FormProvider, useForm } from 'react-hook-form'
 import { useAuth } from '../Authentication/AuthProvider'
 import { useFixScroll } from './FixScroll'
+import PostItem from './PostItem'
 
-interface Post {
+export interface Post {
   recipeId: number
   recipeName: string
   img: string
@@ -245,10 +246,6 @@ const SocialMedia = () => {
 
   useFixScroll(hasMore, fetchData)
 
-  const handleClickRecipe = (recipeId: number) => {
-    console.log('Recipe Id: ', recipeId)
-  }
-
   const handleCreatePost = () => {
     if (chosenRecipe && newPostText) {
       let post: Post = {
@@ -395,72 +392,7 @@ const SocialMedia = () => {
               scrollableTarget="scrollableDiv"
             >
               {currentPosts.map((post, index) => (
-                <Paper
-                  sx={{ mb: 2, height: '175px', borderRadius: 8 }}
-                  key={index}
-                >
-                  <Grid2 container height="100%" columns={16}>
-                    <Grid2
-                      container
-                      size={4}
-                      direction={'column'}
-                      alignItems="center"
-                      justifyContent="center"
-                      height="100%"
-                    >
-                      <Button onClick={(e) => handleClickRecipe(post.recipeId)}>
-                        <Typography variant="h6">
-                          Recipe {post.recipeName}
-                        </Typography>
-                      </Button>
-                      {post.img ? (
-                        <img
-                          src={post.img}
-                          alt={`${post.recipeName} Image`}
-                          style={{
-                            maxWidth: '150px',
-                          }}
-                        />
-                      ) : (
-                        <></>
-                      )}
-                    </Grid2>
-                    <Grid2 container size={1}>
-                      <Divider orientation="vertical" />
-                    </Grid2>
-                    <Grid2
-                      container
-                      alignItems="center"
-                      size={8}
-                      paddingY="30px"
-                    >
-                      <Typography variant="body1" textAlign="left">
-                        {post.content}
-                      </Typography>
-                    </Grid2>
-                    <Grid2 size={1} container justifyContent="flex-end">
-                      <Divider orientation="vertical" />
-                    </Grid2>
-                    <Grid2
-                      container
-                      direction="column"
-                      size={2}
-                      alignItems="center"
-                      justifyContent="space-evenly"
-                    >
-                      <Grid2 size={6}>
-                        <IconButton>
-                          <ThumbUp />
-                        </IconButton>
-                      </Grid2>
-                      <Grid2 size={6}>
-                        <IconButton>
-                          <ThumbDownOutlined />
-                        </IconButton>
-                      </Grid2>
-                    </Grid2>
-                  </Grid2>
-                </Paper>
+                <PostItem post={post} index={index} />
               ))}
             </InfiniteScroll>
           </Box>
