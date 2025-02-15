@@ -19,7 +19,7 @@ from groq import Groq
 from pydantic import BaseModel, conint, conlist, PositiveInt
 import logging
 from models import Recipe, RecipeListRequest, RecipeListResponse, RecipeListRequest2,RecipeQuery
-from db.objects import User
+from db.objects import User, Post
 from db.database import Database_Connection
 
 # from models import User
@@ -40,18 +40,11 @@ config = {
     "PORT": os.getenv("PORT")
 }
 router = APIRouter()
-userRouter = APIRouter()
 client = Groq(api_key=config["GROQ_API_KEY"])
 
 class MealPlanEntry(BaseModel):
     day: int  # 0-6 representing Monday-Sunday
     recipe: dict  # The recipe details (name, instructions, etc.)
-
-class UserCred(BaseModel):
-    username: str
-    password: str
-
-# router = APIRouter()
 
 @router.post("/meal-plan/", response_description="Save a meal plan for a specific day", status_code=200)
 async def save_meal_plan(entry: MealPlanEntry, request: Request):
@@ -195,49 +188,138 @@ async def recommend_recipes(query: RecipeQuery = Body(...)):
         logger.error(f"Unexpected error in recommend_recipes: {str(e)}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred")
     
-@userRouter.post("/signup")
-async def signup(incomingUser: UserCred = Body(...)):
-    # try:
-        # Creating a new user
-        user: User = User(incomingUser.username, incomingUser.password)
-        print(user)
-        if db.get_user(user.Username) is not None:
-            raise HTTPException(status_code=400, detail="User with that username already exists")
-        userid: int = db.add_user(user)
+@app.post("/signup")
+async def signup(username: str, password: str):
+    # Creating a new user
+    user: User = User(username, password)
+    if db.get_user(username) is not None:
+        raise HTTPException(status_code=400, detail="User with that username already exists")
+    db.add_user(user)
 
-        return {"id": userid, "username": user.Username}
-    # except:
-    #     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occured when signing up this user")
+    return {"message": "Succesfully Signed Up"}
 
-
-@userRouter.post("/login")
-async def login(incomingUser: UserCred = Body(...)):
-    # try: 
-    print(incomingUser.username)
-    user: User = db.get_user(incomingUser.username)
+@app.get("/login")
+async def login(username: str, password: str):
+    user: User = db.get_user(username)
     if user is None:
         raise HTTPException(status_code=400, detail="There is no user with that username")
     
-    print(user.Username)
-    print(user.Password)
-    print(incomingUser.password)
-    if user.Password == incomingUser.password:
-        return {"id": user.UserId, "username": user.Username}
-        
-    return "Incorrect Username or Password"
-    # except:
-    #     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occured when logging in this user")
+    if user.Password == password:
+        return {"message": "Successfully Signed In"}
+    
+    return {"message": "Incorrect Username or Password"}
 
 
-
-@userRouter.get("/getUser/{username}")
+@app.get("/getUser/{username}")
 async def getUser(username: str) -> dict:
-    # try:
-        user: User = db.get_user(username)
-        if user is None:
-            raise HTTPException(status_code=400, detail="There is no user with that username")
-        
-        return user
-    # except: 
-    #     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occured when trying to get this user")
-        
+    user: User = db.get_user(username)
+    if user is None:
+        raise HTTPException(status_code=400, detail="There is no user with that username")
+    
+    return {"message": user.to_dict()}
+
+# for now append username to the api request, unless we decide to use a token
+@app.post("/recipes/{username}")
+async def createRecipe(username: str, recipe: Recipe):
+    user: User = db.get_user(username)
+    if user is None:
+        raise HTTPException(status_code=400, detail="There is no user with that username")
+
+@app.post("/posts/", response_description="Create a new post", status_code=201)
+async def create_post(post: Post):
+    """Creates a new post in the database."""
+    try:
+        if db.add_post(post):
+            return {"message": "Post created successfully."}
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to create post."
+            )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while creating the post: {str(e)}"
+        )
+
+@app.get("/posts/{post_id}", response_description="Get a post by ID", response_model=Post)
+async def get_post(post_id: int):
+    """Retrieves a post by its ID."""
+    post = db.get_post(post_id)
+    if post:
+        return post
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Post with ID {post_id} not found."
+    )
+
+@app.get("/posts/", response_description="List all posts", response_model=List[Post])
+async def list_posts():
+    """Retrieves all posts from the database."""
+    posts = db.get_all_posts()
+    return posts
+
+@app.put("/posts/{post_id}/like", response_description="Like a post", status_code=200)
+async def like_post(post_id: int):
+    """Increments the likes count for a post."""
+    try:
+        post = db.get_post(post_id)
+        if post:
+            if db.update_post_likes(post_id, post.likes + 1):
+                return {"message": "Post liked successfully."}
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to update post likes."
+                )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Post with ID {post_id} not found."
+            )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while liking the post: {str(e)}"
+        )
+
+@app.put("/posts/{post_id}/dislike", response_description="Dislike a post", status_code=200)
+async def dislike_post(post_id: int):
+    """Increments the dislikes count for a post."""
+    try:
+        post = db.get_post(post_id)
+        if post:
+            if db.update_post_dislikes(post_id, post.dislikes + 1):
+                return {"message": "Post disliked successfully."}
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to update post dislikes."
+                )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Post with ID {post_id} not found."
+            )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while disliking the post: {str(e)}"
+        )
+
+@app.delete("/posts/{post_id}", response_description="Delete a post", status_code=200)
+async def delete_post(post_id: int):
+    """Deletes a post by its ID."""
+    try:
+        if db.delete_post(post_id):
+            return {"message": "Post deleted successfully."}
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Post with ID {post_id} not found."
+            )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while deleting the post: {str(e)}"
+        )
