@@ -6,7 +6,7 @@ import {
   Paper,
   Typography,
 } from '@mui/material'
-import { Post } from './SocialMedia'
+import { Post } from '../../api/types'
 import { ThumbDownOutlined, ThumbUp } from '@mui/icons-material'
 
 interface PostItemProp {
@@ -30,13 +30,15 @@ const PostItem = (props: PostItemProp) => {
           justifyContent="center"
           height="100%"
         >
-          <Button onClick={(e) => handleClickRecipe(props.post.recipeId)}>
-            <Typography variant="h6">Recipe {props.post.recipeName}</Typography>
+          <Button onClick={(e) => handleClickRecipe(props.post.recipe.id)}>
+            <Typography variant="h6">
+              Recipe {props.post.recipe.name}
+            </Typography>
           </Button>
           {props.post.img ? (
             <img
               src={props.post.img}
-              alt={`${props.post.recipeName} Image`}
+              alt={`${props.post.recipe.name} Image`}
               style={{
                 maxWidth: '150px',
               }}

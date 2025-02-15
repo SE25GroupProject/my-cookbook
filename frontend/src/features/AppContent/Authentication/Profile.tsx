@@ -17,11 +17,58 @@ import ImageInput from '../../../components/ImageInput'
 import { Form, FormProvider, useForm } from 'react-hook-form'
 import avatar from '../images/default-avatar.png'
 import { TabContext, TabList, TabPanel } from '@mui/lab'
+import { Post, PostRecipe, Recipe, RecipeListData } from '../../api/types'
+import {
+  mockRecipe,
+  mockRecipeTwo,
+  testPosts,
+  testRecipes,
+  testRecipesTwo,
+} from '../testVariables'
+import PostItem from '../SocialMedia/PostItem'
+import InfiniteScroll from 'react-infinite-scroll-component'
+import { useFixScroll } from '../SocialMedia/FixScroll'
+import RecipeListItem from '../RecipeList/RecipeLIstItem'
 
 const Profile = () => {
   const auth = useAuth()
   const formMethods = useForm()
   const { handleSubmit, getValues } = formMethods
+
+  const myPosts: Post[] = [...testPosts]
+  const userRecipes: Recipe[] = [mockRecipe, mockRecipeTwo]
+  const favRecipes: Recipe[] = [mockRecipeTwo, mockRecipe]
+
+  const postsPerPage = 10
+
+  const [currentPosts, setCurrentPosts] = useState<Post[]>(
+    [...myPosts].splice(
+      0,
+      myPosts.length < postsPerPage ? myPosts.length : postsPerPage
+    )
+  )
+  const [hasMore, setHasMore] = useState(true)
+
+  const fetchData = () => {
+    if (myPosts.length == currentPosts.length) {
+      setHasMore(false)
+    }
+
+    var postCopy = [...myPosts]
+    var postsToDisplay = postCopy.splice(
+      currentPosts.length,
+      myPosts.length < postsPerPage ? myPosts.length : postsPerPage
+    )
+
+    // a fake async api call like which sends
+    // 20 more records in .5 secs
+    setTimeout(() => {
+      setCurrentPosts(currentPosts.concat(postsToDisplay))
+    }, 1500)
+  }
+
+  useFixScroll(hasMore, fetchData)
+
   const [imgAnchorEl, setImgAnchorEl] = useState<HTMLButtonElement | null>(null)
   const [tabValue, setTabValue] = useState('1')
 
@@ -141,13 +188,49 @@ const Profile = () => {
               </TabList>
             </Box>
             <TabPanel value="1" sx={{ p: 2 }}>
-              Post List
+              <Box sx={{ overflow: 'hidden' }}>
+                <Box
+                  id="scrollable"
+                  sx={{
+                    height: 490,
+                    width: '102%',
+                    overflow: 'auto',
+                    pr: '20px',
+                  }}
+                >
+                  <InfiniteScroll
+                    dataLength={currentPosts.length}
+                    next={fetchData}
+                    hasMore={hasMore}
+                    loader={<h4>Loading...</h4>}
+                    endMessage={
+                      <p style={{ textAlign: 'center' }}>
+                        <b>Yay! You have seen it all</b>
+                      </p>
+                    }
+                    scrollableTarget="scrollable"
+                    height={440}
+                  >
+                    {myPosts.map((post, index) => (
+                      <PostItem post={post} index={index} />
+                    ))}
+                  </InfiniteScroll>
+                </Box>
+              </Box>
             </TabPanel>
             <TabPanel value="2" sx={{ p: 2 }}>
-              My Favorites List
+              <Stack spacing={2} alignItems="center">
+                {favRecipes.map((recipe, index) => (
+                  <RecipeListItem recipe={recipe} index={index} />
+                ))}
+              </Stack>
             </TabPanel>
             <TabPanel value="3" sx={{ p: 2 }}>
-              My Recipes List
+              <Stack spacing={2} alignItems="center">
+                {userRecipes.map((recipe, index) => (
+                  <RecipeListItem recipe={recipe} index={index} />
+                ))}
+              </Stack>
             </TabPanel>
           </TabContext>
         </Stack>

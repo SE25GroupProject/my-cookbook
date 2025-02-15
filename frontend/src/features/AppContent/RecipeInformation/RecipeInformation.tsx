@@ -41,6 +41,7 @@ import axios from 'axios'
 import { useTheme } from '../../Themes/themeContext'
 import { useNavigate } from 'react-router-dom'
 import { useGetRecipeQuery } from './RecipeInfoSlice'
+import { Recipe, RecipeObject } from '../../api/types'
 
 const store = applicationStore()
 
@@ -100,7 +101,7 @@ const CopyUrlModal = ({ open, onClose, url, platform }: any) => {
           fullWidth
           value={url}
           variant="outlined"
-          inputProps={{ readOnly: true }}
+          // inputProps={{ readOnly: true }}
           multiline
           rows={2}
           style={{ wordWrap: 'break-word', height: 'auto' }}
@@ -137,6 +138,7 @@ const RecipeInformationWrapped = () => {
   const [selectedDayIndex, setSelectedDayIndex] = useState(0)
 
   const { data: recipe, isLoading, isSuccess } = useGetRecipeQuery(id as string)
+  let images = recipe?.images ? [...recipe?.images] : []
 
   let triviaPaperStyles = {
     background: theme.background,
@@ -737,10 +739,10 @@ const RecipeInformationWrapped = () => {
             background: theme.headerColor,
           }}
         >
-          {recipe?.images?.length > 0 && recipe?.images[0] !== '' ? (
+          {images && images[0] !== '' ? (
             <Typography variant="subtitle1" gutterBottom>
               <Stack direction="column" spacing={2} padding="25px">
-                {recipe.images
+                {images
                   .reverse()
                   .slice(0, 3)
                   .map((imageLink: string, idx: number) => {

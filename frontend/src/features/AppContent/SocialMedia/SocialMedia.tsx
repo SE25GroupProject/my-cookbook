@@ -29,18 +29,8 @@ import { FormProvider, useForm } from 'react-hook-form'
 import { useAuth } from '../Authentication/AuthProvider'
 import { useFixScroll } from './FixScroll'
 import PostItem from './PostItem'
-
-export interface Post {
-  recipeId: number
-  recipeName: string
-  img: string
-  content: string
-}
-
-interface PostRecipe {
-  recipeId: number
-  recipeName: string
-}
+import { testPosts, testRecipes } from '../testVariables'
+import { Post, PostRecipe } from '../../api/types'
 
 const SocialMedia = () => {
   const auth = useAuth()
@@ -48,163 +38,9 @@ const SocialMedia = () => {
 
   const { handleSubmit, getValues } = formMethods
 
-  const [posts, setPosts] = useState<Post[]>([
-    {
-      recipeId: 58,
-      recipeName: 'Test 1',
-      img: '',
-      content: 'This is a test post',
-    },
-    {
-      recipeId: 58,
-      recipeName: 'Test 2',
-      img: '',
-      content: 'This is test post 2',
-    },
-    {
-      recipeId: 58,
-      recipeName: 'Test 3',
-      img: '',
-      content: 'This is test post 3',
-    },
-    {
-      recipeId: 58,
-      recipeName: 'Test 4',
-      img: '',
-      content: 'This is test post 4',
-    },
-    {
-      recipeId: 58,
-      recipeName: 'Test 5',
-      img: '',
-      content: 'This is test post 5',
-    },
-    {
-      recipeId: 58,
-      recipeName: 'Test 6',
-      img: '',
-      content: 'This is test post 6',
-    },
-    {
-      recipeId: 58,
-      recipeName: 'Test 7',
-      img: '',
-      content: 'This is test post 7',
-    },
-    {
-      recipeId: 58,
-      recipeName: 'Test 8',
-      img: '',
-      content: 'This is test post 9',
-    },
-    {
-      recipeId: 58,
-      recipeName: 'Test 10',
-      img: '',
-      content: 'This is test post 10',
-    },
-    {
-      recipeId: 58,
-      recipeName: 'Test 11',
-      img: '',
-      content: 'This is test post 11',
-    },
-    {
-      recipeId: 58,
-      recipeName: 'Test 12',
-      img: '',
-      content: 'This is test post 12',
-    },
-    {
-      recipeId: 58,
-      recipeName: 'Test 13',
-      img: '',
-      content: 'This is test post 13',
-    },
-    {
-      recipeId: 58,
-      recipeName: 'Test 14',
-      img: '',
-      content: 'This is test post 14',
-    },
-    {
-      recipeId: 58,
-      recipeName: 'Test 15',
-      img: '',
-      content: 'This is test post 15',
-    },
-    {
-      recipeId: 58,
-      recipeName: 'Test 16',
-      img: '',
-      content: 'This is test post 16',
-    },
-    {
-      recipeId: 58,
-      recipeName: 'Test 17',
-      img: '',
-      content: 'This is test post 17',
-    },
-    {
-      recipeId: 58,
-      recipeName: 'Test 18',
-      img: '',
-      content: 'This is test post 18',
-    },
-    {
-      recipeId: 58,
-      recipeName: 'Test 19',
-      img: '',
-      content: 'This is test post 19',
-    },
-    {
-      recipeId: 58,
-      recipeName: 'Test 20',
-      img: '',
-      content: 'This is test post 20',
-    },
-    {
-      recipeId: 58,
-      recipeName: 'Test 21',
-      img: '',
-      content: 'This is test post 21',
-    },
-    {
-      recipeId: 58,
-      recipeName: 'Test 22',
-      img: '',
-      content: 'This is test post 22',
-    },
-    {
-      recipeId: 58,
-      recipeName: 'Test 23',
-      img: '',
-      content: 'This is test post 23',
-    },
-  ])
+  const [posts, setPosts] = useState<Post[]>([...testPosts])
 
-  const userRecipes: PostRecipe[] = [
-    {
-      recipeId: 58,
-      recipeName: 'test 1',
-    },
-    {
-      recipeId: 58,
-      recipeName: 'test 2',
-    },
-    {
-      recipeId: 58,
-      recipeName: 'test 3',
-    },
-    {
-      recipeId: 58,
-      recipeName: 'test 4',
-    },
-    {
-      recipeId: 58,
-      recipeName: 'test 5',
-    },
-  ]
+  const userRecipes: PostRecipe[] = [...testRecipes]
 
   const [imgAnchorEl, setImgAnchorEl] = useState<HTMLButtonElement | null>(null)
   const [postImg, setPostImg] = useState('')
@@ -223,8 +59,6 @@ const SocialMedia = () => {
   const [hasMore, setHasMore] = useState(true)
 
   const fetchData = () => {
-    console.log('fetching!')
-
     if (posts.length == currentPosts.length) {
       setHasMore(false)
     }
@@ -234,8 +68,6 @@ const SocialMedia = () => {
       currentPosts.length,
       posts.length < postsPerPage ? posts.length : postsPerPage
     )
-
-    console.log(posts.length)
 
     // a fake async api call like which sends
     // 20 more records in .5 secs
@@ -249,8 +81,7 @@ const SocialMedia = () => {
   const handleCreatePost = () => {
     if (chosenRecipe && newPostText) {
       let post: Post = {
-        recipeId: chosenRecipe.recipeId,
-        recipeName: chosenRecipe.recipeName,
+        recipe: chosenRecipe,
         img: postImg,
         content: newPostText,
       }
@@ -338,7 +169,7 @@ const SocialMedia = () => {
                 }}
                 size="small"
                 options={userRecipes}
-                getOptionLabel={(option) => option.recipeName}
+                getOptionLabel={(option) => option.name}
                 renderInput={(params) => (
                   <TextField {...params} label="Your Recipes" />
                 )}
