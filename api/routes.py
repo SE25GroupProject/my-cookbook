@@ -41,6 +41,7 @@ config = {
 }
 router = APIRouter()
 userRouter = APIRouter()
+recipeRouter = APIRouter()
 client = Groq(api_key=config["GROQ_API_KEY"])
 
 class MealPlanEntry(BaseModel):
