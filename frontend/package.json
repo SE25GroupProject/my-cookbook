@@ -6,6 +6,7 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^6.4.3",
+    "@mui/lab": "^6.0.0-beta.26",
     "@mui/material": "^6.4.3",
     "@reduxjs/toolkit": "^2.5.1",
     "@testing-library/dom": "^10.4.0",
@@ -54,14 +55,14 @@
     "ts-jest": "^29.2.5"
   },
   "scripts": {
-    "start": " react-scripts start",
+    "start": "WATCHPACK_POLLING=true  react-scripts start",
     "build": "react-scripts build",
     "test:dev": "react-scripts test --watch",
     "test": "react-scripts test --watchAll=false",
     "eject": "react-scripts eject",
     "start:dev": "node -r dotenv/config dist/server.js",
     "dev:watch": "npx concurrently \"npm run build:watch\" \"npm run dev:run\"",
-    "dev:run": "npx nodemon lib/index.js",
+    "dev:run": "npx ts-node-dev src/index.tsx",
     "build:watch": "npx typescript -w"
   },
   "eslintConfig": {

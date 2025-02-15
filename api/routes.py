@@ -40,13 +40,18 @@ config = {
     "PORT": os.getenv("PORT")
 }
 router = APIRouter()
+userRouter = APIRouter()
 client = Groq(api_key=config["GROQ_API_KEY"])
 
 class MealPlanEntry(BaseModel):
     day: int  # 0-6 representing Monday-Sunday
     recipe: dict  # The recipe details (name, instructions, etc.)
 
-router = APIRouter()
+class UserCred(BaseModel):
+    username: str
+    password: str
+
+# router = APIRouter()
 
 @router.post("/meal-plan/", response_description="Save a meal plan for a specific day", status_code=200)
 async def save_meal_plan(entry: MealPlanEntry, request: Request):
@@ -190,32 +195,49 @@ async def recommend_recipes(query: RecipeQuery = Body(...)):
         logger.error(f"Unexpected error in recommend_recipes: {str(e)}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred")
     
-@app.post("/signup")
-async def signup(username: str, password: str):
-    # Creating a new user
-    user: User = User(username, password)
-    if db.get_user(username) is not None:
-        raise HTTPException(status_code=400, detail="User with that username already exists")
-    db.add_user(user)
+@userRouter.post("/signup")
+async def signup(incomingUser: UserCred = Body(...)):
+    # try:
+        # Creating a new user
+        user: User = User(incomingUser.username, incomingUser.password)
+        print(user)
+        if db.get_user(user.Username) is not None:
+            raise HTTPException(status_code=400, detail="User with that username already exists")
+        userid: int = db.add_user(user)
 
-    return {"message": "Succesfully Signed Up"}
+        return {"id": userid, "username": user.Username}
+    # except:
+    #     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occured when signing up this user")
 
-@app.get("/login")
-async def login(username: str, password: str):
-    user: User = db.get_user(username)
+
+@userRouter.post("/login")
+async def login(incomingUser: UserCred = Body(...)):
+    # try: 
+    print(incomingUser.username)
+    user: User = db.get_user(incomingUser.username)
     if user is None:
         raise HTTPException(status_code=400, detail="There is no user with that username")
     
-    if user.Password == password:
-        return {"message": "Successfully Signed In"}
-    
-    return {"message": "Incorrect Username or Password"}
+    print(user.Username)
+    print(user.Password)
+    print(incomingUser.password)
+    if user.Password == incomingUser.password:
+        return {"id": user.UserId, "username": user.Username}
+        
+    return "Incorrect Username or Password"
+    # except:
+    #     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occured when logging in this user")
 
 
-@app.get("/getUser/{username}")
+
+@userRouter.get("/getUser/{username}")
 async def getUser(username: str) -> dict:
-    user: User = db.get_user(username)
-    if user is None:
-        raise HTTPException(status_code=400, detail="There is no user with that username")
-    
-    return {"message": user.to_dict()}
+    # try:
+        user: User = db.get_user(username)
+        if user is None:
+            raise HTTPException(status_code=400, detail="There is no user with that username")
+        
+        return user
+    # except: 
+    #     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occured when trying to get this user")
+        

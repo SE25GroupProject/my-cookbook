@@ -20,7 +20,7 @@
 ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
 <a href="https://groq.com" target="_blank" rel="noopener noreferrer">
-  <img
+<img
     src="https://groq.com/wp-content/uploads/2024/03/PBG-mark1-color.svg"
     alt="Powered by Groq for fast inference."
     width="100" 
@@ -34,27 +34,28 @@
 <br><br>
 
 # New Demo!
-[![New Demo!](https://img.youtube.com/vi/IluD4IUT5kM/0.jpg)](https://www.youtube.com/watch?v=IluD4IUT5kM)
 
+[![New Demo!](https://img.youtube.com/vi/IluD4IUT5kM/0.jpg)](https://www.youtube.com/watch?v=IluD4IUT5kM)
 
 <br><br>
 
-# 🍳 What is CookBook?  
+# 🍳 What is CookBook?
 
 CookBook is your **ultimate AI-powered kitchen assistant** that makes cooking stress-free, fun, and delicious! 🎉  
-Whether you're working with a stocked pantry or just a few ingredients, CookBook will help you whip up amazing recipes tailored to what you have.  
+Whether you're working with a stocked pantry or just a few ingredients, CookBook will help you whip up amazing recipes tailored to what you have.
 
 ### Why CookBook Stands Out:
-- **✨ Easy to Use**: A super-friendly platform where you can simply input your ingredients, and CookBook will suggest recipes instantly.  
-- **📖 Step-by-Step Guidance**: Get detailed, easy-to-follow instructions for every recipe.  
-- **🌟 Flexible & Adaptable**: Use as few or as many ingredients as you want—CookBook adjusts to you!  
-- **🍴 Recipes for Everyone**: Explore a variety of recipes across multiple cuisines and cultures.  
 
-With CookBook, you'll never run out of cooking inspiration again! 🥗🍜🍰  
+- **✨ Easy to Use**: A super-friendly platform where you can simply input your ingredients, and CookBook will suggest recipes instantly.
+- **📖 Step-by-Step Guidance**: Get detailed, easy-to-follow instructions for every recipe.
+- **🌟 Flexible & Adaptable**: Use as few or as many ingredients as you want—CookBook adjusts to you!
+- **🍴 Recipes for Everyone**: Explore a variety of recipes across multiple cuisines and cultures.
+
+With CookBook, you'll never run out of cooking inspiration again! 🥗🍜🍰
 
 ---
 
-# 🤔 Why Choose CookBook?  
+# 🤔 Why Choose CookBook?
 
 Most of us have faced these situations:  
 1️⃣ **Craving something delicious**, but delivery isn't an option.  
@@ -62,12 +63,13 @@ Most of us have faced these situations:
 3️⃣ Wanting to try something **new and exciting**, but need guidance.
 
 ### How CookBook Solves These Problems:
-- 🍳 **Ingredient-Based Recipes**: Enter the ingredients you have, and CookBook finds recipes to match.  
-- 📜 **Step-by-Step Instructions**: Follow clear directions, even if you're new to cooking!  
-- 🌍 **Explore Global Cuisines**: Try dishes from different cultures with ease.  
-- 🖥️ **Familiar & Intuitive Interface**: Just like your favorite search engine, simply enter your ingredients and hit "Proceed" to get recipe suggestions.  
 
-CookBook isn’t just a tool—it’s your cooking companion, saving time and bringing creativity to your kitchen! 🍲✨  
+- 🍳 **Ingredient-Based Recipes**: Enter the ingredients you have, and CookBook finds recipes to match.
+- 📜 **Step-by-Step Instructions**: Follow clear directions, even if you're new to cooking!
+- 🌍 **Explore Global Cuisines**: Try dishes from different cultures with ease.
+- 🖥️ **Familiar & Intuitive Interface**: Just like your favorite search engine, simply enter your ingredients and hit "Proceed" to get recipe suggestions.
+
+CookBook isn’t just a tool—it’s your cooking companion, saving time and bringing creativity to your kitchen! 🍲✨
 
 ---
 
@@ -94,64 +96,68 @@ CookBook isn’t just a tool—it’s your cooking companion, saving time and br
   
 </p><br><br>
 
-
-
 # 🚀What's New?
 
 ## New features:
-- 🎤 **Voice-Guided Recipes**: Choose from multiple voices to guide you while you cook.  
-- 🖼️ **Personalized Themes**: Customize your CookBook experience with themes like *Midnight Chef* or *Literary Lemon*.  
-- 📝 **Printable Meal Plans**: Plan your meals for the week and print them for easy access.  
-- 🛒 **Smart Shopping Lists**: Automatically generate and export shopping lists as PDFs.  
-- 🍝 **Advanced Filters**: Search recipes by cuisine type, cooking time, or dietary preferences.  
-- 🤝 **Social Sharing**: Easily share recipes with friends via Discord, Slack, or social media.
-  
-With CookBook, cooking becomes an adventure. What will you create today? 🥘👨‍🍳👩‍🍳  
----
-## 🎥 Demo Video  
 
-[![Watch the Demo](https://img.youtube.com/vi/Tk9iwPMeQhA/0.jpg)](https://youtu.be/Tk9iwPMeQhA)  
+- 🎤 **Voice-Guided Recipes**: Choose from multiple voices to guide you while you cook.
+- 🖼️ **Personalized Themes**: Customize your CookBook experience with themes like _Midnight Chef_ or _Literary Lemon_.
+- 📝 **Printable Meal Plans**: Plan your meals for the week and print them for easy access.
+- 🛒 **Smart Shopping Lists**: Automatically generate and export shopping lists as PDFs.
+- 🍝 **Advanced Filters**: Search recipes by cuisine type, cooking time, or dietary preferences.
+- 🤝 **Social Sharing**: Easily share recipes with friends via Discord, Slack, or social media.
+
+## With CookBook, cooking becomes an adventure. What will you create today? 🥘👨‍🍳👩‍🍳
+
+## 🎥 Demo Video
+
+[![Watch the Demo](https://img.youtube.com/vi/Tk9iwPMeQhA/0.jpg)](https://youtu.be/Tk9iwPMeQhA)
 
 Click the image above to watch the demo video on YouTube! 🚀
 
-
-
-# 🚀 Better Software Design  
+# 🚀 Better Software Design
 
 CookBook is designed with scalability, safety, and reliability in mind. The software architecture includes modern solutions to ensure a seamless experience for users.
 
-### Scalability Enhancements  
-- **[Content Delivery Network (CDN)](https://github.com/yzhu27/CookBook/blob/main/docs/Scalability.md#content-delivery-network)**: Accelerates content delivery by distributing data globally.  
-- **[Load Balancing](https://github.com/yzhu27/CookBook/blob/main/docs/Scalability.md#load-balancing-on-cloudflare)**: Ensures optimal resource utilization and improves availability.  
-- **[Cache](https://github.com/yzhu27/CookBook/blob/main/docs/Scalability.md#cache)**: Reduces latency and increases speed by caching frequently accessed content.  
+### Scalability Enhancements
 
-### Safety Enhancements  
-- **[Domain](https://github.com/yzhu27/CookBook/blob/main/docs/Safety.md#domain)**: Ensures secure domain configurations.  
-- **[SSL/TLS](https://github.com/yzhu27/CookBook/blob/main/docs/Safety.md#ssltls)**: Encrypts communication between users and the server for secure data transfer.  
-- **[DDoS Protection](https://github.com/yzhu27/CookBook/blob/main/docs/Safety.md#ddos-protection)**: Protects against distributed denial-of-service attacks to ensure site reliability.  
+- **[Content Delivery Network (CDN)](https://github.com/yzhu27/CookBook/blob/main/docs/Scalability.md#content-delivery-network)**: Accelerates content delivery by distributing data globally.
+- **[Load Balancing](https://github.com/yzhu27/CookBook/blob/main/docs/Scalability.md#load-balancing-on-cloudflare)**: Ensures optimal resource utilization and improves availability.
+- **[Cache](https://github.com/yzhu27/CookBook/blob/main/docs/Scalability.md#cache)**: Reduces latency and increases speed by caching frequently accessed content.
 
----
+### Safety Enhancements
 
-# 🌐 Access the Website  
-
-Access CookBook directly via this link: [Cook Book](https://cookbook-alpha.vercel.app/).  
-
-### 🛠️ Troubleshooting  
-If the page fails to load, you can try the following:  
-- Switch to a different network environment (e.g., home network or mobile hotspot).  
-- Some users may experience DNS resolution failures under NC State's network due to DNS server issues.  
-
-If problems persist, follow the installation instructions below to run CookBook locally.  
+- **[Domain](https://github.com/yzhu27/CookBook/blob/main/docs/Safety.md#domain)**: Ensures secure domain configurations.
+- **[SSL/TLS](https://github.com/yzhu27/CookBook/blob/main/docs/Safety.md#ssltls)**: Encrypts communication between users and the server for secure data transfer.
+- **[DDoS Protection](https://github.com/yzhu27/CookBook/blob/main/docs/Safety.md#ddos-protection)**: Protects against distributed denial-of-service attacks to ensure site reliability.
 
 ---
 
-# 🛠️Installations  
+# 🌐 Access the Website
 
-## Prerequisites  
-Before setting up the project, ensure you have the following installed:  
-- **[MongoDB](https://www.mongodb.com/products/platform/cloud)**: Create a cluster and generate the DB URL, username, and password.  
-- **[GROQ](https://groq.com/)**: Create an API key.  
-- **Create a `.env` file** in the `api` folder with the following details:  
+Access CookBook directly via this link: [Cook Book](https://cookbook-alpha.vercel.app/).
+
+### 🛠️ Troubleshooting
+
+If the page fails to load, you can try the following:
+
+- Switch to a different network environment (e.g., home network or mobile hotspot).
+- Some users may experience DNS resolution failures under NC State's network due to DNS server issues.
+
+If problems persist, follow the installation instructions below to run CookBook locally.
+
+---
+
+# 🛠️Installations
+
+## Prerequisites
+
+Before setting up the project, ensure you have the following installed:
+
+- **[MongoDB](https://www.mongodb.com/products/platform/cloud)**: Create a cluster and generate the DB URL, username, and password.
+- **[GROQ](https://groq.com/)**: Create an API key.
+- **Create a `.env` file** in the `api` folder with the following details:
+
 ```env
 ATLAS_URI = ...
 DATABASE = cookbook
@@ -159,31 +165,42 @@ GROQ_API_KEY = ...
 PORT = 8000
 
 ```
-*   [Docker](https://docs.docker.com/get-docker/)
-*   [Docker Compose](https://docs.docker.com/compose/install/)
-*   (Optional) [Python 3.11](https://www.python.org/downloads/) and [pytest 7.4.4](https://docs.pytest.org/) for testing the API
-*   (Optional) [Node.js](https://nodejs.org/en/download/) and [npm](https://docs.npmjs.com/cli/v7/commands/npm) for frontend testing
+
+- [Docker](https://docs.docker.com/get-docker/)
+- [Docker Compose](https://docs.docker.com/compose/install/)
+- (Optional) [Python 3.11](https://www.python.org/downloads/) and [pytest 7.4.4](https://docs.pytest.org/) for testing the API
+- (Optional) [Node.js](https://nodejs.org/en/download/) and [npm](https://docs.npmjs.com/cli/v7/commands/npm) for frontend testing
 
 ## 📊 Dataset
+
 You can find the dataset used for this project [here](https://drive.google.com/file/d/12CZFb7Ugmiw9zQ7M_qpRsn7pmaV1zW0c/view?usp=sharing)
+
+## Installation
+
+For more in-depth installation instrctions, view our [INSTALL.md](INSTALL.md)
 
 ## 🔧 Backend Installation
 
 Follow these steps to set up and run the backend server:
 
 1. **Navigate to the API folder**:
+
    ```bash
    cd api
-   
+
+   ```
+
 2. **Install required dependencies**:
-    ```bash
-    pip install -r requirements.txt
+
+   ```bash
+   pip install -r requirements.txt
+
+   ```
 
 3. **Run the application server**:
    ```bash
    python -m uvicorn main:app --reload
-
-
+   ```
 
 ### 🛠️Trouble Shooting
 
@@ -192,79 +209,96 @@ In case you run into any issues running the above commands, some operating syste
 ## 🎨Frontend Installation
 
 To set up the front end React app, do:
+
 1. **Navigate to the frontend folder**:
+
    ```bash
    cd frontend
 
-   
+
+   ```
+
 2. **Install required dependencies**:
-    ```bash
-    npm install
+
+   ```bash
+   npm install
+
+   ```
 
 3. **If the above command fails, use the following alternative:**:
+
    ```bash
    npm install --legacy-peer-deps
-   
+
+   ```
+
 4. **Start the React app:**
    ```bash
    npm start
-
+   ```
 
 # Examples
 
-## ✨ New Functions 
+## ✨ New Functions
+
 CookBook has been upgraded with exciting new features to make your cooking experience smarter, more interactive, and hassle-free! Below are the highlights of the latest functionalities added:
-### 🎤 Multiple Voice-Guided Recipes  
-A fresh addition! Choose from multiple voice options to guide you through cooking, enhancing convenience and enabling hands-free operation.  
+
+### 🎤 Multiple Voice-Guided Recipes
+
+A fresh addition! Choose from multiple voice options to guide you through cooking, enhancing convenience and enabling hands-free operation.
 
 ![Voice-Guided Recipes Screenshot](https://github.com/user-attachments/assets/c24d6cec-9fa9-4aaa-9924-5307d6bfba8b)
 
 ---
 
-### 🖼️ Personalized Themes  
-Make CookBook your own with beautifully designed themes like *Midnight Chef*, *Literary Lemon*, and more. Create the perfect cooking atmosphere tailored to your style.  
+### 🖼️ Personalized Themes
+
+Make CookBook your own with beautifully designed themes like _Midnight Chef_, _Literary Lemon_, and more. Create the perfect cooking atmosphere tailored to your style.
 
 ![Personalized Themes Screenshot](https://github.com/user-attachments/assets/28d6a098-5512-48b0-b5ba-adc998e97313)
 
 ---
 
-### 📝 Printable Meal Plans  
-Plan your meals for the week and print them with ease! CookBook helps you stay organized by preparing a clear, printable meal plan to simplify your cooking schedule.  
+### 📝 Printable Meal Plans
+
+Plan your meals for the week and print them with ease! CookBook helps you stay organized by preparing a clear, printable meal plan to simplify your cooking schedule.
 
 ![Printable Meal Plans Screenshot](https://github.com/Software-Engineering-2024-Group/my-cookbook/blob/main/assets/mealplan.png?raw=true)
 
 ---
 
-### 🛒 PDF Shopping List Export  
-Easily generate shopping lists from selected recipes and export them as PDFs for offline access and convenience. Save time and never forget an ingredient while shopping!  
+### 🛒 PDF Shopping List Export
 
-![Shopping List Export Screenshot](https://github.com/Software-Engineering-2024-Group/my-cookbook/blob/main/assets/shopping.png?raw=true)  
+Easily generate shopping lists from selected recipes and export them as PDFs for offline access and convenience. Save time and never forget an ingredient while shopping!
 
----
-
-### 🍝 Advanced Recipe Filters  
-Looking for something quick? Or perhaps you want to try a specific cuisine? Use advanced filters to narrow down recipes by:  
-- Cuisine type  
-- Cooking time  
-- Dietary preferences  
-
-![Recipe Filters Screenshot](https://github.com/Software-Engineering-2024-Group/my-cookbook/blob/main/assets/Category_filter.png?raw=true)  
+![Shopping List Export Screenshot](https://github.com/Software-Engineering-2024-Group/my-cookbook/blob/main/assets/shopping.png?raw=true)
 
 ---
 
-### 🤝 Social Sharing & Quick Access  
-Share your favorite recipes instantly via Discord, Slack, or other social media platforms. Collaboration in the kitchen has never been easier!  
+### 🍝 Advanced Recipe Filters
+
+Looking for something quick? Or perhaps you want to try a specific cuisine? Use advanced filters to narrow down recipes by:
+
+- Cuisine type
+- Cooking time
+- Dietary preferences
+
+![Recipe Filters Screenshot](https://github.com/Software-Engineering-2024-Group/my-cookbook/blob/main/assets/Category_filter.png?raw=true)
+
+---
+
+### 🤝 Social Sharing & Quick Access
+
+Share your favorite recipes instantly via Discord, Slack, or other social media platforms. Collaboration in the kitchen has never been easier!
 
 ![Social Sharing Screenshot](https://github.com/user-attachments/assets/beb3eb82-e251-4f4e-90e7-d0d0b924aa57)
 
 ![FAQ Screenshot](https://github.com/user-attachments/assets/df62d5e3-fed0-4946-9b15-b6609aa46698)
 
-
 ---
 
-
-
 ## Old Functions
+
 - This is the CookBook HomePage that should automatically open in a browser after executing the command: 'npm start'
   <br><br>
 
@@ -293,12 +327,10 @@ Share your favorite recipes instantly via Discord, Slack, or other social media 
 
 <br><br>
 
-
 - Start the App by URL.
-![case](assets/HomePage_new.png)
+  ![case](assets/HomePage_new.png)
 
 <br>
-
 
 - Above content mentions that users may manually input keyword, and click on 'search tag' to create some keyword search tags to search recepies. Besides, users may also click on some "food tags" to search receipes without specific input. For example, we may select "milk" tag:
 
@@ -354,6 +386,7 @@ Following extensions have to be added to you VS Code editor:
 ```
 
 # Code Coverage
+
 [Codecov](https://app.codecov.io/gh/yzhu27/CookBook)
 ![civ](assets/codecov.png)
 
@@ -361,7 +394,35 @@ In case of any queries and for additional help, please email us at: help.cookboo
 
 # Meet the Team
 
+## Version 5
+
+<center>
+  <table>
+    <tr>
+      <td align="center">
+        <a href="https://github.com/cammyj1122">
+          <img src="https://avatars.githubusercontent.com/u/20007512?v=4" width="100px;" alt="Camille Jones"/><br />
+          <sub><b>Camille Jones</b></sub>
+        </a><br />
+      </td>
+      <td align="center">
+        <a href="https://github.com/Jallard2">
+          <img src="https://avatars.githubusercontent.com/u/80693591?v=4" width="100px;" alt="Jacob Allard"/><br />
+          <sub><b>Jacob Allard</b></sub>
+        </a><br />
+      </td>
+      <td align="center">
+        <a href="https://github.com/mdsanchez1">
+          <img src="https://avatars.githubusercontent.com/u/146499961?v=4" width="100px;" alt="Michael Sanchez"/><br />
+          <sub><b>Michael Sanchez</b></sub>
+        </a><br />
+      </td>
+    </tr>
+  </table>
+</center>
+
 ## Version 4
+
 <center>
   <table>
     <tr>
@@ -388,13 +449,14 @@ In case of any queries and for additional help, please email us at: help.cookboo
 </center>
 
 ## Version 3
+
 - Akshay Ashutosh Dongare
 - Anish Mulay
 - Ashwattha Phatak
 - ![Team](https://github.com/user-attachments/assets/9c9d9a1d-4efb-4952-bdd1-8bf8bb0d5afb)
 
-
 ## Version 2.x
+
 - Pinxiang Wang
 - Yuheng Zhu
 - Mengzhe Wang
@@ -402,72 +464,69 @@ In case of any queries and for additional help, please email us at: help.cookboo
 - Yiran Zhu
 
 ## Version 1.0
+
 ![Team](assets/team_edit.png)
 
-
-
-
 # Support
+
 You can find the dataset used for this project [here](https://drive.google.com/file/d/12CZFb7Ugmiw9zQ7M_qpRsn7pmaV1zW0c/view?usp=sharing)
 
 ### 📊 Score Card
+
 #### Total Grade: 151
 
-| Factor | Score | Notes |
-| --- | --- | --- |
-| Video | 3 | https://youtu.be/Tk9iwPMeQhA?si=6ZQWc6nXfInSZTet |
-| Workload | 3 | Distributed |
-| Number of commits | 3 | 50+ |
-| Number of commits: by different people | 3 |https://github.com/Software-Engineering-2024-Group/my-cookbook/graphs/contributors |
-| Issues report: There are many | 3 | https://github.com/Software-Engineering-2024-Group/my-cookbook/issues |
-| Issues are being closed | 3 | https://github.com/Software-Engineering-2024-Group/my-cookbook/issues?q=is%3Aissue+is%3Aclosed|
-| DOI badge | 3 | https://zenodo.org/records/14200974 |
-| Docs: format | 3 | https://github.com/Software-Engineering-2024-Group/my-cookbook/blob/main/.github/workflows/autopep8.yml |
-| Docs: description  | 3 | https://github.com/Software-Engineering-2024-Group/my-cookbook |
-| Docs: short animated video | 3 |  |
-| Docs: strong punchlines | 3 | https://github.com/Software-Engineering-2024-Group/my-cookbook |
-| Docs: mini tutorials | 3 | https://github.com/Software-Engineering-2024-Group/BurnoutExtreme/blob/master/Tutorials.md#signup-and-sign-in |
-| Use of version control tools | 3 | https://github.com/Software-Engineering-2024-Group/my-cookbook/blob/main/.github/workflows/autopep8.yml |
-| Use of style checkers | 3 | https://github.com/Software-Engineering-2024-Group/BurnoutExtreme/blob/master/.github/workflows/autopep8.yml |
-| Use of code formatters. | 3 | https://github.com/Software-Engineering-2024-Group/my-cookbook/blob/main/.github/workflows/flake8.yml |
-| Use of syntax checkers. | 3 | https://github.com/Software-Engineering-2024-Group/my-cookbook?tab=readme-ov-file#style-checker-and-code-fomatter |
-| Use of code coverage | 3 | https://coveralls.io/github/Software-Engineering-2024-Group/my-cookbook?branch=main |
-| Other automated analysis tools | 2 | https://github.com/Software-Engineering-2024-Group/my-cookbook/blob/main/.github/workflows/build.yml |
-| Test cases exist | 3 | https://github.com/Software-Engineering-2024-Group/my-cookbook/tree/main/tests |
-| Test cases are routinely executed | 2 | https://github.com/Software-Engineering-2024-Group/my-cookbook/tree/main/tests |
-| The files http://contributing.md/ lists coding standards and lots of tips | 3 |  |
-| Issues are discussed before they are closed | 3 | https://github.com/Software-Engineering-2024-Group/my-cookbook/issues |
-| Chat channel: exists | 3 | whatsapp, discord(https://discord.gg/4zmAMZNY) |
-| Test cases: a large proportion of the issues related to handling failing cases. | 3 | https://github.com/Software-Engineering-2024-Group/my-cookbook/issues |
-| Evidence that the whole team is using the same tools | 3 |  |
-| Evidence that the members of the team are working across multiple places in the code base | 3 | https://github.com/Software-Engineering-2024-Group/my-cookbook/pulse |
-| Short release cycles | 3 |  |
-| Does your website and documentation provide a clear, high-level overview of your software? | 3 | https://github.com/Software-Engineering-2024-Group/my-cookbook |
-| Does your website and documentation clearly describe the type of user who should use your software? | 3 | https://github.com/Software-Engineering-2024-Group/my-cookbook |
-| Do you publish case studies to show how your software has been used by yourself and others? | 3 |  |
-| Is the name of your project/software unique? | 3 | https://github.com/Software-Engineering-2024-Group/my-cookbook |
-| Is your project/software name free from trademark violations? | 3 |  |
-| Is your software available as a package that can be deployed without building it? | 3 | https://github.com/Software-Engineering-2024-Group/my-cookbook |
-| Is your software available for free? | 3 | https://github.com/Software-Engineering-2024-Group/my-cookbook |
-| Is your source code publicly available to download, either as a downloadable bundle or via access to a source code repository? | 3 | https://github.com/Software-Engineering-2024-Group/my-cookbook |
-| Is your software hosted in an established, third-party repository like GitHub? | 3 |  |
-| Is your documentation clearly available on your website or within your software? | 3 |  |
-| Does your documentation include a "quick start" guide, that provides a short overview of how to use your software with some basic examples of use? | 3 | https://github.com/Software-Engineering-2024-Group/my-cookbook |
-| If you provide more extensive documentation, does this provide clear, step-by-step instructions on how to deploy and use your software? | 3 |  |
-| Do you provide a comprehensive guide to all your software’s commands, functions and options? | 3 | https://github.com/Software-Engineering-2024-Group/my-cookbook |
-| Do you provide troubleshooting information that describes the symptoms and step-by-step solutions for problems and error messages? | 3 |  |
-| If your software can be used as a library, package or service by other software, do you provide comprehensive API documentation? | 3 |https://github.com/Software-Engineering-2024-Group/my-cookbook/blob/main/INSTALL.md |
-| Do you store your documentation under revision control with your source code? | 2 |  |
-| Do you publish your release history e.g. release data, version numbers, key features of each release etc. on your web site or in your documentation? | 3 |  |
-| Does your software describe how a user can get help with using your software? | 3 |  |
-| Does your website and documentation describe what support, if any, you provide to users and developers? | 3 | https://github.com/Software-Engineering-2024-Group/my-cookbook/blob/main/INSTALL.md |
-| Does your project have an e-mail address or forum that is solely for supporting users? | 3 |  |
-| Are e-mails to your support e-mail address received by more than one person? | 3 |  |
-| Does your project have a ticketing system to manage bug reports and feature requests? | 2 | https://github.com/Software-Engineering-2024-Group/my-cookbook/issues |
-| Is your project's ticketing system publicly visible to your users, so they can view bug reports and feature requests? | 3 | https://github.com/Software-Engineering-2024-Group/my-cookbook/issues |
-
-
-
+| Factor                                                                                                                                               | Score | Notes                                                                                                             |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------- | ----- | ----------------------------------------------------------------------------------------------------------------- |
+| Video                                                                                                                                                | 3     | https://youtu.be/Tk9iwPMeQhA?si=6ZQWc6nXfInSZTet                                                                  |
+| Workload                                                                                                                                             | 3     | Distributed                                                                                                       |
+| Number of commits                                                                                                                                    | 3     | 50+                                                                                                               |
+| Number of commits: by different people                                                                                                               | 3     | https://github.com/Software-Engineering-2024-Group/my-cookbook/graphs/contributors                                |
+| Issues report: There are many                                                                                                                        | 3     | https://github.com/Software-Engineering-2024-Group/my-cookbook/issues                                             |
+| Issues are being closed                                                                                                                              | 3     | https://github.com/Software-Engineering-2024-Group/my-cookbook/issues?q=is%3Aissue+is%3Aclosed                    |
+| DOI badge                                                                                                                                            | 3     | https://zenodo.org/records/14200974                                                                               |
+| Docs: format                                                                                                                                         | 3     | https://github.com/Software-Engineering-2024-Group/my-cookbook/blob/main/.github/workflows/autopep8.yml           |
+| Docs: description                                                                                                                                    | 3     | https://github.com/Software-Engineering-2024-Group/my-cookbook                                                    |
+| Docs: short animated video                                                                                                                           | 3     |                                                                                                                   |
+| Docs: strong punchlines                                                                                                                              | 3     | https://github.com/Software-Engineering-2024-Group/my-cookbook                                                    |
+| Docs: mini tutorials                                                                                                                                 | 3     | https://github.com/Software-Engineering-2024-Group/BurnoutExtreme/blob/master/Tutorials.md#signup-and-sign-in     |
+| Use of version control tools                                                                                                                         | 3     | https://github.com/Software-Engineering-2024-Group/my-cookbook/blob/main/.github/workflows/autopep8.yml           |
+| Use of style checkers                                                                                                                                | 3     | https://github.com/Software-Engineering-2024-Group/BurnoutExtreme/blob/master/.github/workflows/autopep8.yml      |
+| Use of code formatters.                                                                                                                              | 3     | https://github.com/Software-Engineering-2024-Group/my-cookbook/blob/main/.github/workflows/flake8.yml             |
+| Use of syntax checkers.                                                                                                                              | 3     | https://github.com/Software-Engineering-2024-Group/my-cookbook?tab=readme-ov-file#style-checker-and-code-fomatter |
+| Use of code coverage                                                                                                                                 | 3     | https://coveralls.io/github/Software-Engineering-2024-Group/my-cookbook?branch=main                               |
+| Other automated analysis tools                                                                                                                       | 2     | https://github.com/Software-Engineering-2024-Group/my-cookbook/blob/main/.github/workflows/build.yml              |
+| Test cases exist                                                                                                                                     | 3     | https://github.com/Software-Engineering-2024-Group/my-cookbook/tree/main/tests                                    |
+| Test cases are routinely executed                                                                                                                    | 2     | https://github.com/Software-Engineering-2024-Group/my-cookbook/tree/main/tests                                    |
+| The files http://contributing.md/ lists coding standards and lots of tips                                                                            | 3     |                                                                                                                   |
+| Issues are discussed before they are closed                                                                                                          | 3     | https://github.com/Software-Engineering-2024-Group/my-cookbook/issues                                             |
+| Chat channel: exists                                                                                                                                 | 3     | whatsapp, discord(https://discord.gg/4zmAMZNY)                                                                    |
+| Test cases: a large proportion of the issues related to handling failing cases.                                                                      | 3     | https://github.com/Software-Engineering-2024-Group/my-cookbook/issues                                             |
+| Evidence that the whole team is using the same tools                                                                                                 | 3     |                                                                                                                   |
+| Evidence that the members of the team are working across multiple places in the code base                                                            | 3     | https://github.com/Software-Engineering-2024-Group/my-cookbook/pulse                                              |
+| Short release cycles                                                                                                                                 | 3     |                                                                                                                   |
+| Does your website and documentation provide a clear, high-level overview of your software?                                                           | 3     | https://github.com/Software-Engineering-2024-Group/my-cookbook                                                    |
+| Does your website and documentation clearly describe the type of user who should use your software?                                                  | 3     | https://github.com/Software-Engineering-2024-Group/my-cookbook                                                    |
+| Do you publish case studies to show how your software has been used by yourself and others?                                                          | 3     |                                                                                                                   |
+| Is the name of your project/software unique?                                                                                                         | 3     | https://github.com/Software-Engineering-2024-Group/my-cookbook                                                    |
+| Is your project/software name free from trademark violations?                                                                                        | 3     |                                                                                                                   |
+| Is your software available as a package that can be deployed without building it?                                                                    | 3     | https://github.com/Software-Engineering-2024-Group/my-cookbook                                                    |
+| Is your software available for free?                                                                                                                 | 3     | https://github.com/Software-Engineering-2024-Group/my-cookbook                                                    |
+| Is your source code publicly available to download, either as a downloadable bundle or via access to a source code repository?                       | 3     | https://github.com/Software-Engineering-2024-Group/my-cookbook                                                    |
+| Is your software hosted in an established, third-party repository like GitHub?                                                                       | 3     |                                                                                                                   |
+| Is your documentation clearly available on your website or within your software?                                                                     | 3     |                                                                                                                   |
+| Does your documentation include a "quick start" guide, that provides a short overview of how to use your software with some basic examples of use?   | 3     | https://github.com/Software-Engineering-2024-Group/my-cookbook                                                    |
+| If you provide more extensive documentation, does this provide clear, step-by-step instructions on how to deploy and use your software?              | 3     |                                                                                                                   |
+| Do you provide a comprehensive guide to all your software’s commands, functions and options?                                                         | 3     | https://github.com/Software-Engineering-2024-Group/my-cookbook                                                    |
+| Do you provide troubleshooting information that describes the symptoms and step-by-step solutions for problems and error messages?                   | 3     |                                                                                                                   |
+| If your software can be used as a library, package or service by other software, do you provide comprehensive API documentation?                     | 3     | https://github.com/Software-Engineering-2024-Group/my-cookbook/blob/main/INSTALL.md                               |
+| Do you store your documentation under revision control with your source code?                                                                        | 2     |                                                                                                                   |
+| Do you publish your release history e.g. release data, version numbers, key features of each release etc. on your web site or in your documentation? | 3     |                                                                                                                   |
+| Does your software describe how a user can get help with using your software?                                                                        | 3     |                                                                                                                   |
+| Does your website and documentation describe what support, if any, you provide to users and developers?                                              | 3     | https://github.com/Software-Engineering-2024-Group/my-cookbook/blob/main/INSTALL.md                               |
+| Does your project have an e-mail address or forum that is solely for supporting users?                                                               | 3     |                                                                                                                   |
+| Are e-mails to your support e-mail address received by more than one person?                                                                         | 3     |                                                                                                                   |
+| Does your project have a ticketing system to manage bug reports and feature requests?                                                                | 2     | https://github.com/Software-Engineering-2024-Group/my-cookbook/issues                                             |
+| Is your project's ticketing system publicly visible to your users, so they can view bug reports and feature requests?                                | 3     | https://github.com/Software-Engineering-2024-Group/my-cookbook/issues                                             |
 
 ```
 CookBook

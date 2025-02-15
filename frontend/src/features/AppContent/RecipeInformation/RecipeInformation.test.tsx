@@ -9,60 +9,28 @@ import {
 import axios from 'axios'
 import { BrowserRouter } from 'react-router-dom'
 import { ThemeProvider } from '../../Themes/themeContext'
-import * as ACTION_TYPES from './getRecipeInformation.actionTypes'
+
+import * as hooks from './RecipeInfoSlice'
 
 jest.mock('axios')
 const mockedAxios = axios as jest.Mocked<typeof axios>
 
-const getRecipeInfoInitiatorMock = () => {
-  return {
-    type: ACTION_TYPES.LOADING_GET_RECIPE_INFORMATION,
-    payload: 'http://localhost:8000/recipe/20919',
-  }
-}
-
-const getRecipeInfoSuccessMock = (data: any) => {
-  return {
-    type: ACTION_TYPES.SUCCESS_GET_RECIPE_INFORMATION,
-    payload: data,
-  }
-}
-
-const getRecipeInfoFailureMock = (error: any) => {
-  return {
-    type: ACTION_TYPES.FAILURE_GET_RECIPE_INFORMATION,
-    payload: error,
-  }
-}
-
-jest.mock('./getRecipeInformation.action.ts', () => ({
-  getRecipeInfoInitiator: getRecipeInfoInitiatorMock,
-  getRecipeInfoSuccess: getRecipeInfoSuccessMock,
-  getRecipeInfoFailure: getRecipeInfoFailureMock,
+jest.mock('./RecipeInfoSlice', () => ({
+  useGetRecipeQuery: () => {
+    return {
+      data: mockRecipe,
+      isSuccess: true,
+      isLoading: false,
+    }
+  },
 }))
 
 import RecipeInformation from './RecipeInformation'
+import { useGetRecipeQuery } from './RecipeInfoSlice'
+import { Recipe } from '../../api/types'
+import { mockRecipe } from '../testVariables'
 
 describe('Recipe Display Tests', () => {
-  test('Show Recipe Loading', () => {
-    render(
-      <BrowserRouter
-        future={{
-          v7_startTransition: true,
-          v7_relativeSplatPath: true,
-        }}
-      >
-        <ThemeProvider>
-          <RecipeInformation />
-        </ThemeProvider>
-      </BrowserRouter>
-    )
-
-    const recipeInfo = screen.queryByTestId('RecipeInfo')
-    expect(screen.getByTestId('RecipeInfoLoading')).toBeInTheDocument()
-    expect(recipeInfo).not.toBeInTheDocument()
-  })
-
   test('Recipe Rendered in appropriate timeframe', async () => {
     render(
       <BrowserRouter

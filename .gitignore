@@ -548,3 +548,5 @@ dist
 
 */yarn.lock
 */.vscode/
+api/db/recipes.json
+api/db/cookbook.db

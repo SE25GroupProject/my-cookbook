@@ -22,7 +22,7 @@ this file. If not, please write to: help.cookbook@gmail.com
 }
 
 .MuiPaginationItem-root {
-  color: white !important;
+  /* color: white !important; */
 }
 
 .Mui-selected {
@@ -30,7 +30,7 @@ this file. If not, please write to: help.cookbook@gmail.com
   color: #34495e !important;
 }
 
-.no-recipe-found{
-    color: white;
-    font-family: RobotoThin !important;
+.no-recipe-found {
+  color: white;
+  font-family: RobotoThin !important;
 }

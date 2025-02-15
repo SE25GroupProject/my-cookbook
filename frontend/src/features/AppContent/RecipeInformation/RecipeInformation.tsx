@@ -34,13 +34,13 @@ import { Provider } from 'react-redux'
 import applicationStore from '../../../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
-import { getRecipeInfoInitiator } from './getRecipeInformation.action'
 import './RecipeInformation.css'
 import noImage from './no-image.png'
 import { FaWhatsapp, FaSlack, FaDiscord } from 'react-icons/fa'
 import axios from 'axios'
 import { useTheme } from '../../Themes/themeContext'
 import { useNavigate } from 'react-router-dom'
+import { useGetRecipeQuery } from './RecipeInfoSlice'
 
 const store = applicationStore()
 
@@ -136,6 +136,8 @@ const RecipeInformationWrapped = () => {
   const [selectedPlatform, setSelectedPlatform] = useState('slack')
   const [selectedDayIndex, setSelectedDayIndex] = useState(0)
 
+  const { data: recipe, isLoading, isSuccess } = useGetRecipeQuery(id as string)
+
   let triviaPaperStyles = {
     background: theme.background,
     marginTop: '20px',
@@ -158,7 +160,7 @@ const RecipeInformationWrapped = () => {
   }
 
   // accesses the state of the component from the app's store
-  const recipeInfo = useSelector((state: any) => state.getRecipeInfoAppState)
+  // const recipeInfo = useSelector((state: any) => state.getRecipeInfoAppState)
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [availableVoices, setAvailableVoices] = useState<
     SpeechSynthesisVoice[]
@@ -199,17 +201,17 @@ const RecipeInformationWrapped = () => {
   }
   /* the effect hook below does an api call to get the recipe details
       using the recipe id as soon as the compnent gets loaded up */
-  useEffect(() => {
-    dispatch(getRecipeInfoInitiator('http://localhost:8000/recipe/' + id))
-    return () => {
-      // state cleanup here
-    }
-  }, [])
+  // useEffect(() => {
+  //   // dispatch(getRecipeInfoInitiator('http://localhost:8000/recipe/' + id))
+  //   return () => {
+  //     // state cleanup here
+  //   }
+  // }, [])
 
-  if (recipeInfo.isGetRecipeInfoLoading) {
+  if (isLoading) {
     return <div data-testid="RecipeInfoLoading"> Loading ... </div>
-  } else if (recipeInfo.isGetRecipeInfoSuccess) {
-    const recipe = recipeInfo.getRecipeInfoData // The recipe object containing all necessary information
+  } else if (isSuccess) {
+    // const recipe = recipeInfo.getRecipeInfoData // The recipe object containing all necessary information
     const recipeDetailsforLLM = `
       Name: ${recipe.name}
       Ingredients: ${recipe.ingredients ? recipe.ingredients.join(', ') : []}

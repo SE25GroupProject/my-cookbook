@@ -10,10 +10,12 @@ this file. If not, please write to: help.cookbook@gmail.com
 
 .App {
   text-align: center;
+  height: 100%;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   overflow-y: hidden;
+  justify-content: center;
 }
 
 .App-logo {
@@ -33,7 +35,8 @@ this file. If not, please write to: help.cookbook@gmail.com
   flex-direction: column;
   overflow-y: hidden;
   color: white;
-  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande',
+    'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }
 
 .App-searchComponent {
@@ -49,17 +52,38 @@ this file. If not, please write to: help.cookbook@gmail.com
 }
 
 .App-body {
-  min-height: 75vh;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   font-size: calc(10px + 2vmin);
-  overflow: hidden;
 }
 
 .App-link {
   color: #61dafb;
+}
+
+.search-bar-container {
+  position: absolute;
+  top: 110px;
+  left: 0;
+  right: 0;
+  z-index: 10;
+}
+
+.search-bar {
+  overflow: hidden;
+  max-height: 400px;
+  transition: max-height 200ms ease-in-out;
+}
+
+.search-bar.hidden {
+  max-height: 0;
+}
+
+.search-expand {
+  text-align: right;
 }
 
 @keyframes App-logo-spin {

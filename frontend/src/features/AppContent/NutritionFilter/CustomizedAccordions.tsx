@@ -10,10 +10,10 @@ import Typography from '@mui/material/Typography'
 import { Slider } from '@mui/material'
 import { Stack } from '@mui/material'
 import Button from '@mui/material/Button'
-import { getRecipeListInitiator } from '../RecipeList/getRecipeList.action'
 import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { useTheme } from '../../Themes/themeContext'
+import { NutritionMax } from '../../api/types'
 
 const Accordion = styled((props: AccordionProps) => (
   <MuiAccordion disableGutters elevation={0} square {...props} />
@@ -52,17 +52,14 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
 }))
 
 export default function CustomizedAccordions() {
-  const dispatch = useDispatch()
   const navigateTo = useNavigate()
   const { theme } = useTheme() // Use theme context here
   const [expanded, setExpanded] = React.useState<string | false>()
 
-  const handleChange = (panel: string) => (
-    event: React.SyntheticEvent,
-    newExpanded: boolean
-  ) => {
-    setExpanded(newExpanded ? panel : false)
-  }
+  const handleChange =
+    (panel: string) => (event: React.SyntheticEvent, newExpanded: boolean) => {
+      setExpanded(newExpanded ? panel : false)
+    }
 
   const defaultValue = 50
   const [cal, setCal] = React.useState<number>(defaultValue)
@@ -71,16 +68,17 @@ export default function CustomizedAccordions() {
   const [pro, setPro] = React.useState<number>(defaultValue)
 
   const onSearch = () => {
-    dispatch(
-      getRecipeListInitiator('http://localhost:8000/recipe/search2/', {
-        page: 1,
-        caloriesUp: cal,
-        fatUp: fat,
-        sugUp: sug,
-        proUp: pro,
-      })
-    )
-    navigateTo('/recipe-list')
+    let nutritionMax: NutritionMax = {
+      caloriesUp: cal,
+      fatUp: fat,
+      sugUp: sug,
+      proUp: pro,
+    }
+
+    navigateTo('/recipe-list', {
+      state: { nutrition: nutritionMax },
+      replace: true,
+    })
   }
 
   // @ts-ignore
@@ -92,12 +90,22 @@ export default function CustomizedAccordions() {
         onChange={handleChange('panel1')}
         sx={{ bgcolor: theme.background }} // Apply background color from theme
       >
-        <AccordionSummary aria-controls="panel1d-content" id="panel1d-header" style={{ backgroundColor: theme.background }}>
-          <Typography style={{ color: theme.headerColor }}>Nutrition Filter</Typography>
+        <AccordionSummary
+          aria-controls="panel1d-content"
+          id="panel1d-header"
+          style={{ backgroundColor: theme.background }}
+        >
+          <Typography style={{ color: theme.headerColor }}>
+            Nutrition Filter
+          </Typography>
         </AccordionSummary>
         <AccordionDetails sx={{ backgroundColor: theme.background }}>
           <Stack spacing={2} direction="row" sx={{ mb: 1 }} alignItems="center">
-            <Typography style={{ color: theme.color }} id="non-linear-slider" gutterBottom>
+            <Typography
+              style={{ color: theme.color }}
+              id="non-linear-slider"
+              gutterBottom
+            >
               Calories:
             </Typography>
             <Slider
@@ -108,7 +116,11 @@ export default function CustomizedAccordions() {
               max={4000}
               sx={{ color: theme.headerColor }} // Slider thumb color from theme
             />
-            <Typography style={{ color: theme.color }} id="non-linear-slider" gutterBottom>
+            <Typography
+              style={{ color: theme.color }}
+              id="non-linear-slider"
+              gutterBottom
+            >
               Fat:
             </Typography>
             <Slider
@@ -119,7 +131,11 @@ export default function CustomizedAccordions() {
               onChange={(e, v) => setFat(v as number)}
               sx={{ color: theme.headerColor }} // Slider thumb color from theme
             />
-            <Typography style={{ color: theme.color }} id="non-linear-slider" gutterBottom>
+            <Typography
+              style={{ color: theme.color }}
+              id="non-linear-slider"
+              gutterBottom
+            >
               Sugar:
             </Typography>
             <Slider
@@ -130,7 +146,11 @@ export default function CustomizedAccordions() {
               onChange={(e, v) => setSug(v as number)}
               sx={{ color: theme.headerColor }} // Slider thumb color from theme
             />
-            <Typography style={{ color: theme.color }} id="non-linear-slider" gutterBottom>
+            <Typography
+              style={{ color: theme.color }}
+              id="non-linear-slider"
+              gutterBottom
+            >
               Protein:
             </Typography>
             <Slider
@@ -142,7 +162,11 @@ export default function CustomizedAccordions() {
               sx={{ color: theme.headerColor }} // Slider thumb color from theme
             />
           </Stack>
-          <Typography style={{ color: theme.color }} id="non-linear-slider" gutterBottom>
+          <Typography
+            style={{ color: theme.color }}
+            id="non-linear-slider"
+            gutterBottom
+          >
             Calorie: {cal} - Fat: {fat} - Sugar: {sug} - Protein: {pro}
           </Typography>
           <Stack

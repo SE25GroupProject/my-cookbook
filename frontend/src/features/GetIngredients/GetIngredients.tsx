@@ -23,9 +23,8 @@ import { Autocomplete, Box, Button, Chip, Grid, TextField } from '@mui/material'
 import { useForm, Controller } from 'react-hook-form'
 import Send from '@mui/icons-material/Send'
 import HighlightOffIcon from '@mui/icons-material/HighlightOff'
-import { getIngredientsInitiator } from './getIngredients.action'
-import { getRecipeListInitiator } from '../AppContent/RecipeList/getRecipeList.action'
 import { useTheme } from '../Themes/themeContext'
+import { useGetIngredientSuggestionsQuery } from './IngredientsSlice'
 
 interface ChipData {
   key: string
@@ -82,32 +81,33 @@ const GetIngredients = () => {
   const [chipData, setChipData] = useState<readonly ChipData[]>([])
   const [listData, setListData] = useState<readonly ListData[]>([])
 
-  // accesses the state of the component from the app's store
-  const getIngredientsState = useSelector(
-    (state: any) => state.getIngredientsAppState
-  )
-  
+  const [queryValue, setQueryValue] = useState('')
+  const [skip, setSkip] = useState(true)
+
+  const { data: ingredients } = useGetIngredientSuggestionsQuery(queryValue, {
+    skip: skip,
+  })
+
   useEffect(() => {
-    let ingredients = getIngredientsState.getIngredientsData
-    if (Array.isArray(ingredients)) {
+    if (ingredients && Array.isArray(ingredients)) {
       ingredients.forEach((item: string, index: number) => {
         setListData((list) => list.concat({ key: item, label: item }))
       })
-    }
-    return () => {
+    } else {
       setListData([])
     }
-  }, [getIngredientsState.getIngredientsData])
+  }, [ingredients])
 
   // function to get ingredients suggestions after input of 3 chars in the search field
   const onChangeTextField = (val: string) => {
-    if (val.length >= 3) {
-      dispatch(
-        getIngredientsInitiator(
-          'http://localhost:8000/recipe/ingredients/' + val
-        )
-      )
-    }
+    // dispatch(
+    //   getIngredientsInitiator(
+    //     'http://localhost:8000/recipe/ingredients/' + val
+    //   )
+    // )
+    setSkip(val.length >= 3)
+
+    setQueryValue(val)
   }
 
   // on enter or ingredient selection from suggestion list, this function stores the input in the chipData state
@@ -125,16 +125,14 @@ const GetIngredients = () => {
   // handler to trigger the API call to get the list of recipes according to the user's ingredient's input
   const onSubmit = () => {
     let ingredientsArray: Array<string> = []
-    chipData.forEach((chip) => ingredientsArray.push(chip.label.toLocaleLowerCase()))
+    chipData.forEach((chip) =>
+      ingredientsArray.push(chip.label.toLocaleLowerCase())
+    )
     if (ingredientsArray.length > 0) {
-      sessionStorage.setItem('ingredients', JSON.stringify(ingredientsArray))
-      dispatch(
-        getRecipeListInitiator('http://localhost:8000/recipe/search/', {
-          ingredients: ingredientsArray,
-          page: 1,
-        })
-      )
-      navigateTo('/recipe-list')
+      navigateTo('/recipe-list', {
+        state: { ingredients: ingredientsArray },
+        replace: true,
+      })
     }
   }
 
@@ -145,24 +143,31 @@ const GetIngredients = () => {
         <Grid item xs={1} style={{ backgroundColor: theme.background }}></Grid>
         <Grid item xs={10} style={{ backgroundColor: theme.background }}>
           <Controller
-
             render={({ field }) => (
               <InputField
-              style={{ backgroundColor: theme.background, color: theme.color }}
+                style={{
+                  backgroundColor: theme.background,
+                  color: theme.color,
+                }}
                 field={field}
                 label="Type to select Ingredients"
                 id="outlined-size-normal"
                 listData={listData}
                 onChangeField={onChangeField}
                 onChangeTextField={onChangeTextField}
-                
               />
             )}
             name="ingredients"
             control={control}
           />
         </Grid>
-        <Grid item xs={1} container justifyContent="flex-start" style={{ backgroundColor: theme.background, color:theme.color }}>
+        <Grid
+          item
+          xs={1}
+          container
+          justifyContent="flex-start"
+          style={{ backgroundColor: theme.background, color: theme.color }}
+        >
           <Button
             onClick={onSubmit}
             type="submit"
@@ -179,9 +184,12 @@ const GetIngredients = () => {
           />
         </Grid>
       </Grid>
-      <Grid container spacing={2}style={{ backgroundColor: theme.background }}>
+      <Grid container spacing={2} style={{ backgroundColor: theme.background }}>
         <Grid item xs={12} style={{ backgroundColor: theme.background }}>
-          <Box paddingTop={'20px'} style={{ backgroundColor: theme.background }}>
+          <Box
+            paddingTop={'20px'}
+            style={{ backgroundColor: theme.background }}
+          >
             {chipData.map((data) => {
               return (
                 <Chip

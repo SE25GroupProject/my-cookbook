@@ -1,50 +1,72 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../Authentication/AuthProvider'
+import { UserCred } from '../../api/types'
+import {
+  Alert,
+  Box,
+  Button,
+  Container,
+  Link,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material'
 
-const Login: React.FC = () => {
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [error, setError] = useState<string>('');
-  const navigate = useNavigate();
+export interface LoginParam {
+  intendedRoute: string
+}
 
-  // Fetch saved email and password from localStorage
-  const savedEmail = localStorage.getItem('userEmail');
-  const savedPassword = localStorage.getItem('userPassword');
+const Login = () => {
+  const auth = useAuth()
+
+  const [email, setEmail] = useState<string>('')
+  const [password, setPassword] = useState<string>('')
 
   const handleLogin = () => {
-    // Compare entered email and password with saved ones
-    if (savedEmail === email && savedPassword === password) {
-      alert('Login successful!');
-      navigate('/profile'); // Redirect to profile page
-    } else {
-      setError('Incorrect email or password');
+    const user: UserCred = {
+      username: email,
+      password: password,
     }
-  };
+    auth?.loginAction(user)
+  }
 
   return (
-    <div>
-      <h2>Login</h2>
-      <div>
-        <input
-          type="email"
-          placeholder="Enter email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-      </div>
-      <div>
-        <input
-          type="password"
-          placeholder="Enter password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-      </div>
-      {error && <p>{error}</p>}
-      <button onClick={handleLogin}>Login</button>
-      <p>Don't have an account? <a href="/signup">Signup here</a></p>
-    </div>
-  );
-};
+    <Container maxWidth="sm">
+      <Paper elevation={3} sx={{ p: 4 }}>
+        <Stack spacing={6}>
+          <Stack spacing={2}>
+            <Typography variant="h3">Login</Typography>
+            {auth?.error && (
+              <Alert severity="error" variant="outlined">
+                {auth.error}
+              </Alert>
+            )}
+            <TextField
+              value={email}
+              label="Enter Email"
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <TextField
+              value={[password]}
+              label="Enter Password"
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </Stack>
 
-export default Login;
+          <Box>
+            <Button variant="outlined" onClick={handleLogin}>
+              Log In
+            </Button>
+          </Box>
+          <Typography variant="body1">
+            Don't have an account? <Link href="/signup">Signup here</Link>
+          </Typography>
+        </Stack>
+      </Paper>
+    </Container>
+  )
+}
+
+export default Login
