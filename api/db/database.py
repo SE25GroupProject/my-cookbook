@@ -140,6 +140,6 @@ class Database_Connection():
             print(e)
             return None
     
-    def update_recipe(self, originalRecipe: Recipe, newRecipe: Recipe):
+    def update_recipe(self, oldRecipeId: int, newRecipe: Recipe):
         """Updates a recipe to have the data of the new recipe"""
         pass

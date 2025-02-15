@@ -242,3 +242,27 @@ async def getUser(username: str) -> dict:
     # except: 
     #     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occured when trying to get this user")
         
+
+@recipeRouter.get("/getRecipe/{recipeId}")
+async def getRecipe(recipeId: int) -> Recipe:
+    recipe: Recipe = db.get_recipe(recipeId)
+    if recipe is None:
+        raise HTTPException(status_code=400, detail="There is not recipe with that Id")
+    return recipe
+
+# Todo: This may have to change as I am not sure if this is the proper way to expect a body for a post request
+@recipeRouter.post("/createRecipe/")
+async def createRecipe(recipeObject: Recipe) -> bool:
+    success = db.create_recipe(recipeObject)
+    if success:
+        return True
+    
+    return False
+
+@recipeRouter.put("/updateRecipe/{recipeId}")
+async def updateRecipe(recipeId: int, newRecipe: Recipe):
+    success = db.update_recipe(recipeId, newRecipe)
+    if success:
+        return True
+    
+    return False
