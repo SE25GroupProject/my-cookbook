@@ -1,6 +1,7 @@
 """Holds classes of all objects for database use"""
 from models import Recipe
 from datetime import datetime
+from pydantic import BaseModel
 
 class User():
     def __init__(self, username: str, password: str, userId: int = -1):
@@ -16,7 +17,7 @@ class User():
 
         return output
 
-class Post:
+class Post(BaseModel):
     def __init__(self, userId: int, message: str, image: bytes, recipe: Recipe):
         self.postId = None # should be auto incremented when inserted into database
         self.userId = userId

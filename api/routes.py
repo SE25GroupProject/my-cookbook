@@ -40,11 +40,18 @@ config = {
     "PORT": os.getenv("PORT")
 }
 router = APIRouter()
+userRouter = APIRouter()
 client = Groq(api_key=config["GROQ_API_KEY"])
 
 class MealPlanEntry(BaseModel):
     day: int  # 0-6 representing Monday-Sunday
     recipe: dict  # The recipe details (name, instructions, etc.)
+
+class UserCred(BaseModel):
+    username: str
+    password: str
+
+# router = APIRouter()
 
 @router.post("/meal-plan/", response_description="Save a meal plan for a specific day", status_code=200)
 async def save_meal_plan(entry: MealPlanEntry, request: Request):
@@ -188,44 +195,53 @@ async def recommend_recipes(query: RecipeQuery = Body(...)):
         logger.error(f"Unexpected error in recommend_recipes: {str(e)}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred")
     
-@app.post("/signup")
-async def signup(username: str, password: str):
-    # Creating a new user
-    user: User = User(username, password)
-    if db.get_user(username) is not None:
-        raise HTTPException(status_code=400, detail="User with that username already exists")
-    db.add_user(user)
+@userRouter.post("/signup")
+async def signup(incomingUser: UserCred = Body(...)):
+    # try:
+        # Creating a new user
+        user: User = User(incomingUser.username, incomingUser.password)
+        print(user)
+        if db.get_user(user.Username) is not None:
+            raise HTTPException(status_code=400, detail="User with that username already exists")
+        userid: int = db.add_user(user)
 
-    return {"message": "Succesfully Signed Up"}
+        return {"id": userid, "username": user.Username}
+    # except:
+    #     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occured when signing up this user")
 
-@app.get("/login")
-async def login(username: str, password: str):
-    user: User = db.get_user(username)
+
+@userRouter.post("/login")
+async def login(incomingUser: UserCred = Body(...)):
+    # try: 
+    print(incomingUser.username)
+    user: User = db.get_user(incomingUser.username)
     if user is None:
         raise HTTPException(status_code=400, detail="There is no user with that username")
     
-    if user.Password == password:
-        return {"message": "Successfully Signed In"}
-    
-    return {"message": "Incorrect Username or Password"}
+    print(user.Username)
+    print(user.Password)
+    print(incomingUser.password)
+    if user.Password == incomingUser.password:
+        return {"id": user.UserId, "username": user.Username}
+        
+    return "Incorrect Username or Password"
+    # except:
+    #     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occured when logging in this user")
 
 
-@app.get("/getUser/{username}")
+
+@userRouter.get("/getUser/{username}")
 async def getUser(username: str) -> dict:
-    user: User = db.get_user(username)
-    if user is None:
-        raise HTTPException(status_code=400, detail="There is no user with that username")
-    
-    return {"message": user.to_dict()}
+    # try:
+        user: User = db.get_user(username)
+        if user is None:
+            raise HTTPException(status_code=400, detail="There is no user with that username")
+        
+        return user
+    # except: 
+    #     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occured when trying to get this user")
 
-# for now append username to the api request, unless we decide to use a token
-@app.post("/recipes/{username}")
-async def createRecipe(username: str, recipe: Recipe):
-    user: User = db.get_user(username)
-    if user is None:
-        raise HTTPException(status_code=400, detail="There is no user with that username")
-
-@app.post("/posts/", response_description="Create a new post", status_code=201)
+@router.post("/posts/", response_description="Create a new post", status_code=201)
 async def create_post(post: Post):
     """Creates a new post in the database."""
     try:
@@ -242,7 +258,7 @@ async def create_post(post: Post):
             detail=f"An error occurred while creating the post: {str(e)}"
         )
 
-@app.get("/posts/{post_id}", response_description="Get a post by ID", response_model=Post)
+@router.get("/posts/{post_id}", response_description="Get a post by ID", response_model=Post)
 async def get_post(post_id: int):
     """Retrieves a post by its ID."""
     post = db.get_post(post_id)
@@ -253,13 +269,13 @@ async def get_post(post_id: int):
         detail=f"Post with ID {post_id} not found."
     )
 
-@app.get("/posts/", response_description="List all posts", response_model=List[Post])
+@router.get("/posts/", response_description="List all posts", response_model=List[Post])
 async def list_posts():
     """Retrieves all posts from the database."""
     posts = db.get_all_posts()
     return posts
 
-@app.put("/posts/{post_id}/like", response_description="Like a post", status_code=200)
+@router.put("/posts/{post_id}/like", response_description="Like a post", status_code=200)
 async def like_post(post_id: int):
     """Increments the likes count for a post."""
     try:
@@ -283,7 +299,7 @@ async def like_post(post_id: int):
             detail=f"An error occurred while liking the post: {str(e)}"
         )
 
-@app.put("/posts/{post_id}/dislike", response_description="Dislike a post", status_code=200)
+@router.put("/posts/{post_id}/dislike", response_description="Dislike a post", status_code=200)
 async def dislike_post(post_id: int):
     """Increments the dislikes count for a post."""
     try:
@@ -307,7 +323,7 @@ async def dislike_post(post_id: int):
             detail=f"An error occurred while disliking the post: {str(e)}"
         )
 
-@app.delete("/posts/{post_id}", response_description="Delete a post", status_code=200)
+@router.delete("/posts/{post_id}", response_description="Delete a post", status_code=200)
 async def delete_post(post_id: int):
     """Deletes a post by its ID."""
     try:
@@ -322,4 +338,4 @@ async def delete_post(post_id: int):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred while deleting the post: {str(e)}"
-        )
+        )    
