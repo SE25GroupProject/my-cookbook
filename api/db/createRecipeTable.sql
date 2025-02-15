@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS Recipes;
 
 CREATE TABLE Recipes (
-    _id INTEGER PRIMARY KEY,
+    recipeId INTEGER PRIMARY KEY,
     name TEXT NOT NULL,
     cookTime TEXT NOT NULL,
     prepTime TEXT NOT NULL,
@@ -28,7 +28,7 @@ CREATE TABLE Images (
     recipeId INTEGER NOT NULL,
     imageUrl TEXT NOT NULL,
 
-    FOREIGN KEY (recipeId) REFERENCES Recipes(_id)
+    FOREIGN KEY (recipeId) REFERENCES Recipes(recipeId)
 );
 
 -- The table holding the tags for the recipes
@@ -38,7 +38,7 @@ CREATE TABLE Tags (
     recipeId INTEGER NOT NULL,
     tag TEXT NOT NULL,
     
-    FOREIGN KEY (recipeId) REFERENCES Recipes(_id)
+    FOREIGN KEY (recipeId) REFERENCES Recipes(recipeId)
 );
 
 -- The table holding the ingredients for the recipes
@@ -49,7 +49,7 @@ CREATE TABLE Ingredients (
     name TEXT NOT NULL,
     amount REAL,
 
-    FOREIGN KEY (recipeId) REFERENCES Recipes(_id)
+    FOREIGN KEY (recipeId) REFERENCES Recipes(recipeId)
 );
 
 -- The table holding the instructions
@@ -60,5 +60,5 @@ CREATE TABLE Instructions (
     step INTEGER NOT NULL,
     instruction TEXT NOT NULL,
 
-    FOREIGN KEY (recipeId) REFERENCES Recipes(_id)
+    FOREIGN KEY (recipeId) REFERENCES Recipes(recipeId)
 );
