@@ -1,7 +1,8 @@
 """Holds classes of all objects for database use"""
 from models import Recipe
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from typing import Optional
 
 class User():
     def __init__(self, username: str, password: str, userId: int = -1):
@@ -18,25 +19,11 @@ class User():
         return output
 
 class Post(BaseModel):
-    def __init__(self, userId: int, message: str, image: bytes, recipe: Recipe):
-        self.postId = None # should be auto incremented when inserted into database
-        self.userId = userId
-        self.message = message
-        self.image = image 
-        self.recipe = recipe
-        self.date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        self.likes = 0
-        self.dislikes = 0
-
-    def to_dict(self) -> dict:
-        return {
-            "postId": self.postId,
-            "userId": self.userId,
-            "message": self.message,
-            "image": self.image, 
-            "recipe": self.recipe.model_dump_json(),
-            "date": self.date,
-            "likes": self.likes,
-            "dislikes": self.dislikes,
-        }
-    
+    postId: Optional[int] = Field(default=None, description="Auto-incremented ID from the database")
+    userId: int = Field(..., description="ID of the user who created the post")
+    message: str = Field(..., description="Content of the post")
+    image: str = Field(..., description="Base64-encoded image data")
+    recipe: Optional[Recipe] = Field(default=None, description="Recipe associated with the post")
+    date: str = Field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d %H:%M:%S"), description="Timestamp of the post")
+    likes: int = Field(default=0, description="Number of likes")
+    dislikes: int = Field(default=0, description="Number of dislikes")
