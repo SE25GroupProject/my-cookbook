@@ -41,6 +41,7 @@ config = {
 }
 router = APIRouter()
 userRouter = APIRouter()
+postRouter = APIRouter()
 client = Groq(api_key=config["GROQ_API_KEY"])
 
 class MealPlanEntry(BaseModel):
@@ -241,7 +242,7 @@ async def getUser(username: str) -> dict:
     # except: 
     #     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occured when trying to get this user")
 
-@router.post("/posts/", response_description="Create a new post", status_code=201)
+@postRouter.post("/", response_description="Create a new post", status_code=201)
 async def create_post(post: Post):
     """Creates a new post in the database."""
     try:
@@ -258,7 +259,7 @@ async def create_post(post: Post):
             detail=f"An error occurred while creating the post: {str(e)}"
         )
 
-@router.get("/posts/{post_id}", response_description="Get a post by ID", response_model=Post)
+@postRouter.get("/{post_id}", response_description="Get a post by ID", response_model=Post)
 async def get_post(post_id: int):
     """Retrieves a post by its ID."""
     post = db.get_post(post_id)
@@ -269,13 +270,13 @@ async def get_post(post_id: int):
         detail=f"Post with ID {post_id} not found."
     )
 
-@router.get("/posts/", response_description="List all posts", response_model=List[Post])
+@postRouter.get("/", response_description="List all posts", response_model=List[Post])
 async def list_posts():
     """Retrieves all posts from the database."""
     posts = db.get_all_posts()
     return posts
 
-@router.put("/posts/{post_id}/like", response_description="Like a post", status_code=200)
+@postRouter.put("/{post_id}/like", response_description="Like a post", status_code=200)
 async def like_post(post_id: int):
     """Increments the likes count for a post."""
     try:
@@ -299,7 +300,7 @@ async def like_post(post_id: int):
             detail=f"An error occurred while liking the post: {str(e)}"
         )
 
-@router.put("/posts/{post_id}/dislike", response_description="Dislike a post", status_code=200)
+@postRouter.put("/{post_id}/dislike", response_description="Dislike a post", status_code=200)
 async def dislike_post(post_id: int):
     """Increments the dislikes count for a post."""
     try:
@@ -323,7 +324,7 @@ async def dislike_post(post_id: int):
             detail=f"An error occurred while disliking the post: {str(e)}"
         )
 
-@router.delete("/posts/{post_id}", response_description="Delete a post", status_code=200)
+@postRouter.delete("/{post_id}", response_description="Delete a post", status_code=200)
 async def delete_post(post_id: int):
     """Deletes a post by its ID."""
     try:

@@ -7,11 +7,12 @@ CREATE TABLE Posts (
     UserId INTEGER NOT NULL,                  
     Message TEXT NOT NULL,                   
     Image BLOB,                               
-    Recipe TEXT NOT NULL,                     
+    RecipeId INTEGER,                     
     Date DATETIME DEFAULT CURRENT_TIMESTAMP,  
     Likes INTEGER DEFAULT 0,                  
     Dislikes INTEGER DEFAULT 0,               
 
     -- Foreign key constraint to link Posts to Users
     FOREIGN KEY (UserId) REFERENCES Users(UserId)
+    FOREIGN KEY (RecipeId) REFERENCES Recipes(_id)
 );

@@ -61,14 +61,20 @@ class Database_Connection():
         """Adds a new post to the database"""
         try:
             command_string: str = """
-                INSERT INTO Posts (UserId, Message, Image, Recipe, Date, Likes, Dislikes)
+                INSERT INTO Posts (UserId, Message, Image, RecipeId, Date, Likes, Dislikes)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             """
+
+            if post.recipe == None:
+                id = ""
+            else:
+                id = post.recipe.id
+
             self.cursor.execute(command_string, (
                 post.userId,
                 post.message,
                 post.image,
-                "change",  # to be changed when custom recipes are done
+                id,  # store the id of the recipe
                 post.date,
                 post.likes,
                 post.dislikes,
@@ -90,7 +96,7 @@ class Database_Connection():
                 userId=post_data[1],
                 message=post_data[2],
                 image=post_data[3],
-                recipe="change",  # to be changed when custom recipes are done
+                recipe=None,  # to be changed when custom recipes are done
                 date=post_data[5],
                 likes=post_data[6],
                 dislikes=post_data[7],
@@ -109,7 +115,7 @@ class Database_Connection():
                 userId=post_data[1],
                 message=post_data[2],
                 image=post_data[3],
-                recipe="change",  # to be changed when custom recipes are done
+                recipe=None,  # to be changed when custom recipes are done
                 date=post_data[5],
                 likes=post_data[6],
                 dislikes=post_data[7],
