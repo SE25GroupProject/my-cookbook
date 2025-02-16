@@ -19,7 +19,7 @@ from groq import Groq
 from pydantic import BaseModel, conint, conlist, PositiveInt
 import logging
 from models import Recipe, RecipeListRequest, RecipeListResponse, RecipeListRequest2,RecipeQuery
-from db.objects import User
+from db.objects import User, Post
 from db.database import Database_Connection
 
 # from models import User
@@ -41,6 +41,7 @@ config = {
 }
 router = APIRouter()
 userRouter = APIRouter()
+postRouter = APIRouter()
 client = Groq(api_key=config["GROQ_API_KEY"])
 
 class MealPlanEntry(BaseModel):
@@ -240,4 +241,102 @@ async def getUser(username: str) -> dict:
         return user
     # except: 
     #     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occured when trying to get this user")
-        
+
+@postRouter.post("/", response_description="Create a new post", status_code=201)
+async def create_post(post: Post):
+    """Creates a new post in the database."""
+    try:
+        if db.add_post(post):
+            return {"message": "Post created successfully."}
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to create post."
+            )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while creating the post: {str(e)}"
+        )
+
+@postRouter.get("/{post_id}", response_description="Get a post by ID", response_model=Post)
+async def get_post(post_id: int):
+    """Retrieves a post by its ID."""
+    post = db.get_post(post_id)
+    if post:
+        return post
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Post with ID {post_id} not found."
+    )
+
+@postRouter.get("/", response_description="List all posts", response_model=List[Post])
+async def list_posts():
+    """Retrieves all posts from the database."""
+    posts = db.get_all_posts()
+    return posts
+
+@postRouter.put("/{post_id}/like", response_description="Like a post", status_code=200)
+async def like_post(post_id: int):
+    """Increments the likes count for a post."""
+    try:
+        post = db.get_post(post_id)
+        if post:
+            if db.update_post_likes(post_id, post.likes + 1):
+                return {"message": "Post liked successfully."}
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to update post likes."
+                )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Post with ID {post_id} not found."
+            )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while liking the post: {str(e)}"
+        )
+
+@postRouter.put("/{post_id}/dislike", response_description="Dislike a post", status_code=200)
+async def dislike_post(post_id: int):
+    """Increments the dislikes count for a post."""
+    try:
+        post = db.get_post(post_id)
+        if post:
+            if db.update_post_dislikes(post_id, post.dislikes + 1):
+                return {"message": "Post disliked successfully."}
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to update post dislikes."
+                )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Post with ID {post_id} not found."
+            )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while disliking the post: {str(e)}"
+        )
+
+@postRouter.delete("/{post_id}", response_description="Delete a post", status_code=200)
+async def delete_post(post_id: int):
+    """Deletes a post by its ID."""
+    try:
+        if db.delete_post(post_id):
+            return {"message": "Post deleted successfully."}
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Post with ID {post_id} not found."
+            )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while deleting the post: {str(e)}"
+        )    
