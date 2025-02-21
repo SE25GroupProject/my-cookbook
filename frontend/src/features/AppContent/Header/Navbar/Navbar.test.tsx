@@ -18,62 +18,75 @@ this file. If not, please write to: help.cookbook@gmail.com
 
 import Navbar from './Navbar'
 import { ThemeProvider } from '../../../Themes/themeContext'
+import userEvent from '@testing-library/user-event'
 
-test('shows Home link in Navbar', () => {
+test('shows Next Meal links in Navbar', async () => {
   render(
     <ThemeProvider>
       <Navbar />
     </ThemeProvider>
   )
-  expect(screen.getByText('Home')).toBeInTheDocument()
+  const nextMeal = screen.getByText('Your Next Meal')
+
+  userEvent.click(nextMeal)
+
+  expect(await screen.findByText('Create A Recipe')).toBeInTheDocument()
+  expect(screen.getByText('The Feed')).toBeInTheDocument()
 })
 
-test('shows About link in Navbar', () => {
+test('shows Meal Prep links in Navbar', async () => {
   render(
     <ThemeProvider>
       <Navbar />
     </ThemeProvider>
   )
-  expect(screen.getByText('About')).toBeInTheDocument()
+
+  const mealPrep = screen.getByText('Meal Prep')
+
+  userEvent.click(mealPrep)
+
+  expect(await screen.findByText('Shopping Lists')).toBeInTheDocument()
+  expect(screen.getByText('Meal Plans')).toBeInTheDocument()
 })
 
-test('shows Contact Us link in Navbar', () => {
+test('shows Info links in Navbar', async () => {
   render(
     <ThemeProvider>
       <Navbar />
     </ThemeProvider>
   )
-  expect(screen.getByText(/Contact/i)).toBeInTheDocument()
+
+  const info = screen.getByText('Information')
+
+  userEvent.click(info)
+
+  expect(
+    await screen.findByText(/About Us/i, { exact: false })
+  ).toBeInTheDocument()
+
+  expect(screen.getByText(/Contact/i, { exact: false })).toBeInTheDocument()
+  expect(screen.getByText(/FAQ/i, { exact: false })).toBeInTheDocument()
 })
 
-test('shows Contact Us link in Navbar', () => {
+test('shows Account links in Navbar', async () => {
   render(
     <ThemeProvider>
       <Navbar />
     </ThemeProvider>
   )
-  expect(screen.getByText(/FAQ/i)).toBeInTheDocument()
+
+  const account = screen.getByText('Account')
+
+  userEvent.click(account)
+
+  expect(
+    await screen.findByText(/Sign Up/i, { exact: false })
+  ).toBeInTheDocument()
+
+  expect(screen.getByText(/Log In/i, { exact: false })).toBeInTheDocument()
 })
 
-test('shows Contact Us link in Navbar', () => {
-  render(
-    <ThemeProvider>
-      <Navbar />
-    </ThemeProvider>
-  )
-  expect(screen.getByText(/Meal Plan/i)).toBeInTheDocument()
-})
-
-test('shows Contact Us link in Navbar', () => {
-  render(
-    <ThemeProvider>
-      <Navbar />
-    </ThemeProvider>
-  )
-  expect(screen.getByText(/Shopping List/i)).toBeInTheDocument()
-})
-
-test('shows Contact Us link in Navbar', () => {
+test('shows Select Theme Dropdown in Navbar', () => {
   render(
     <ThemeProvider>
       <Navbar />

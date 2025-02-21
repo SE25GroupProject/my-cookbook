@@ -34,5 +34,5 @@ test('has navbar component ', () => {
       <Header />
     </ThemeProvider>
   )
-  expect(getByTestId('nav-comp-43')).toBeInTheDocument()
+  expect(getByTestId('navbar')).toBeInTheDocument()
 })

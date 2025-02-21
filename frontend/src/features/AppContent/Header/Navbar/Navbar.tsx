@@ -70,7 +70,7 @@ function Navbar() {
 
   return (
     // <section className="navbar" style={{ backgroundColor: theme.background }}>
-    <Stack spacing={2} direction={'row'}>
+    <Stack spacing={2} direction={'row'} data-testid="navbar">
       {/* <a href="/" className="navbar-item" style={{ color: theme.color }}>
         Home
       </a> */}
