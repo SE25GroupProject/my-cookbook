@@ -91,12 +91,14 @@ async def get_meal_plan(request: Request):
             detail="An error occurred while retrieving the meal plan."
         )
 
+# Deprecated - Unused Route
 @router.get("/", response_description="List all recipes", response_model=List[Recipe])
 def list_recipes(request: Request):
     """Returns a list of 10 recipes"""
     recipes = list(request.app.database["recipes"].find(limit=10))
     return recipes
 
+# Deprecated - Getting Recreated
 @router.get("/{id}", response_description="Get a recipe by id", response_model=Recipe)
 def find_recipe(id: str, request: Request):
     """Finds a recipe mapped to the provided ID"""
@@ -104,6 +106,7 @@ def find_recipe(id: str, request: Request):
         return recipe
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Recipe with ID {id} not found")
 
+# Deprecated - Unused Route
 @router.get("/search/{ingredient}", response_description="List all recipes with the given ingredient", response_model=List[Recipe])
 def list_recipes_by_ingregredient(ingredient: str,request: Request):
     """Lists recipes containing the given ingredient"""
@@ -113,8 +116,11 @@ def list_recipes_by_ingregredient(ingredient: str,request: Request):
 @router.post("/search/", response_description="Get Recipes that match all the ingredients in the request", status_code=200, response_model=RecipeListResponse)
 def list_recipes_by_ingredients(request: Request, inp: RecipeListRequest = Body(...)):
     """Lists recipes matching all provided ingredients"""
+    # Goes into the recipes database, looks in all the ingredients of each to find ingredients matching inp.ing, sorts the recipes by rating and id, then gets 10 by page provided
     recipes = list(request.app.database["recipes"].find({ "ingredients" : { "$all" : inp.ingredients } }).sort([("rating", pymongo.DESCENDING), ("_id", pymongo.ASCENDING)]).skip((inp.page-1)*10).limit(10))
+    # Counts how many documents there are in total in this list
     count = request.app.database["recipes"].count_documents({ "ingredients" : { "$all" : inp.ingredients } })
+    # Creates a response with the list of 10 recipes, the current page, and the current count
     response = RecipeListResponse(recipes=recipes, page=inp.page, count=count)
     return response
 
