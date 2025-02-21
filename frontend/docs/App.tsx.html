@@ -1,4 +1,32 @@
-/*
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: App.tsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: App.tsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/*
 
 Copyright (C) 2022 SE CookBook - All Rights Reserved
 You may use, distribute and modify this code under the
@@ -56,8 +84,8 @@ const AppContentLayout: React.FC = () => {
     localStorage.getItem('alreadyVisited') || ''
   )
 
-  const [visitedEl, setVisitedEl] = useState<HTMLButtonElement | null>(null)
-  const buttonRef = createRef<HTMLButtonElement>()
+  const [visitedEl, setVisitedEl] = useState&lt;HTMLButtonElement | null>(null)
+  const buttonRef = createRef&lt;HTMLButtonElement>()
 
   useEffect(() => {
     if (!alreadyVisited) {
@@ -78,43 +106,43 @@ const AppContentLayout: React.FC = () => {
   }
 
   return (
-    <div
+    &lt;div
       className="App"
       style={{ backgroundColor: theme.background, color: theme.color }}
     >
-      <Header />
-      <div className="search-bar-container">
-        <div className={`search-bar ${searchOpen ? '' : 'hidden'}`}>
-          <div
+      &lt;Header />
+      &lt;div className="search-bar-container">
+        &lt;div className={`search-bar ${searchOpen ? '' : 'hidden'}`}>
+          &lt;div
             className="search-helper"
             data-testid="search-comp-43"
             style={{ backgroundColor: theme.background }}
           >
-            <GetIngredients />
-          </div>
-          <div
+            &lt;GetIngredients />
+          &lt;/div>
+          &lt;div
             className="search-helper"
             data-testid="header-comp-44"
             style={{ backgroundColor: theme.background }}
           >
-            <GetTags />
-          </div>
-          <div
+            &lt;GetTags />
+          &lt;/div>
+          &lt;div
             className="search-helper"
             data-testid="header-comp-45"
             style={{ backgroundColor: theme.background }}
           >
-            <CustomizedAccordions />
-          </div>
-        </div>
-        <div className="search-expand">
-          <Button
+            &lt;CustomizedAccordions />
+          &lt;/div>
+        &lt;/div>
+        &lt;div className="search-expand">
+          &lt;Button
             onClick={(e) => toggleSearchBar(null)}
             variant="outlined"
             sx={{ borderColor: theme.color }}
             ref={buttonRef}
           >
-            <Typography
+            &lt;Typography
               color={theme.color}
               variant="h6"
               sx={{
@@ -123,28 +151,28 @@ const AppContentLayout: React.FC = () => {
               }}
             >
               Search A Recipe
-            </Typography>
+            &lt;/Typography>
             {searchOpen ? (
-              <FaAngleDoubleUp fontSize={20} color={theme.color} />
+              &lt;FaAngleDoubleUp fontSize={20} color={theme.color} />
             ) : (
-              <FaAngleDoubleDown fontSize={20} color={theme.color} />
+              &lt;FaAngleDoubleDown fontSize={20} color={theme.color} />
             )}
-          </Button>
-          <Popper
+          &lt;/Button>
+          &lt;Popper
             open={Boolean(visitedEl)}
             anchorEl={visitedEl}
             placement="bottom"
             transition
           >
             {({ TransitionProps }) => (
-              <Fade {...TransitionProps} timeout={350}>
-                <Box
+              &lt;Fade {...TransitionProps} timeout={350}>
+                &lt;Box
                   sx={{
                     p: 1,
                   }}
                 >
-                  <Stack direction={'row'} spacing={2} alignItems={'center'}>
-                    <Typography
+                  &lt;Stack direction={'row'} spacing={2} alignItems={'center'}>
+                    &lt;Typography
                       variant="h5"
                       sx={{
                         bgcolor: theme.background,
@@ -155,8 +183,8 @@ const AppContentLayout: React.FC = () => {
                       }}
                     >
                       Click Here to Start!
-                    </Typography>
-                    <img
+                    &lt;/Typography>
+                    &lt;img
                       src={curlyArrow} // Fallback image if no profile photo
                       alt="Arrow"
                       className="curly-arrow"
@@ -165,42 +193,65 @@ const AppContentLayout: React.FC = () => {
                         // height: '80px',
                       }}
                     />
-                  </Stack>
-                </Box>
-              </Fade>
+                  &lt;/Stack>
+                &lt;/Box>
+              &lt;/Fade>
             )}
-          </Popper>
-        </div>
-      </div>
-      <div
+          &lt;/Popper>
+        &lt;/div>
+      &lt;/div>
+      &lt;div
         className="App-body"
         data-testid="body-comp-43"
         style={{ backgroundColor: theme.background }}
       >
-        <AppContent toggleSearchBar={toggleSearchBar} />
-      </div>
-    </div>
+        &lt;AppContent toggleSearchBar={toggleSearchBar} />
+      &lt;/div>
+    &lt;/div>
   )
 }
 
 // Main App component
 const App: React.FC = () => {
   return (
-    <Provider store={store}>
-      <BrowserRouter
+    &lt;Provider store={store}>
+      &lt;BrowserRouter
         future={{
           v7_relativeSplatPath: true,
           v7_startTransition: true,
         }}
       >
-        <AuthProvider>
-          <ThemeProvider>
-            <AppContentLayout />
-          </ThemeProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </Provider>
+        &lt;AuthProvider>
+          &lt;ThemeProvider>
+            &lt;AppContentLayout />
+          &lt;/ThemeProvider>
+        &lt;/AuthProvider>
+      &lt;/BrowserRouter>
+    &lt;/Provider>
   )
 }
 
 export default App
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Interfaces</h3><ul><li><a href="ActionTypes.html">ActionTypes</a></li><li><a href="Post.html">Post</a></li><li><a href="RecipeFormProps.html">RecipeFormProps</a></li><li><a href="RecipeListProps.html">RecipeListProps</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AppContentLayout">AppContentLayout</a></li><li><a href="global.html#Header">Header</a></li><li><a href="global.html#Navbar">Navbar</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Fri Feb 21 2025 12:23:43 GMT-0500 (Eastern Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

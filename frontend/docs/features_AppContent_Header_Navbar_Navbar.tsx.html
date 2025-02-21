@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: features/AppContent/Header/Navbar/Navbar.tsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: features/AppContent/Header/Navbar/Navbar.tsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/*
+
+Copyright (C) 2022 SE CookBook - All Rights Reserved
+You may use, distribute and modify this code under the
+terms of the MIT license.
+You should have received a copy of the MIT license with
+this file. If not, please write to: help.cookbook@gmail.com
+
+*/
+
+import React, { useState } from 'react'
+
+import './Navbar.css'
+import { useTheme } from '../../../Themes/themeContext'
+import themes from '../../../Themes/themes'
+import {
+  AppBar,
+  Box,
+  Button,
+  Grid2,
+  Link,
+  Menu,
+  MenuItem,
+  Popover,
+  Stack,
+  Toolbar,
+} from '@mui/material'
+import { KeyboardArrowDown } from '@mui/icons-material'
+import { useAuth } from '../../Authentication/AuthProvider'
+/**
+ * File name: Navbar.tsx
+ * Task - Home, About, Contact options available for the user on the Navigation Bar.
+ * @author Asrita Kuchibhotla
+ */
+
+function Navbar() {
+  const auth = useAuth()
+  const { theme, toggleTheme } = useTheme()
+
+  const [nextMealEl, setNextMealEl] = useState&lt;null | HTMLElement>(null)
+  const [mealPrepEl, setMealPrepEl] = useState&lt;null | HTMLElement>(null)
+  const [infoEl, setInfoEl] = useState&lt;null | HTMLElement>(null)
+  const [accountEl, setAccountEl] = useState&lt;null | HTMLElement>(null)
+
+  // Function to handle theme change
+  const handleThemeChange = (event: React.ChangeEvent&lt;HTMLSelectElement>) => {
+    toggleTheme(event.target.value)
+  }
+
+  const CloseNextMealMenu = () => {
+    setNextMealEl(null)
+  }
+
+  const CloseMealPrepMenu = () => {
+    setMealPrepEl(null)
+  }
+
+  const CloseAboutMenu = () => {
+    setInfoEl(null)
+  }
+
+  const CloseAccountMenu = () => {
+    setAccountEl(null)
+  }
+
+  const handleLogout = () => {
+    CloseAccountMenu()
+    auth?.logOut()
+  }
+
+  return (
+    // &lt;section className="navbar" style={{ backgroundColor: theme.background }}>
+    &lt;Stack spacing={2} direction={'row'}>
+      {/* &lt;a href="/" className="navbar-item" style={{ color: theme.color }}>
+        Home
+      &lt;/a> */}
+      &lt;Button
+        sx={{ color: theme.color }}
+        id="your-next-meal"
+        onClick={(e) => setNextMealEl(e.currentTarget)}
+      >
+        Your Next Meal
+        &lt;KeyboardArrowDown />
+      &lt;/Button>
+      &lt;Button
+        sx={{ color: theme.color }}
+        id="meal-prep"
+        onClick={(e) => setMealPrepEl(e.currentTarget)}
+      >
+        Meal Prep
+        &lt;KeyboardArrowDown />
+      &lt;/Button>
+      &lt;Button
+        sx={{ color: theme.color }}
+        id="information"
+        onClick={(e) => setInfoEl(e.currentTarget)}
+      >
+        Information
+        &lt;KeyboardArrowDown />
+      &lt;/Button>
+
+      &lt;Button
+        sx={{ color: theme.color }}
+        id="account"
+        onClick={(e) => setAccountEl(e.currentTarget)}
+      >
+        Account
+        &lt;KeyboardArrowDown />
+      &lt;/Button>
+
+      &lt;Menu
+        anchorEl={nextMealEl}
+        open={Boolean(nextMealEl)}
+        onClose={CloseNextMealMenu}
+      >
+        &lt;Link underline="none" color="inherit" href="/feed">
+          &lt;MenuItem onClick={CloseNextMealMenu}>The Feed&lt;/MenuItem>
+        &lt;/Link>
+
+        &lt;Link underline="none" color="inherit" href="/create-recipe">
+          &lt;MenuItem onClick={CloseNextMealMenu}>Create A Recipe &lt;/MenuItem>
+        &lt;/Link>
+      &lt;/Menu>
+      &lt;Menu
+        anchorEl={mealPrepEl}
+        open={Boolean(mealPrepEl)}
+        onClose={CloseMealPrepMenu}
+      >
+        &lt;Link underline="none" color="inherit" href="/meal">
+          &lt;MenuItem onClick={CloseMealPrepMenu}>Meal Plans&lt;/MenuItem>
+        &lt;/Link>
+        &lt;Link underline="none" color="inherit" href="/shoppinglist">
+          &lt;MenuItem onClick={CloseMealPrepMenu}>Shopping Lists&lt;/MenuItem>
+        &lt;/Link>
+      &lt;/Menu>
+      &lt;Menu anchorEl={infoEl} open={Boolean(infoEl)} onClose={CloseAboutMenu}>
+        &lt;Link underline="none" color="inherit" href="/about">
+          &lt;MenuItem onClick={CloseAboutMenu}>About Us&lt;/MenuItem>
+        &lt;/Link>
+
+        &lt;Link underline="none" color="inherit" href="/faq">
+          &lt;MenuItem onClick={CloseAboutMenu}>FAQS&lt;/MenuItem>
+        &lt;/Link>
+        &lt;Link underline="none" color="inherit" href="/contact">
+          &lt;MenuItem onClick={CloseAboutMenu}>Contact Us&lt;/MenuItem>
+        &lt;/Link>
+      &lt;/Menu>
+
+      &lt;Menu
+        anchorEl={accountEl}
+        open={Boolean(accountEl)}
+        onClose={CloseAccountMenu}
+      >
+        {auth?.userSignedIn ? (
+          &lt;Box>
+            &lt;Link underline="none" color="inherit" href="/profile">
+              &lt;MenuItem onClick={CloseAccountMenu}>Profile&lt;/MenuItem>
+            &lt;/Link>
+            &lt;Button onClick={handleLogout}>
+              &lt;MenuItem onClick={CloseAccountMenu}>Log Out&lt;/MenuItem>
+            &lt;/Button>
+          &lt;/Box>
+        ) : (
+          &lt;Box>
+            &lt;Link underline="none" color="inherit" href="/signup">
+              &lt;MenuItem onClick={CloseAccountMenu}>Sign Up&lt;/MenuItem>
+            &lt;/Link>
+
+            &lt;Link underline="none" color="inherit" href="/login">
+              &lt;MenuItem onClick={CloseAccountMenu}>Log In&lt;/MenuItem>
+            &lt;/Link>
+          &lt;/Box>
+        )}
+      &lt;/Menu>
+      {/* &lt;a href="/meal" className="navbar-item" style={{ color: theme.color }}>
+        Meal Plan
+      &lt;/a>
+      &lt;a href="/about" className="navbar-item" style={{ color: theme.color }}>
+        About
+      &lt;/a>
+      &lt;a href="/faq" className="navbar-item" style={{ color: theme.color }}>
+        FAQs
+      &lt;/a>
+      &lt;a href="/contact" className="navbar-item" style={{ color: theme.color }}>
+        Contact Us
+      &lt;/a>
+      &lt;a href="/signup" className="navbar-item" style={{ color: theme.color }}>
+        Signup
+      &lt;/a> */}
+      {/* &lt;a
+        href="/shoppinglist"
+        className="navbar-item"
+        style={{ color: theme.color }}
+      >
+        Shopping List
+      &lt;/a> */}
+      {/* Theme Dropdown */}
+
+      &lt;div className="theme-selector">
+        &lt;label htmlFor="theme-dropdown" style={{ color: theme.color }}>
+          Select Theme:
+        &lt;/label>
+        &lt;select
+          id="theme-dropdown"
+          onChange={handleThemeChange}
+          value={Object.keys(themes).find(
+            (themeName) =>
+              themes[themeName as keyof typeof themes].background ===
+              theme.background
+          )}
+          style={{
+            backgroundColor: theme.background,
+            color: theme.color,
+            cursor: 'pointer',
+            border: `1px solid ${theme.color}`,
+          }}
+        >
+          {Object.keys(themes).map((themeName) => (
+            &lt;option
+              key={themeName}
+              value={themeName}
+              style={{
+                backgroundColor:
+                  themes[themeName as keyof typeof themes].background,
+                color: themes[themeName as keyof typeof themes].color,
+              }}
+            >
+              {themeName}
+            &lt;/option>
+          ))}
+        &lt;/select>
+      &lt;/div>
+    &lt;/Stack>
+
+    // &lt;/section>
+  )
+}
+
+export default Navbar
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Interfaces</h3><ul><li><a href="ActionTypes.html">ActionTypes</a></li><li><a href="Post.html">Post</a></li><li><a href="RecipeFormProps.html">RecipeFormProps</a></li><li><a href="RecipeListProps.html">RecipeListProps</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AppContentLayout">AppContentLayout</a></li><li><a href="global.html#Header">Header</a></li><li><a href="global.html#Navbar">Navbar</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Fri Feb 21 2025 12:23:43 GMT-0500 (Eastern Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

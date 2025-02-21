@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: features/AppContent/UserRecipes/RecipeForm.tsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: features/AppContent/UserRecipes/RecipeForm.tsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/*
+
+Copyright (C) 2022 SE CookBook - All Rights Reserved
+You may use, distribute and modify this code under the
+terms of the MIT license.
+You should have received a copy of the MIT license with
+this file. If not, please write to: help.cookbook@gmail.com
+
+*/
+
+import { useParams } from 'react-router-dom'
+import { useGetRecipeQuery } from '../../api/apiSlice'
+import React, { useEffect, useState } from 'react'
+import { Recipe, RecipeObject } from '../../api/types'
+import { Controller, Form, FormProvider, useForm } from 'react-hook-form'
+import {
+  Box,
+  Button,
+  Container,
+  Grid2,
+  IconButton,
+  InputAdornment,
+  OutlinedInput,
+  Paper,
+  Stack,
+  styled,
+  Tab,
+  TextField,
+  Tooltip,
+  Typography,
+  TablePagination,
+  Autocomplete,
+  Popover,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from '@mui/material'
+import ImageInput from '../../../components/ImageInput'
+import { useTheme } from '../../Themes/themeContext'
+import { TabContext, TabList, TabPanel } from '@mui/lab'
+import { FaQuestion } from 'react-icons/fa'
+import {
+  AddCircleOutline,
+  Close,
+  DeleteOutline,
+  Edit,
+  HelpOutline,
+  QuestionMark,
+  Replay,
+} from '@mui/icons-material'
+import { RECIPE_CATEGORIES } from '../RecipeList/recipeCategories'
+
+/**
+ * File name: RecipeForm.tsx
+ * Task - This component allows users to generate or update user submitted recipes via a form.
+ * @author Camille Jones - crjone24@gmail.com
+ */
+
+interface RecipeFormProps {
+  recipe: Recipe | null
+}
+
+interface Time {
+  hour: number
+  min: number
+}
+
+const transformStringToTime = (timeString: string): Time => {
+  const timeRegex = /^(?!\s*$)+(([\d]*)[H]{1})?(([\d]*)[M]{1})?/gm
+
+  const timeParsed = timeRegex.exec(timeString)
+  return {
+    hour: parseInt(timeParsed?.[2] ?? '0'),
+    min: parseInt(timeParsed?.[4] ?? '0'),
+  }
+}
+
+const transformTimeToString = (time: Time): string => {
+  const hours = time.hour > 0 ? `${time.hour}H` : ''
+  const mins = time.min > 0 ? `${time.min}M` : ''
+  return hours || mins ? hours + mins : '~'
+}
+
+const RecipeForm = () => {
+  const { id } = useParams()
+  const { theme } = useTheme()
+  const [tabValue, setTabValue] = useState('1')
+  const [forceShrink, setForceShrink] = useState(false)
+
+  const [prepTime, setPrepTime] = useState&lt;Time>({ min: 0, hour: 0 })
+  const [cookTime, setCookTime] = useState&lt;Time>({ min: 0, hour: 0 })
+  const [totalTime, setTotalTime] = useState&lt;Time>({ min: 0, hour: 0 })
+
+  const [ingredients, setIngredients] = useState&lt;Array&lt;string>>([])
+  const [ingPage, setIngPage] = useState(0)
+  const [ingToAdd, setIngToAdd] = useState('')
+  const ingPerPage = 3
+  const currIngs = ingredients.slice(
+    ingPage * ingPerPage,
+    ingPage * ingPerPage + ingPerPage
+  )
+
+  const [steps, setSteps] = useState&lt;Array&lt;string>>([])
+  const [stepPage, setStepPage] = useState(0)
+  const [stepToAdd, setStepToAdd] = useState('')
+  const stepsPerPage = 5
+  const currSteps = steps.slice(
+    stepPage * stepsPerPage,
+    stepPage * stepsPerPage + stepsPerPage
+  )
+
+  const [stepToEdit, setStepToEdit] = useState('')
+  const [stepToEditIdx, setStepToEditIdx] = useState(-1)
+  const [anchorEl, setAnchorEl] = React.useState&lt;HTMLButtonElement | null>(null)
+  const openStepAdd = Boolean(anchorEl)
+
+  const handleOpenAddStepPopup = (
+    event: React.MouseEvent&lt;HTMLButtonElement>
+  ) => {
+    setAnchorEl(event.currentTarget)
+  }
+
+  const handleCloseAddStepPopup = () => {
+    setAnchorEl(null)
+  }
+
+  const [openStepEdit, setOpenStepEdit] = useState(false)
+  const handleOpenEditStepPopup = (
+    event: React.MouseEvent&lt;HTMLButtonElement> | null,
+    index: number
+  ) => {
+    console.log('index', index)
+    const fullIndex = stepPage * stepsPerPage + index
+    setStepToEdit(steps[fullIndex])
+    setStepToEditIdx(fullIndex)
+    setOpenStepEdit(true)
+  }
+
+  const handleCloseEditStepPopup = () => {
+    setStepToEdit('')
+    setOpenStepEdit(false)
+  }
+
+  let userRecipe: Recipe | undefined = new RecipeObject()
+
+  const formMethods = useForm&lt;Recipe>({ defaultValues: userRecipe })
+  const { handleSubmit, control, reset, register } = formMethods
+
+  const {
+    data: recipe,
+    isLoading,
+    isSuccess,
+  } = useGetRecipeQuery(id as string, { skip: typeof id === 'undefined' })
+
+  useEffect(() => {
+    if (recipe) {
+      reset(recipe)
+      setForceShrink(true)
+
+      setPrepTime(transformStringToTime(recipe.prepTime))
+      setCookTime(transformStringToTime(recipe.cookTime))
+      setIngredients(recipe.ingredients)
+      setSteps(recipe.instructions)
+    }
+  }, [reset, recipe])
+
+  useEffect(() => {
+    var hours = prepTime.hour + cookTime.hour
+    var mins = prepTime.min + cookTime.min
+
+    if (mins > 59) {
+      hours = hours + 1
+      mins = mins - 60
+    }
+
+    setTotalTime({
+      hour: hours,
+      min: mins,
+    })
+  }, [prepTime, cookTime])
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
+    setTabValue(newValue)
+  }
+
+  const onSubmit = handleSubmit((data) => {
+    data.prepTime = transformTimeToString(prepTime)
+    data.cookTime = transformTimeToString(cookTime)
+    data.totalTime = transformTimeToString(totalTime)
+
+    data.ingredients = ingredients
+    data.instructions = steps
+
+    console.log(data)
+  })
+
+  const onTimeChanged = (
+    e: React.ChangeEvent&lt;HTMLInputElement | HTMLTextAreaElement>,
+    type: 'prep' | 'cook',
+    isHours: boolean
+  ) => {
+    const value = parseInt(e.target.value)
+    const boundedValue = value > 60 ? 60 : value &lt; 0 ? 0 : value
+
+    if (type === 'prep') {
+      setPrepTime({
+        min: isHours ? prepTime.min : boundedValue,
+        hour: isHours ? boundedValue : prepTime.hour,
+      })
+    } else {
+      setCookTime({
+        min: isHours ? cookTime.min : boundedValue,
+        hour: isHours ? boundedValue : cookTime.hour,
+      })
+    }
+  }
+
+  const handleIngChangeAddInput = (
+    event: React.ChangeEvent&lt;HTMLInputElement>
+  ) => {
+    setIngToAdd(event.target.value)
+  }
+
+  const handleIngredientAdd = () => {
+    setIngredients([...ingredients, ingToAdd])
+    setIngToAdd('')
+  }
+
+  const handleIngredientRemove = (index: number) => {
+    const fullIndex = ingPage * ingPerPage + index
+    const newIngList = ingredients.filter((ing, idx) => {
+      return idx != fullIndex
+    })
+    setIngredients(newIngList)
+
+    if (ingPage != 0 &amp;&amp; ingPage * ingPerPage + 1 > newIngList.length)
+      setIngPage(ingPage - 1)
+  }
+
+  const handleIngChangePage = (
+    event: React.MouseEvent&lt;HTMLButtonElement> | null,
+    page: number
+  ) => {
+    setIngPage(page)
+  }
+
+  const handleStepChangeAddInput = (
+    event: React.ChangeEvent&lt;HTMLInputElement>
+  ) => {
+    setStepToAdd(event.target.value)
+  }
+
+  const handleStepChangeEditInput = (
+    event: React.ChangeEvent&lt;HTMLInputElement>
+  ) => {
+    setStepToEdit(event.target.value)
+  }
+
+  const handleStepAdd = () => {
+    setSteps([...steps, stepToAdd])
+    setStepToAdd('')
+    handleCloseAddStepPopup()
+  }
+
+  const handleStepEdit = (index: number) => {
+    // console.log('index', index)
+    // const fullIndex = stepPage * stepsPerPage + index
+    // console.log('full index', fullIndex)
+    setSteps(
+      steps.map((step, idx) => {
+        return idx === stepToEditIdx ? stepToEdit : step
+      })
+    )
+    setStepToEdit('')
+    handleCloseEditStepPopup()
+  }
+
+  const handleStepRemove = (index: number) => {
+    const fullIndex = stepPage * stepsPerPage + index
+    const newStepsList = steps.filter((step, idx) => {
+      return idx != fullIndex
+    })
+    setSteps(newStepsList)
+
+    if (stepPage != 0 &amp;&amp; stepPage * stepsPerPage + 1 > newStepsList.length)
+      setIngPage(ingPage - 1)
+  }
+
+  const handleStepChangePage = (
+    event: React.MouseEvent&lt;HTMLButtonElement> | null,
+    page: number
+  ) => {
+    setStepPage(page)
+  }
+
+  return (
+    &lt;Container maxWidth="lg">
+      {isLoading ? (
+        &lt;Typography variant="body1">Loading...&lt;/Typography>
+      ) : (
+        &lt;>
+          &lt;Typography
+            variant="h4"
+            align="left"
+            gutterBottom
+            color={theme.color}
+          >
+            {id ? 'Edit' : 'Create'} Recipe
+          &lt;/Typography>
+          &lt;Paper
+            elevation={6}
+            sx={{ height: { xs: 300, sm: 340, md: 575, xl: 680 } }}
+          >
+            &lt;FormProvider {...formMethods}>
+              &lt;Box
+                className="recipe-form"
+                style={{ padding: '20px' }}
+                onSubmit={onSubmit}
+                component={'form'}
+              >
+                &lt;Grid2 container spacing={2}>
+                  &lt;Grid2 size={5}>
+                    &lt;Stack
+                      spacing={2}
+                      sx={{
+                        alignItems: 'stretch',
+                      }}
+                    >
+                      &lt;Paper
+                        elevation={3}
+                        sx={{
+                          textAlign: 'center',
+                          height: '200px',
+                          position: 'relative',
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}
+                      >
+                        &lt;Tooltip
+                          title="Click Image to Choose New Image"
+                          sx={{ position: 'absolute', top: 0, right: 0 }}
+                        >
+                          &lt;IconButton>
+                            &lt;HelpOutline>&lt;/HelpOutline>
+                          &lt;/IconButton>
+                        &lt;/Tooltip>
+                        &lt;ImageInput
+                          images={recipe ? recipe.images : null}
+                          multiple={true}
+                          onChange={null}
+                        />
+                      &lt;/Paper>
+                      &lt;Paper
+                        elevation={3}
+                        sx={{
+                          textAlign: 'center',
+                          height: { lg: 315, xl: 425 },
+                        }}
+                      >
+                        &lt;TabContext value={tabValue}>
+                          &lt;Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                            &lt;TabList
+                              onChange={handleTabChange}
+                              aria-label="lab API tabs example"
+                              variant="fullWidth"
+                            >
+                              &lt;Tab label="Desc." value="1" />
+                              &lt;Tab label="Info" value="2" />
+                              &lt;Tab label="Ing." value="3" />
+                              &lt;Tab label="Nutr." value="4" />
+                            &lt;/TabList>
+                          &lt;/Box>
+                          &lt;TabPanel value="1" sx={{ p: 2 }}>
+                            &lt;Grid2 container spacing={2}>
+                              &lt;Controller
+                                name="category"
+                                control={control}
+                                render={({ field, fieldState }) => (
+                                  &lt;Autocomplete
+                                    options={RECIPE_CATEGORIES}
+                                    getOptionLabel={(option) => option || ''}
+                                    onInputChange={(e, v) => field.onChange(v)}
+                                    renderInput={(params) => (
+                                      &lt;TextField
+                                        {...params}
+                                        inputRef={field.ref}
+                                        error={fieldState.invalid}
+                                        label="Category"
+                                      />
+                                    )}
+                                    clearOnEscape
+                                    autoHighlight
+                                    value={field.value || ''}
+                                    onBlur={field.onBlur}
+                                    onChange={field.onChange}
+                                    ref={field.ref}
+                                    fullWidth
+                                  >&lt;/Autocomplete>
+                                )}
+                              />
+                              &lt;Controller
+                                name="description"
+                                rules={{ required: true }}
+                                render={({ field }) => (
+                                  &lt;TextField
+                                    id="standard-multiline-static"
+                                    label="Description"
+                                    multiline
+                                    maxRows={8}
+                                    {...field}
+                                    fullWidth
+                                    slotProps={{
+                                      inputLabel: { shrink: forceShrink },
+                                    }}
+                                  />
+                                )}
+                              />
+                            &lt;/Grid2>
+                          &lt;/TabPanel>
+                          &lt;TabPanel value="2">
+                            &lt;Grid2 container spacing={2}>
+                              &lt;Grid2 size={12}>
+                                &lt;Controller
+                                  name="servings"
+                                  rules={{ required: true }}
+                                  render={({ field }) => (
+                                    &lt;TextField
+                                      label="Servings"
+                                      type="number"
+                                      {...field}
+                                      fullWidth
+                                      slotProps={{
+                                        inputLabel: { shrink: forceShrink },
+                                      }}
+                                      size="small"
+                                    />
+                                  )}
+                                />
+                              &lt;/Grid2>
+                              &lt;Grid2 size={6}>
+                                &lt;TextField
+                                  label="Prep Hours"
+                                  type="number"
+                                  slotProps={{
+                                    inputLabel: { shrink: forceShrink },
+                                  }}
+                                  size="small"
+                                  value={prepTime?.hour}
+                                  onChange={(e) =>
+                                    onTimeChanged(e, 'prep', true)
+                                  }
+                                />
+                              &lt;/Grid2>
+                              &lt;Grid2 size={6}>
+                                &lt;TextField
+                                  label="Prep Mins"
+                                  type="number"
+                                  slotProps={{
+                                    inputLabel: { shrink: forceShrink },
+                                  }}
+                                  size="small"
+                                  value={prepTime?.min}
+                                  onChange={(e) =>
+                                    onTimeChanged(e, 'prep', false)
+                                  }
+                                />
+                              &lt;/Grid2>
+                              &lt;Grid2 size={6}>
+                                &lt;TextField
+                                  label="Cook Hours"
+                                  type="number"
+                                  slotProps={{
+                                    inputLabel: { shrink: forceShrink },
+                                  }}
+                                  size="small"
+                                  value={cookTime?.hour}
+                                  onChange={(e) =>
+                                    onTimeChanged(e, 'cook', true)
+                                  }
+                                />
+                              &lt;/Grid2>
+                              &lt;Grid2 size={6}>
+                                &lt;TextField
+                                  label="Cook Mins"
+                                  type="number"
+                                  slotProps={{
+                                    inputLabel: { shrink: forceShrink },
+                                  }}
+                                  size="small"
+                                  value={cookTime?.min}
+                                  onChange={(e) =>
+                                    onTimeChanged(e, 'cook', false)
+                                  }
+                                />
+                              &lt;/Grid2>
+                              &lt;Grid2 size={6}>
+                                &lt;Typography variant="h6" textAlign={'left'}>
+                                  Total:
+                                &lt;/Typography>
+                              &lt;/Grid2>
+                              &lt;Grid2 size={6}>
+                                &lt;Typography variant="h6" textAlign={'right'}>
+                                  {totalTime.hour ?? 0} H {totalTime.min ?? 0} M
+                                &lt;/Typography>
+                              &lt;/Grid2>
+                            &lt;/Grid2>
+                          &lt;/TabPanel>
+                          &lt;TabPanel value="3" sx={{ px: 2, py: 1 }}>
+                            &lt;OutlinedInput
+                              id="outlined-adornment-password"
+                              endAdornment={
+                                &lt;InputAdornment position="end">
+                                  &lt;IconButton
+                                    onClick={handleIngredientAdd}
+                                    edge="end"
+                                    aria-label="Add New Ingredient"
+                                    disabled={
+                                      ingToAdd.length === 0 ||
+                                      ingredients.includes(ingToAdd)
+                                    }
+                                  >
+                                    &lt;AddCircleOutline />
+                                  &lt;/IconButton>
+                                &lt;/InputAdornment>
+                              }
+                              size="small"
+                              fullWidth
+                              sx={{ mb: 2 }}
+                              value={ingToAdd}
+                              onChange={handleIngChangeAddInput}
+                              aria-label="Add Ingredient Input"
+                            />
+                            &lt;Stack spacing={1} sx={{ minHeight: 142 }}>
+                              {currIngs.map((currIng, index) => (
+                                &lt;Container
+                                  aria-label={`Ingredient ${ingPage * ingPerPage + index}`}
+                                  key={index}
+                                  sx={{
+                                    px: 2,
+                                    py: 1,
+                                    border: '1px solid',
+                                    borderColor: 'divider',
+                                    borderRadius: 2,
+                                    position: 'relative',
+                                  }}
+                                >
+                                  &lt;Typography variant="body1">
+                                    {currIng}
+                                  &lt;/Typography>
+                                  &lt;IconButton
+                                    onClick={() => {
+                                      handleIngredientRemove(index)
+                                    }}
+                                    sx={{
+                                      position: 'absolute',
+                                      right: 0,
+                                      top: 0,
+                                      bottom: 0,
+                                    }}
+                                  >
+                                    &lt;DeleteOutline />
+                                  &lt;/IconButton>
+                                &lt;/Container>
+                              ))}
+                            &lt;/Stack>
+
+                            &lt;TablePagination
+                              component="div"
+                              count={ingredients.length}
+                              page={ingPage}
+                              onPageChange={handleIngChangePage}
+                              rowsPerPage={3}
+                              rowsPerPageOptions={[]}
+                            />
+                          &lt;/TabPanel>
+                          &lt;TabPanel value="4">
+                            &lt;Grid2 container spacing={1}>
+                              &lt;Grid2 size={12}>
+                                &lt;Controller
+                                  name="calories"
+                                  rules={{ required: true }}
+                                  render={({ field }) => (
+                                    &lt;TextField
+                                      label="Calories"
+                                      {...field}
+                                      fullWidth
+                                      slotProps={{
+                                        inputLabel: { shrink: forceShrink },
+                                        htmlInput: {
+                                          step: '.1',
+                                        },
+                                      }}
+                                      type="number"
+                                      size="small"
+                                    />
+                                  )}
+                                />
+                              &lt;/Grid2>
+                              &lt;Grid2 size={6}>
+                                &lt;Controller
+                                  name="protein"
+                                  rules={{ required: true }}
+                                  render={({ field }) => (
+                                    &lt;TextField
+                                      label="Protein"
+                                      {...field}
+                                      fullWidth
+                                      slotProps={{
+                                        inputLabel: { shrink: forceShrink },
+                                        htmlInput: {
+                                          step: '.1',
+                                        },
+                                      }}
+                                      type="number"
+                                      size="small"
+                                    />
+                                  )}
+                                />
+                              &lt;/Grid2>
+                              &lt;Grid2 size={6}>
+                                &lt;Controller
+                                  name="sugar"
+                                  rules={{ required: true }}
+                                  render={({ field }) => (
+                                    &lt;TextField
+                                      label="Sugar"
+                                      {...field}
+                                      fullWidth
+                                      slotProps={{
+                                        inputLabel: { shrink: forceShrink },
+                                        htmlInput: {
+                                          step: '.1',
+                                        },
+                                      }}
+                                      type="number"
+                                      size="small"
+                                    />
+                                  )}
+                                />
+                              &lt;/Grid2>
+                              &lt;Grid2 size={6}>
+                                &lt;Controller
+                                  name="fiber"
+                                  rules={{ required: true }}
+                                  render={({ field }) => (
+                                    &lt;TextField
+                                      label="Fiber"
+                                      {...field}
+                                      fullWidth
+                                      slotProps={{
+                                        inputLabel: { shrink: forceShrink },
+                                        htmlInput: {
+                                          step: '.1',
+                                        },
+                                      }}
+                                      type="number"
+                                      size="small"
+                                    />
+                                  )}
+                                />
+                              &lt;/Grid2>
+                              &lt;Grid2 size={6}>
+                                &lt;Controller
+                                  name="carbs"
+                                  rules={{ required: true }}
+                                  render={({ field }) => (
+                                    &lt;TextField
+                                      label="Carbs"
+                                      {...field}
+                                      fullWidth
+                                      slotProps={{
+                                        inputLabel: { shrink: forceShrink },
+                                        htmlInput: {
+                                          step: '.1',
+                                        },
+                                      }}
+                                      type="number"
+                                      size="small"
+                                    />
+                                  )}
+                                />
+                              &lt;/Grid2>
+                              &lt;Grid2 size={6}>
+                                &lt;Controller
+                                  name="fat"
+                                  rules={{ required: true }}
+                                  render={({ field }) => (
+                                    &lt;TextField
+                                      label="Fat"
+                                      {...field}
+                                      fullWidth
+                                      slotProps={{
+                                        inputLabel: { shrink: forceShrink },
+                                        htmlInput: {
+                                          step: '.1',
+                                        },
+                                      }}
+                                      type="number"
+                                      size="small"
+                                    />
+                                  )}
+                                />
+                              &lt;/Grid2>
+                              &lt;Grid2 size={6}>
+                                &lt;Controller
+                                  name="saturatedFat"
+                                  rules={{ required: true }}
+                                  render={({ field }) => (
+                                    &lt;TextField
+                                      label="Saturated Fat"
+                                      {...field}
+                                      fullWidth
+                                      slotProps={{
+                                        inputLabel: { shrink: forceShrink },
+                                        htmlInput: {
+                                          step: '.1',
+                                        },
+                                      }}
+                                      type="number"
+                                      size="small"
+                                    />
+                                  )}
+                                />
+                              &lt;/Grid2>
+                              &lt;Grid2 size={6}>
+                                &lt;Controller
+                                  name="sodium"
+                                  rules={{ required: true }}
+                                  render={({ field }) => (
+                                    &lt;TextField
+                                      label="Sodium"
+                                      {...field}
+                                      fullWidth
+                                      slotProps={{
+                                        inputLabel: { shrink: forceShrink },
+                                        htmlInput: {
+                                          step: '.1',
+                                        },
+                                      }}
+                                      type="number"
+                                      size="small"
+                                    />
+                                  )}
+                                />
+                              &lt;/Grid2>
+                              &lt;Grid2 size={6}>
+                                &lt;Controller
+                                  name="cholesterol"
+                                  rules={{ required: true }}
+                                  render={({ field }) => (
+                                    &lt;TextField
+                                      label="Cholesterol"
+                                      {...field}
+                                      fullWidth
+                                      slotProps={{
+                                        inputLabel: { shrink: forceShrink },
+                                        htmlInput: {
+                                          step: '.1',
+                                        },
+                                      }}
+                                      type="number"
+                                      size="small"
+                                    />
+                                  )}
+                                />
+                              &lt;/Grid2>
+                            &lt;/Grid2>
+                          &lt;/TabPanel>
+                        &lt;/TabContext>
+                      &lt;/Paper>
+                    &lt;/Stack>
+                  &lt;/Grid2>
+
+                  &lt;Grid2
+                    container
+                    direction="column"
+                    sx={{
+                      alignItems: 'stretch',
+                      justifyContent: 'space-between',
+                    }}
+                    size={7}
+                  >
+                    &lt;Grid2
+                      container
+                      direction="column"
+                      sx={{
+                        alignItems: 'stretch',
+                      }}
+                    >
+                      &lt;Controller
+                        name="name"
+                        rules={{ required: true }}
+                        render={({ field }) => (
+                          &lt;TextField
+                            label="Name"
+                            {...field}
+                            fullWidth
+                            slotProps={{
+                              inputLabel: { shrink: forceShrink },
+                            }}
+                          />
+                        )}
+                      />
+                      &lt;Stack
+                        direction="column"
+                        spacing={1}
+                        sx={{
+                          justifyContent: 'center',
+                          alignItems: 'stretch',
+                          minHeight: 142,
+                        }}
+                      >
+                        &lt;Typography
+                          variant="h6"
+                          gutterBottom={false}
+                          textAlign={'left'}
+                        >
+                          Steps
+                        &lt;/Typography>
+                        {currSteps.map((currStep, index) => (
+                          &lt;Box
+                            key={index}
+                            sx={{
+                              px: 2,
+                              py: 1,
+                              border: '1px solid',
+                              borderColor: 'divider',
+                              borderRadius: 2,
+                              position: 'relative',
+                              height: '57px',
+                              display: 'flex',
+                              alignItems: 'center',
+                            }}
+                          >
+                            &lt;Typography
+                              textAlign={'left'}
+                              variant="body1"
+                              sx={{
+                                maxWidth: '400px',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                              }}
+                            >
+                              {currStep}
+                            &lt;/Typography>
+                            &lt;Grid2
+                              sx={{
+                                position: 'absolute',
+                                right: 0,
+                                top: 0,
+                                bottom: 0,
+                                justifyContent: 'center',
+                              }}
+                              container
+                            >
+                              &lt;Dialog
+                                open={openStepEdit}
+                                onClose={handleCloseEditStepPopup}
+                                fullWidth
+                              >
+                                &lt;DialogTitle
+                                  sx={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                  }}
+                                >
+                                  Edit a Step
+                                  &lt;IconButton
+                                    onClick={handleCloseEditStepPopup}
+                                  >
+                                    &lt;Close />
+                                  &lt;/IconButton>
+                                &lt;/DialogTitle>
+                                &lt;DialogContent>
+                                  &lt;TextField
+                                    label="Edit a Step"
+                                    multiline
+                                    rows={5}
+                                    fullWidth
+                                    value={stepToEdit}
+                                    onChange={handleStepChangeEditInput}
+                                    sx={{ mt: 2 }}
+                                  />
+                                &lt;/DialogContent>
+                                &lt;DialogActions>
+                                  &lt;Button
+                                    variant="outlined"
+                                    onClick={(e) => handleStepEdit(index)}
+                                  >
+                                    Save Step
+                                  &lt;/Button>
+                                &lt;/DialogActions>
+                              &lt;/Dialog>
+                              &lt;IconButton
+                                sx={{ borderRadius: 0 }}
+                                onClick={(e) =>
+                                  handleOpenEditStepPopup(null, index)
+                                }
+                                aria-label={`Edit Step ${index}`}
+                              >
+                                &lt;Edit />
+                              &lt;/IconButton>
+                              &lt;IconButton
+                                sx={{ borderRadius: 0 }}
+                                onClick={(e) => handleStepRemove(index)}
+                                aria-label={`Delete Step ${index}`}
+                              >
+                                &lt;DeleteOutline />
+                              &lt;/IconButton>
+                            &lt;/Grid2>
+                          &lt;/Box>
+                        ))}
+                      &lt;/Stack>
+                    &lt;/Grid2>
+                    &lt;Grid2 container sx={{ justifyContent: 'space-between' }}>
+                      &lt;Popover
+                        open={openStepAdd}
+                        anchorEl={anchorEl}
+                        onClose={handleCloseAddStepPopup}
+                        anchorOrigin={{
+                          vertical: 'top',
+                          horizontal: 'left',
+                        }}
+                        transformOrigin={{
+                          vertical: 'bottom',
+                          horizontal: 'left',
+                        }}
+                      >
+                        &lt;Grid2
+                          container
+                          spacing={2}
+                          sx={{
+                            my: 2,
+                            mx: 5,
+                            justifyContent: 'flex-end',
+                            width: '565px',
+                          }}
+                        >
+                          &lt;Grid2 size={12}>
+                            &lt;TextField
+                              label="Add a Step"
+                              multiline
+                              rows={5}
+                              fullWidth
+                              value={stepToAdd}
+                              onChange={handleStepChangeAddInput}
+                            />
+                          &lt;/Grid2>
+
+                          &lt;Button variant="outlined" onClick={handleStepAdd}>
+                            Add Step
+                          &lt;/Button>
+                        &lt;/Grid2>
+                      &lt;/Popover>
+                      &lt;Grid2 size={12}>
+                        &lt;TablePagination
+                          component="div"
+                          count={steps.length}
+                          page={stepPage}
+                          onPageChange={handleStepChangePage}
+                          rowsPerPage={5}
+                          rowsPerPageOptions={[]}
+                        />
+                      &lt;/Grid2>
+                      &lt;IconButton
+                        onClick={handleOpenAddStepPopup}
+                        aria-label="Add New Step"
+                      >
+                        &lt;AddCircleOutline color="primary" />
+                      &lt;/IconButton>
+                      &lt;Button type="submit" variant="contained">
+                        Submit
+                      &lt;/Button>
+                    &lt;/Grid2>
+                  &lt;/Grid2>
+                &lt;/Grid2>
+              &lt;/Box>
+            &lt;/FormProvider>
+          &lt;/Paper>
+        &lt;/>
+      )}
+    &lt;/Container>
+  )
+}
+
+export default RecipeForm
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Interfaces</h3><ul><li><a href="ActionTypes.html">ActionTypes</a></li><li><a href="Post.html">Post</a></li><li><a href="RecipeFormProps.html">RecipeFormProps</a></li><li><a href="RecipeListProps.html">RecipeListProps</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AppContentLayout">AppContentLayout</a></li><li><a href="global.html#Header">Header</a></li><li><a href="global.html#Navbar">Navbar</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Fri Feb 21 2025 12:23:43 GMT-0500 (Eastern Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

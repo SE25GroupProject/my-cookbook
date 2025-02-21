@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: features/AppContent/RecipeList/RecipeList.tsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: features/AppContent/RecipeList/RecipeList.tsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/*
+
+Copyright (C) 2022 SE CookBook - All Rights Reserved
+You may use, distribute and modify this code under the
+terms of the MIT license.
+You should have received a copy of the MIT license with
+this file. If not, please write to: help.cookbook@gmail.com
+
+*/
+
+import React, { useState, useEffect } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import StarIcon from '@mui/icons-material/Star'
+import {
+  Typography,
+  Card,
+  CardContent,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  CardActionArea,
+  Pagination,
+  CircularProgress,
+  SelectChangeEvent,
+  Box,
+  FormHelperText,
+} from '@mui/material'
+import './RecipeList.css'
+import { RECIPE_CATEGORIES, RECIPE_COOKTIME } from './recipeCategories'
+import { useTheme } from '../../Themes/themeContext'
+import {
+  NutritionMax,
+  Recipe,
+  RecipeListData,
+  RecipeListIngredientsRequest,
+  RecipeListNutritionRequest,
+  RecipeListResponse,
+} from '../../api/types'
+import {
+  useGetRecipeListByIngredientsMutation,
+  useGetRecipeListByNutritionMutation,
+} from './RecipeListSlice'
+import { SearchBarProps } from '../AppContent'
+import RecipeListItem from './RecipeLIstItem'
+/**
+ * File name: RecipeList.tsx
+ * Task - This component displays a list of recipes based on the ingredients inputed.
+ * This component is a dynamic component and is seen only when you click on a recipe from the recipe list.
+ */
+
+interface RecipeListProps {
+  ingredients: String[] | null
+  nutrition: NutritionMax | null
+}
+
+const RecipeList = ({ toggleSearchBar }: SearchBarProps) => {
+  const { theme } = useTheme()
+  const { state } = useLocation()
+
+  const [recipeList, setRecipeList] = useState&lt;RecipeListData[]>([])
+  const [filtedRecipeList, setFilteredRecipeList] = useState&lt;RecipeListData[]>(
+    []
+  )
+  const [page, setPage] = useState&lt;number>(1)
+  const [totalCount, setTotalCount] = useState&lt;number>(0)
+  const [loading, setLoading] = useState&lt;boolean>(false)
+  const [selectedCategory, setSelectedCategory] = useState&lt;string>('')
+  const [selectedCookTime, setSelectedCookTime] = useState&lt;string>('')
+  const [hidden, setHidden] = useState&lt;boolean>(false)
+
+  const [getListByIngredients, { isLoading: ingredientsLoading }] =
+    useGetRecipeListByIngredientsMutation()
+  const [getListByNutrition, { isLoading: nutritionLoading }] =
+    useGetRecipeListByNutritionMutation()
+
+  useEffect(() => {
+    toggleSearchBar(false)
+  }, [recipeList])
+
+  function convertToMinutes(timeString: string) {
+    timeString = timeString.replace(/\s+/g, '').replace('&lt;', '')
+    const match = timeString.match(/(\d+)H(?:\s*(\d+)M)?|(\d+)M/)
+    if (match) {
+      const hours = match[1] ? parseInt(match[1], 10) : 0
+      const minutes = match[2]
+        ? parseInt(match[2], 10)
+        : match[3]
+          ? parseInt(match[3], 10)
+          : 0
+      return hours * 60 + minutes
+    } else {
+      return 0
+    }
+  }
+
+  function unwrapResponse(response: RecipeListResponse) {
+    setRecipeList(response.recipes)
+    setTotalCount(response.count)
+  }
+
+  function RequestList() {
+    console.log(state)
+    if (state?.ingredients) {
+      let request: RecipeListIngredientsRequest = {
+        ingredients: state.ingredients,
+        page: page,
+      }
+      getListByIngredients(request)
+        .unwrap()
+        .then((response: RecipeListResponse) => {
+          unwrapResponse(response)
+        })
+        .catch((err) => console.log(err))
+    }
+
+    if (state?.nutrition) {
+      let request: RecipeListNutritionRequest = {
+        caloriesUp: state.nutrition.caloriesUp,
+        fatUp: state.nutrition.fatUp,
+        sugUp: state.nutrition.sugUp,
+        proUp: state.nutrition.proUp,
+        page: page,
+      }
+      getListByNutrition(request)
+        .unwrap()
+        .then((response: RecipeListResponse) => {
+          unwrapResponse(response)
+        })
+        .catch((err) => console.log(err))
+    }
+  }
+
+  useEffect(() => {
+    RequestList()
+  }, [state])
+
+  useEffect(() => {
+    if (selectedCategory) {
+      let filtered = recipeList.filter(
+        (recipe) => recipe.category === selectedCategory
+      )
+      setFilteredRecipeList(filtered)
+
+      if (selectedCookTime) {
+        setHidden(true)
+        const comp = convertToMinutes(selectedCookTime)
+        let f1 = filtered.filter(
+          (recipe) => convertToMinutes(recipe.cookTime) &lt; comp
+        )
+        if (f1.length === 0) {
+          setHidden(false)
+        } else {
+          filtered = f1
+        }
+      }
+
+      setFilteredRecipeList(filtered)
+    } else {
+      setFilteredRecipeList(recipeList)
+    }
+  }, [selectedCategory, selectedCookTime, recipeList])
+
+  const handlePageChange = (
+    event: React.ChangeEvent&lt;unknown>,
+    value: number
+  ) => {
+    setPage(value)
+
+    RequestList()
+
+    setSelectedCategory('')
+  }
+
+  // Handle category change
+  const handleCategoryChange = (event: SelectChangeEvent&lt;string>) => {
+    setSelectedCategory(event.target.value)
+  }
+
+  const handleCookTimeChange = (event: SelectChangeEvent&lt;string>) => {
+    setSelectedCookTime(event.target.value)
+  }
+
+  return (
+    &lt;>
+      &lt;Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          alignItems: 'center',
+          gap: 2,
+          mb: 2,
+          m: 2,
+          backgroundColor: theme.headerColor, // Theme background
+          color: theme.color, // Theme color
+        }}
+      >
+        &lt;Box />
+        &lt;Pagination
+          page={page}
+          count={Math.ceil(totalCount / 10)}
+          onChange={handlePageChange}
+          color="secondary"
+          variant="outlined"
+          shape="rounded"
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            height: '100%',
+            color: theme.background,
+          }}
+        />
+        {totalCount > 0 &amp;&amp; (
+          &lt;Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between', // Ensures space between both components
+              alignItems: 'center', // Vertically aligns the components in the middle
+              width: '100%', // Ensures the Box takes the full width
+            }}
+          >
+            {/* Category FormControl */}
+            &lt;FormControl
+              sx={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                color: theme.color,
+                backgroundColor: theme.headerColor,
+                marginTop: '15px',
+                marginBottom: '10px',
+                width: '48%', // Adjust width to fit both components in the same row
+              }}
+              size="small"
+            >
+              &lt;InputLabel
+                sx={{
+                  color: theme.color,
+                  fontSize: '18px',
+                  '&amp;.Mui-focused': {
+                    color: theme.color,
+                  },
+                }}
+              >
+                Category
+              &lt;/InputLabel>
+              &lt;Select
+                value={selectedCategory}
+                onChange={handleCategoryChange}
+                label="Category"
+                sx={{
+                  color: theme.color,
+                  fontSize: '15px',
+                  marginTop: '3px',
+                  height: '30px',
+                  width: '100%',
+                  '.MuiSelect-icon': {
+                    color: theme.color,
+                    backgroundColor: theme.headerColor,
+                  },
+                  '&amp;:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: theme.color,
+                  },
+                  '&amp;.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: theme.color,
+                  },
+                }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      maxHeight: 200,
+                      overflowY: 'auto',
+                      marginTop: '8px',
+                      backgroundColor: theme.background,
+                      color: theme.color,
+                    },
+                  },
+                }}
+              >
+                &lt;MenuItem value="">All Categories&lt;/MenuItem>
+                {RECIPE_CATEGORIES.map((category, index) => (
+                  &lt;MenuItem
+                    key={index}
+                    value={category}
+                    sx={{
+                      backgroundColor: theme.background,
+                      color: theme.color,
+                      '&amp;:hover': {
+                        backgroundColor: theme.headerColor,
+                        color: theme.color,
+                      },
+                    }}
+                  >
+                    {category}
+                  &lt;/MenuItem>
+                ))}
+              &lt;/Select>
+              {selectedCategory &amp;&amp; filtedRecipeList.length === 0 &amp;&amp; (
+                &lt;FormHelperText sx={{ color: '#f44336', marginTop: '8px' }}>
+                  No recipes found in this category.
+                &lt;/FormHelperText>
+              )}
+            &lt;/FormControl>
+
+            {/* Cook Time FormControl */}
+            {selectedCategory != '' &amp;&amp; filtedRecipeList.length > 0 &amp;&amp; (
+              &lt;FormControl
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  color: theme.color,
+                  backgroundColor: theme.headerColor,
+                  marginTop: '15px',
+                  marginBottom: '10px',
+                  width: '48%', // Adjust width to fit both components in the same row
+                }}
+                size="small"
+              >
+                &lt;InputLabel
+                  sx={{
+                    color: theme.color,
+                    fontSize: '18px',
+                    '&amp;.Mui-focused': {
+                      color: theme.color,
+                    },
+                  }}
+                >
+                  Cook Time
+                &lt;/InputLabel>
+                &lt;Select
+                  value={selectedCookTime}
+                  onChange={handleCookTimeChange}
+                  label="Cook Time"
+                  sx={{
+                    color: theme.color,
+                    fontSize: '15px',
+                    marginTop: '3px',
+                    height: '30px',
+                    width: '100%',
+                    '.MuiSelect-icon': {
+                      color: theme.color,
+                      backgroundColor: theme.headerColor,
+                    },
+                    '&amp;:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: theme.color,
+                    },
+                    '&amp;.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: theme.color,
+                    },
+                  }}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: {
+                        maxHeight: 200,
+                        overflowY: 'auto',
+                        marginTop: '8px',
+                        backgroundColor: theme.background,
+                        color: theme.color,
+                      },
+                    },
+                  }}
+                >
+                  &lt;MenuItem value="">All Categories&lt;/MenuItem>
+                  {RECIPE_COOKTIME.map((time, index) => (
+                    &lt;MenuItem
+                      key={index}
+                      value={time}
+                      sx={{
+                        backgroundColor: theme.background,
+                        color: theme.color,
+                        '&amp;:hover': {
+                          backgroundColor: theme.headerColor,
+                          color: theme.color,
+                        },
+                      }}
+                    >
+                      {time}
+                    &lt;/MenuItem>
+                  ))}
+                &lt;/Select>
+                {selectedCookTime &amp;&amp; !hidden &amp;&amp; (
+                  &lt;FormHelperText sx={{ color: '#f44336', marginTop: '8px' }}>
+                    No recipes found in selected cooktime.
+                  &lt;/FormHelperText>
+                )}
+              &lt;/FormControl>
+            )}
+          &lt;/Box>
+        )}
+      &lt;/Box>
+      {!loading ? (
+        totalCount > 0 ? (
+          (selectedCategory &amp;&amp; filtedRecipeList.length > 0
+            ? filtedRecipeList
+            : recipeList
+          ).map((recipe: RecipeListData, index: number) => {
+            return &lt;RecipeListItem recipe={recipe} index={index} />
+          })
+        ) : (
+          &lt;Typography
+            variant="h5"
+            component="div"
+            sx={{ m: 4, color: theme.color }} // Theme color for no recipes found
+            className="no-recipe-found"
+          >
+            Currently our database does not have any recipes with the selected
+            ingredients. Check back in later for any updates.
+          &lt;/Typography>
+        )
+      ) : (
+        &lt;CircularProgress
+          style={{ color: theme.color, margin: '50px' }} // Theme color for loader
+        />
+      )}
+      &lt;Pagination
+        page={page}
+        count={Math.ceil(totalCount / 10)}
+        sx={{
+          m: 2,
+          backgroundColor: theme.headerColor,
+          color: theme.color, // Theme color for pagination
+        }}
+        onChange={handlePageChange}
+        color="secondary"
+        variant="outlined"
+        shape="rounded"
+      />
+    &lt;/>
+  )
+}
+
+export default RecipeList
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Interfaces</h3><ul><li><a href="ActionTypes.html">ActionTypes</a></li><li><a href="Post.html">Post</a></li><li><a href="RecipeFormProps.html">RecipeFormProps</a></li><li><a href="RecipeListProps.html">RecipeListProps</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AppContentLayout">AppContentLayout</a></li><li><a href="global.html#Header">Header</a></li><li><a href="global.html#Navbar">Navbar</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Fri Feb 21 2025 12:23:43 GMT-0500 (Eastern Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
