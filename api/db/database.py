@@ -195,3 +195,25 @@ class Database_Connection():
         except Exception as e:
             print(e)
             return None
+        
+    def unfavorite_recipe(self, userId: int, recipeId: int):
+        """Unfavorites a recipe"""
+        try:
+            commandString: str = """DELETE FROM UserFavorites WHERE recipeId = ? AND userId = ?"""
+            self.cursor.execute(commandString, (recipeId, userId,))
+            return True
+        
+        except Exception as e:
+            print(e)
+            return False
+        
+    def favorite_recipe(self, userId: int, recipeId: int):
+        """Favorites a recipe"""
+        try:
+            commandString: str = """INSERT INTO UserFavorites (recipeId, userId) VALUES (?, ?)"""
+            self.cursor.execute(commandString, (recipeId, userId,))
+            return True
+        
+        except Exception as e:
+            print(e)
+            return False

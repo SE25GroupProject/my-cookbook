@@ -278,3 +278,19 @@ async def getUserRecipes(userId: int):
     # This should be fine as if there are no recipes owned by a user it should just return the empty list
     # Can be changed to None if needed
     return recipeObj
+
+@recipeRouter.put("/favoriteRecipe/{recipeId}/{userId}")
+async def favoriteRecipe(recipeId: int, userId: int):
+    success: bool = db.favorite_recipe(userId, recipeId)
+    if success:
+        return True
+    
+    return False
+
+@recipeRouter.put("/unfavoriteRecipe/{recipeId}/{userId}")
+async def favoriteRecipe(recipeId: int, userId: int):
+    success: bool = db.unfavorite_recipe(userId, recipeId)
+    if success:
+        return True
+    
+    return False
