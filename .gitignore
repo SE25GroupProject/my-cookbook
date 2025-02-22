@@ -550,3 +550,4 @@ dist
 */.vscode/
 api/db/recipes.json
 api/db/cookbook.db
+api/cookbook.db

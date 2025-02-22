@@ -52,7 +52,10 @@ class UserCred(BaseModel):
     username: str
     password: str
 
-# router = APIRouter()
+
+# --------------------------------------------------------
+#                     Need Revision
+# --------------------------------------------------------
 
 @router.post("/meal-plan/", response_description="Save a meal plan for a specific day", status_code=200)
 async def save_meal_plan(entry: MealPlanEntry, request: Request):
@@ -90,6 +93,10 @@ async def get_meal_plan(request: Request):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred while retrieving the meal plan."
         )
+    
+# --------------------------------------------------------
+#                   Deprecated Functions
+# --------------------------------------------------------
 
 # Deprecated - Unused Route
 @router.get("/", response_description="List all recipes", response_model=List[Recipe])
@@ -113,10 +120,10 @@ def list_recipes_by_ingregredient(ingredient: str,request: Request):
     recipes = list(request.app.database["recipes"].find({ "ingredients" : { "$in" : [ingredient] } }).limit(10))
     return recipes
 
-# In Use
-@router.post("/search/", response_description="Get Recipes that match all the ingredients in the request", status_code=200, response_model=RecipeListResponse)
+# Deprecated - Replaced
+@router.post("/search-old/", response_description="Get Recipes that match all the ingredients in the request", status_code=200, response_model=RecipeListResponse)
 def list_recipes_by_ingredients(request: Request, inp: RecipeListRequest = Body(...)):
-    """Lists recipes matching all provided ingredients"""
+    """Deprecated - Lists recipes matching all provided ingredients"""
     # Goes into the recipes database, looks in all the ingredients of each to find ingredients matching inp.ing, sorts the recipes by rating and id, then gets 10 by page provided
     recipes = list(request.app.database["recipes"].find({ "ingredients" : { "$all" : inp.ingredients } }).sort([("rating", pymongo.DESCENDING), ("_id", pymongo.ASCENDING)]).skip((inp.page-1)*10).limit(10))
     # Counts how many documents there are in total in this list
@@ -125,21 +132,8 @@ def list_recipes_by_ingredients(request: Request, inp: RecipeListRequest = Body(
     response = RecipeListResponse(recipes=recipes, page=inp.page, count=count)
     return response
 
-@router.post("/search-new/", response_description="Get Recipes that match all the ingredients in the request", status_code=200, response_model=RecipeListResponse)
-def list_recipes_by_ingredients(request: Request, inp: RecipeListRequest = Body(...)):
-    # Create Recipes String
-    ingStr = ",".join("'" + ing + "'" for ing in inp.ingredients)
-    print(recipes)
-
-    
-    # Request list of recipes that have {ing} in the ingredients list with limit and offset. Sort these by rating and id.
-    recipes = db.get_recipes_by_ingredient(ingStr, len(inp.ingredients), inp.page)
-
-    print(recipes)
-    return recipes
-
-# In Use
-@router.get("/ingredients/{queryString}", response_description="List all ingredients", response_model=List[str])
+# Deprecated - Replaced
+@router.get("/ingredients-old/{queryString}", response_description="List all ingredients", response_model=List[str])
 def list_ingredients(queryString : str, request: Request):
     """Lists ingredient suggestions for a query"""
     # Pipeline to: get a list of all ingredients, from each record, match them by regex, and then limit it to only 20 suggestions. The accumulates these into one list
@@ -150,27 +144,27 @@ def list_ingredients(queryString : str, request: Request):
     ings = data[0]["ingredients"]
     return ings
 
-#---------
-# In Use
-@router.post("/search2/", response_description="Get Recipes that match all the ingredients in the request", status_code=200, response_model=RecipeListResponse)
+# Deprecated - Replaced
+@router.post("/search2-old/", response_description="Get Recipes that match all the ingredients in the request", status_code=200, response_model=RecipeListResponse)
 def list_recipes_by_ingredients(request: Request, inp: RecipeListRequest2 = Body(...)):
     """Lists recipes matching all provided ingredients"""
-    #print('Method was called1')
+    # Get a list of recipes up to 1000
     recipes = list(request.app.database["recipes"].find().limit(1000))
 
     res = []
     for recipe in recipes:
-        #print('Method was called3')
+        # For each recipe, look at the the calories, fat, sugar, and protein
         if not recipe["calories"] or not recipe['fat'] or not recipe['sugar'] or not recipe['protein']:
             continue
         try:
-            if float(recipe["calories"]) < inp.caloriesUp and float(recipe["fat"]) < inp.fatUp and float(recipe["sugar"]) < inp.sugUp and float(recipe["protein"]) < inp.proUp:
+            # find all the recipes that are lower than the maxes and report them
+            if float(recipe["calories"]) < inp.caloriesMax and float(recipe["fat"]) < inp.fatMax and float(recipe["sugar"]) < inp.sugMax and float(recipe["protein"]) < inp.proMax:
                 res.append(recipe)
         except:
             continue
     count = len(res)
     show = res[(inp.page-1)*10 : (inp.page)*10-1]
-    response = RecipeListResponse(recipes=show, page=inp.page, count=count)
+    response = RecipeListResponse(recipes=show, page=inp.page)
     return response
 
 # Deprecated - Not in Use
@@ -186,8 +180,59 @@ def list_recipes_by_ingregredient(ingredient: str, caloriesLow: int, caloriesUp:
     res.sort(key = lambda x: x['calories'])
     return res
 
+# --------------------------------------------------------
+#                     In Use Functions
+# --------------------------------------------------------
 
-# In Use 
+# In Use - New
+@router.post("/search/count/", response_description="Get the count of all recipes that match the ingredients in the request", status_code=200, response_model=int)
+async def count_recipes_by_ingredients(request: Request, inp: RecipeListRequest = Body(...)):
+    """Total count of recipes matching the filter criteria"""
+    count = db.get_count_recipes_by_ingredients(inp.ingredients)
+    return count
+
+# In Use - Refactored
+@router.post("/search/", response_description="Get Recipes that match all the ingredients in the request", status_code=200, response_model=RecipeListResponse)
+async def list_recipes_by_ingredients(request: Request, inp: RecipeListRequest = Body(...)):
+    """Lists recipes matching all provided ingredients"""
+    # Request list of recipes that have {ing} in the ingredients list with limit and offset. Sort these by rating and id.
+    res = db.get_recipes_by_ingredient(inp.ingredients, inp.page - 1)
+    return RecipeListResponse(recipes=res, page=inp.page)
+
+# In Use - Refactored
+@router.post("/search2/", response_description="Get Recipes that match all the ingredients in the request", status_code=200, response_model=RecipeListResponse)
+async def list_recipes_by_nutrition(request: Request, inp: RecipeListRequest2 = Body(...)):
+    """Lists recipes matching all provided ingredients"""
+    # Get a page worth of recipes that have stats less than provided
+
+    res = db.get_recipes_by_nutrition(inp.caloriesMax, inp.fatMax, inp.sugMax, inp.proMax, inp.page - 1)
+    response = RecipeListResponse(recipes=res, page=inp.page)
+    return response
+
+# In Use - New
+@router.post("/search2/count/", response_description="Get Recipes that match all the ingredients in the request", status_code=200, response_model=int)
+async def count_recipes_by_nutrition(request: Request, inp: RecipeListRequest2 = Body(...)):
+    """Lists recipes matching all provided ingredients"""
+    # Request list of recipes that have {ing} in the ingredients list with limit and offset. Sort these by rating and id.
+    count = db.get_count_recipes_by_nutrition(inp.caloriesMax, inp.fatMax, inp.sugMax, inp.proMax)
+
+    return count
+
+# In Use - New
+@router.get("/ingredients/{queryString}", response_description="List all ingredients", response_model=List[str])
+async def list_ingredients(queryString : str, request: Request):
+    """Lists ingredient suggestions for a query"""
+    # Pipeline to: get a list of all ingredients, from each record, match them by regex, and then limit it to only 20 suggestions. The accumulates these into one list
+    data = db.get_ingredient_list(queryString)
+    if(len(data) <= 0):
+        return []
+    
+    print(data)
+    ings = [ing.replace("\"", "") for ingRecord in data for ing in ingRecord]
+    return ings
+
+
+# In Use - Good, no refactor needed
 @router.post("/recommend-recipes/", response_model=dict)
 async def recommend_recipes(query: RecipeQuery = Body(...)):
     try:

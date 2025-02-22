@@ -1,6 +1,8 @@
 """Used to hold the information about the database and commands used with it"""
 
 import sqlite3
+from typing import List
+from models import RecipeListEntry
 from db.objects import User, Recipe, Ingredient, Instruction
 
 class Database_Connection():
@@ -18,7 +20,7 @@ class Database_Connection():
     
     def __init__(self):
         """Handles initializing the class"""
-        self.conn = sqlite3.connect('cookbook.db')
+        self.conn = sqlite3.connect('db/cookbook.db')
         self.cursor = self.conn.cursor()
 
         # Checking if the tables exist
@@ -98,7 +100,7 @@ class Database_Connection():
     def get_recipe(self, recipeId: int):
         """Gets a recipe based on its id"""
         try:
-            commandString: str = """SELECT * FROM Recipes WHERE recipeId = ?"""
+            commandString: str = """SELECT * FROM Recipes WHERE _id = ?"""
             self.cursor.execute(commandString, (recipeId,))
             recipeRes = self.cursor.fetchone()
 
@@ -144,15 +146,80 @@ class Database_Connection():
         """Updates a recipe to have the data of the new recipe"""
         pass
 
-    def get_recipes_by_ingredient(self, ingStr: str, str_length: int, page: int, per_page: int = 20):
+    def get_count_recipes_by_ingredients(self, ings: List[str], ):
         try:
-            #commandString: str = """SELECT recipeId FROM Ingredients WHERE name LIKE '%?%' LIMIT ? OFFSET ? """
-            commandString: str = """SELECT recipeId, COUNT(name) FROM (SELECT DISTINCT name, recipeId FROM ingredients WHERE name IN (?)) GROUP BY recipeId HAVING COUNT(*) >= ? LIMIT ? OFFSET ?;"""
-            self.cursor.execute(commandString, (ingStr, str_length, per_page, page * per_page))
-            
-            res = self.cursor.fetchall()
+            countCommand: str = """SELECT recipeId FROM (SELECT DISTINCT name, recipeId FROM ingredients WHERE name IN (%s)) GROUP BY recipeId HAVING COUNT(name) >= ? ;""" %','.join('?'*len(ings))
+            res = self.cursor.execute(countCommand, (*ings, len(ings), ))
+            count = len(res.fetchall())
+            return count
+        except Exception as e: 
+            print(e)
+            return -1
+        
+    def get_recipes_by_ingredient(self, ings: List[str], page: int, per_page: int = 20):
+        """Retrieves a list of recipe ids containing the given ingredients limited by the number per page"""
+        try:
+            commandString: str = """SELECT recipeId FROM (SELECT DISTINCT name, recipeId FROM ingredients WHERE name IN (%s)) GROUP BY recipeId HAVING COUNT(name) >= ? LIMIT ? OFFSET ?;""" %','.join('?'*len(ings))
+            res = self.cursor.execute(commandString, (*ings, len(ings), per_page, page * per_page ))
+            recipeIds = (*res.fetchall(),)
 
-            return res
+            recipeCommand: str = """SELECT * FROM recipes WHERE _id IN (%s)"""%','.join('?'*len(recipeIds))
+            res = self.cursor.execute(recipeCommand, tuple(id for recipeRecord in recipeIds for id in recipeRecord))
+
+            recipeObjs = res.fetchall()
+
+            recipes = []
+            for recipe in recipeObjs:
+                recipes.append(RecipeListEntry(name=recipe[1], cookTime=recipe[2], prepTime=recipe[3], totalTime=recipe[4], 
+                                    description=recipe[5], category=recipe[6], rating=recipe[7], calories=recipe[8], 
+                                    fat=recipe[9], saturatedFat=recipe[10], cholesterol=recipe[11], sodium=recipe[12], 
+                                    carbs=recipe[13], fiber=recipe[14], sugar=recipe[15], protein=recipe[16], 
+                                    servings=recipe[17], id=recipe[0]))
+
+            return recipes
         except Exception as e: 
             print(e)
             return[]
+        
+    def get_count_recipes_by_nutrition(self, caloriesMax: int, fatMax: int, sugMax: int, proMax: int, ):
+        try:
+            countCommand: str = """SELECT * FROM recipes WHERE calories <= ? AND fat <= ? AND sugar <= ? and protein <= ? ;""" 
+            res = self.cursor.execute(countCommand, (caloriesMax, fatMax, sugMax, proMax,))
+
+            count = len(res.fetchall())
+            return count
+        except Exception as e: 
+            print(e)
+            return -1
+
+    def get_recipes_by_nutrition(self, caloriesMax: int, fatMax: int, sugMax: int, proMax: int, page: int, per_page: int = 20):
+        """Retrieves a list of recipe ids containing the given ingredients limited by the number per page"""
+        try:
+            commandString: str = """SELECT * FROM recipes WHERE calories <= ? AND fat <= ? AND sugar <= ? and protein <= ? LIMIT ? OFFSET ?; """
+            print(commandString)
+            res = self.cursor.execute(commandString, (caloriesMax, fatMax, sugMax, proMax, per_page, page * per_page,))
+
+            recipeObjs = res.fetchall()
+
+            recipes = []
+            for recipe in recipeObjs:
+                recipes.append(RecipeListEntry(name=recipe[1], cookTime=recipe[2], prepTime=recipe[3], totalTime=recipe[4], 
+                                    description=recipe[5], category=recipe[6], rating=recipe[7], calories=recipe[8], 
+                                    fat=recipe[9], saturatedFat=recipe[10], cholesterol=recipe[11], sodium=recipe[12], 
+                                    carbs=recipe[13], fiber=recipe[14], sugar=recipe[15], protein=recipe[16], 
+                                    servings=recipe[17], id=recipe[0]))
+
+            return recipes
+        except Exception as e: 
+            print(e)
+            return[]
+        
+    def get_ingredient_list(self, ing: str): 
+        try: 
+            commandString: str = """SELECT name FROM ingredients WHERE name LIKE ? GROUP BY name LIMIT 10;"""
+            res = self.cursor.execute(commandString, (f"%{ing}%", ))
+
+            return res.fetchall()
+        except Exception as e: 
+                print(e)
+                return[]

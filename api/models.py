@@ -110,6 +110,26 @@ class Recipe(BaseModel):
             }
         }
 
+class RecipeListEntry(BaseModel):
+    """A data model representing a recipe"""
+    id: int
+    name: str  # Name of the recipe
+    cookTime: Optional[str] = None
+    prepTime: Optional[str] = None
+    totalTime: Optional[str] = None
+    description: Optional[str] = None
+    category: str
+    rating: Optional[str] = None
+    calories: Optional[str] = None
+    fat: Optional[str] = None
+    saturatedFat: Optional[str] = None
+    cholesterol: Optional[str] = None
+    sodium: Optional[str] = None
+    carbs: Optional[str] = None
+    fiber: Optional[str] = None
+    sugar: Optional[str] = None
+    protein: Optional[str] = None
+    servings: Optional[str] = None
 
 class RecipeListRequest(BaseModel):
     ingredients: List[str] = Field(...,
@@ -118,22 +138,20 @@ class RecipeListRequest(BaseModel):
 
 
 class RecipeListResponse(BaseModel):
-    recipes: List[Recipe] = Field(...,
+    recipes: List[RecipeListEntry] = Field(...,
                                   description="List of recipes matching the filter criteria")
-    page: int = Field(..., description="Current page number")
-    count: int = Field(...,
-                       description="Total count of recipes matching the filter criteria")
+    page: int = Field(..., ge=1, description="Current page number, must be at least 1")
 
 
 class RecipeListRequest2(BaseModel):
-    page: int = Field(..., ge=1, description="Page number, must be at least 1")
-    caloriesUp: float = Field(..., ge=0, le=4000,
+    page: int = Field(..., ge=1, description="Current page number, must be at least 1")
+    caloriesMax: float = Field(..., ge=0, le=4000,
                               description="Calories upper limit, between 0 and 100")
-    fatUp: float = Field(..., ge=0, le=140,
+    fatMax: float = Field(..., ge=0, le=140,
                          description="Fat upper limit, between 0 and 100")
-    sugUp: float = Field(..., ge=0, le=150,
+    sugMax: float = Field(..., ge=0, le=150,
                          description="Sugar upper limit, between 0 and 100")
-    proUp: float = Field(..., ge=0, le=250,
+    proMax: float = Field(..., ge=0, le=250,
                          description="Protein upper limit, between 0 and 100")
 
 

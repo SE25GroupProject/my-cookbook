@@ -36,6 +36,8 @@ import {
   RecipeListResponse,
 } from '../../api/types'
 import {
+  useGetCountIngredientsMutation,
+  useGetCountNutritionMutation,
   useGetRecipeListByIngredientsMutation,
   useGetRecipeListByNutritionMutation,
 } from './RecipeListSlice'
@@ -73,7 +75,7 @@ const RecipeList = ({ toggleSearchBar }: SearchBarProps) => {
   >([])
   const [page, setPage] = useState<number>(1)
   const [totalCount, setTotalCount] = useState<number>(0)
-  const [loading, setLoading] = useState<boolean>(false)
+  // const [loading, setLoading] = useState<boolean>(false)
   const [selectedCategory, setSelectedCategory] = useState<string>('')
   const [selectedCookTime, setSelectedCookTime] = useState<string>('')
   const [hidden, setHidden] = useState<boolean>(false)
@@ -82,6 +84,40 @@ const RecipeList = ({ toggleSearchBar }: SearchBarProps) => {
     useGetRecipeListByIngredientsMutation()
   const [getListByNutrition, { isLoading: nutritionLoading }] =
     useGetRecipeListByNutritionMutation()
+
+  const [getCountIngredients, { isLoading: ingCountLoading }] =
+    useGetCountIngredientsMutation()
+  const [getCountNutrition, { isLoading: nutrCountLoading }] =
+    useGetCountNutritionMutation()
+
+  useEffect(() => {
+    if (state?.ingredients) {
+      let request: RecipeListIngredientsRequest = {
+        ingredients: state.ingredients,
+        page: page,
+      }
+      getCountIngredients(request)
+        .unwrap()
+        .then((response: number) => {
+          setTotalCount(response)
+        })
+        .catch((err) => console.log(err))
+    } else if (state?.nutrition) {
+      let request: RecipeListNutritionRequest = {
+        caloriesMax: state.nutrition.caloriesMax,
+        fatMax: state.nutrition.fatMax,
+        sugMax: state.nutrition.sugMax,
+        proMax: state.nutrition.proMax,
+        page: page,
+      }
+      getCountNutrition(request)
+        .unwrap()
+        .then((response: number) => {
+          setTotalCount(response)
+        })
+        .catch((err) => console.log(err))
+    }
+  }, [])
 
   useEffect(() => {
     toggleSearchBar(false)
@@ -120,7 +156,6 @@ const RecipeList = ({ toggleSearchBar }: SearchBarProps) => {
         )
       })
     }
-    setTotalCount(response.count)
   }
 
   function RequestList() {
@@ -140,10 +175,10 @@ const RecipeList = ({ toggleSearchBar }: SearchBarProps) => {
 
     if (state?.nutrition) {
       let request: RecipeListNutritionRequest = {
-        caloriesUp: state.nutrition.caloriesUp,
-        fatUp: state.nutrition.fatUp,
-        sugUp: state.nutrition.sugUp,
-        proUp: state.nutrition.proUp,
+        caloriesMax: state.nutrition.caloriesMax,
+        fatMax: state.nutrition.fatMax,
+        sugMax: state.nutrition.sugMax,
+        proMax: state.nutrition.proMax,
         page: page,
       }
       getListByNutrition(request)
@@ -415,7 +450,7 @@ const RecipeList = ({ toggleSearchBar }: SearchBarProps) => {
           </Box>
         )}
       </Box>
-      {!loading ? (
+      {!(ingredientsLoading || nutritionLoading) ? (
         totalCount > 0 ? (
           (selectedCategory && filtedRecipeList.length > 0
             ? filtedRecipeList
@@ -484,7 +519,7 @@ const RecipeList = ({ toggleSearchBar }: SearchBarProps) => {
               </Card>
             )
           })
-        ) : (
+        ) : !(ingCountLoading || nutrCountLoading) ? (
           <Typography
             variant="h5"
             component="div"
@@ -494,6 +529,10 @@ const RecipeList = ({ toggleSearchBar }: SearchBarProps) => {
             Currently our database does not have any recipes with the selected
             ingredients. Check back in later for any updates.
           </Typography>
+        ) : (
+          <CircularProgress
+            style={{ color: theme.color, margin: '50px' }} // Theme color for loader
+          />
         )
       ) : (
         <CircularProgress

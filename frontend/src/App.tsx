@@ -15,7 +15,7 @@ this file. If not, please write to: help.cookbook@gmail.com
  * Header and Search component remain static and app contents change according to the state of the application
  * @author Priyanka Ambawane - dearpriyankasa@gmail.com
  */
-import React, { createRef, useEffect, useState } from 'react'
+import React, { createRef, JSX, ReactNode, useEffect, useState } from 'react'
 import { Provider } from 'react-redux'
 import { BrowserRouter } from 'react-router-dom'
 import applicationStore from './store'
@@ -44,7 +44,7 @@ import curlyArrow from './features/AppContent/HomePage/photos/curly-arrow.png'
 const store = applicationStore()
 
 // Separate function for the main application content
-const AppContentLayout: React.FC = () => {
+const AppContentLayout = () => {
   const { theme } = useTheme()
   const [searchOpen, setSearchOpen] = useState(false)
   const [alreadyVisited, setAlreadyVisited] = useState(
