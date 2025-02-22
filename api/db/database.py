@@ -156,7 +156,7 @@ class Database_Connection():
             print(e)
             return -1
         
-    def get_recipes_by_ingredient(self, ings: List[str], page: int, per_page: int = 20):
+    def get_recipes_by_ingredient(self, ings: List[str], page: int, per_page: int = 10):
         """Retrieves a list of recipe ids containing the given ingredients limited by the number per page"""
         try:
             commandString: str = """SELECT recipeId FROM (SELECT DISTINCT name, recipeId FROM ingredients WHERE name IN (%s)) GROUP BY recipeId HAVING COUNT(name) >= ? LIMIT ? OFFSET ?;""" %','.join('?'*len(ings))
@@ -192,7 +192,7 @@ class Database_Connection():
             print(e)
             return -1
 
-    def get_recipes_by_nutrition(self, caloriesMax: int, fatMax: int, sugMax: int, proMax: int, page: int, per_page: int = 20):
+    def get_recipes_by_nutrition(self, caloriesMax: int, fatMax: int, sugMax: int, proMax: int, page: int, per_page: int = 10):
         """Retrieves a list of recipe ids containing the given ingredients limited by the number per page"""
         try:
             commandString: str = """SELECT * FROM recipes WHERE calories <= ? AND fat <= ? AND sugar <= ? and protein <= ? LIMIT ? OFFSET ?; """
