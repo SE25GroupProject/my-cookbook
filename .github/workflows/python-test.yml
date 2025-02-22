@@ -39,6 +39,7 @@ jobs:
 
       - name: Run tests with pytest
         run: |
+          cd api
           coverage run -m pytest 
           coverage report
 
