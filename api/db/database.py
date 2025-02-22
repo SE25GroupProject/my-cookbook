@@ -143,3 +143,16 @@ class Database_Connection():
     def update_recipe(self, oldRecipeId: int, newRecipe: Recipe):
         """Updates a recipe to have the data of the new recipe"""
         pass
+
+    def get_recipes_by_ingredient(self, ingStr: str, str_length: int, page: int, per_page: int = 20):
+        try:
+            #commandString: str = """SELECT recipeId FROM Ingredients WHERE name LIKE '%?%' LIMIT ? OFFSET ? """
+            commandString: str = """SELECT recipeId, COUNT(name) FROM (SELECT DISTINCT name, recipeId FROM ingredients WHERE name IN (?)) GROUP BY recipeId HAVING COUNT(*) >= ? LIMIT ? OFFSET ?;"""
+            self.cursor.execute(commandString, (ingStr, str_length, per_page, page * per_page))
+            
+            res = self.cursor.fetchall()
+
+            return res
+        except Exception as e: 
+            print(e)
+            return[]
