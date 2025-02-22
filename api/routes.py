@@ -18,9 +18,9 @@ import pymongo
 from groq import Groq
 from pydantic import BaseModel, conint, conlist, PositiveInt
 import logging
-from models import Recipe, RecipeListRequest, RecipeListResponse, RecipeListRequest2,RecipeQuery
-from db.objects import User
-from db.database import Database_Connection
+from api.models import Recipe, RecipeListRequest, RecipeListResponse, RecipeListRequest2,RecipeQuery
+from api.db.objects import User
+from api.db.database import Database_Connection
 
 # from models import User
 

@@ -2,8 +2,8 @@
 
 import sqlite3
 from typing import List
-from models import RecipeListEntry
-from db.objects import User, Recipe, Ingredient, Instruction
+from api.models import RecipeListEntry
+from api.db.objects import User, Recipe, Ingredient, Instruction
 
 class Database_Connection():
     """Used as a singleton to access the database"""
