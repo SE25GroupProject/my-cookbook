@@ -36,12 +36,20 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import './RecipeInformation.css'
 import noImage from './no-image.png'
-import { FaWhatsapp, FaSlack, FaDiscord } from 'react-icons/fa'
 import axios from 'axios'
 import { useTheme } from '../../Themes/themeContext'
 import { useNavigate } from 'react-router-dom'
 import { useGetRecipeQuery } from './RecipeInfoSlice'
 import { Recipe, RecipeObject } from '../../api/types'
+
+import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon'
+import { WhatsApp } from '@mui/icons-material'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {
+  faDiscord,
+  faSlack,
+  faWhatsapp,
+} from '@fortawesome/free-brands-svg-icons'
 
 const store = applicationStore()
 
@@ -549,9 +557,10 @@ const RecipeInformationWrapped = () => {
                     (e.currentTarget.style.transform = 'scale(1)')
                   }
                 >
-                  <FaWhatsapp
+                  {/* <FaWhatsapp
                     style={{ marginRight: '10px', fontSize: '1.2em' }}
-                  />
+                  /> */}
+                  <FontAwesomeIcon icon={faWhatsapp} />
                   WhatsApp
                 </button>
                 <button
@@ -575,7 +584,8 @@ const RecipeInformationWrapped = () => {
                     (e.currentTarget.style.transform = 'scale(1)')
                   }
                 >
-                  <FaSlack style={{ marginRight: '10px', fontSize: '1.2em' }} />
+                  {/* <FaSlack style={{ marginRight: '10px', fontSize: '1.2em' }} /> */}
+                  <FontAwesomeIcon icon={faSlack} />
                   Slack
                 </button>
                 <button
@@ -599,9 +609,7 @@ const RecipeInformationWrapped = () => {
                     (e.currentTarget.style.transform = 'scale(1)')
                   }
                 >
-                  <FaDiscord
-                    style={{ marginRight: '10px', fontSize: '1.2em' }}
-                  />
+                  <FontAwesomeIcon icon={faDiscord} />
                   Discord
                 </button>
               </Grid2>

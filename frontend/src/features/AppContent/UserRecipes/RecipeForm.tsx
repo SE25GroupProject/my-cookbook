@@ -39,7 +39,6 @@ import {
 import ImageInput from '../../../components/ImageInput'
 import { useTheme } from '../../Themes/themeContext'
 import { TabContext, TabList, TabPanel } from '@mui/lab'
-import { FaQuestion } from 'react-icons/fa'
 import {
   AddCircleOutline,
   Close,

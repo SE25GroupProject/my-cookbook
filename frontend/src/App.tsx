@@ -37,9 +37,12 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material'
-import { FaAngleDoubleDown, FaAngleDoubleUp } from 'react-icons/fa'
 import AuthProvider from './features/AppContent/Authentication/AuthProvider'
 import curlyArrow from './features/AppContent/images/curly-arrow.png'
+import {
+  KeyboardDoubleArrowDown,
+  KeyboardDoubleArrowUp,
+} from '@mui/icons-material'
 
 const store = applicationStore()
 
@@ -125,9 +128,11 @@ const AppContentLayout: React.FC = () => {
               Search A Recipe
             </Typography>
             {searchOpen ? (
-              <FaAngleDoubleUp fontSize={20} color={theme.color} />
+              // <FaAngleDoubleUp fontSize={20} color={theme.color} />
+              <KeyboardDoubleArrowUp />
             ) : (
-              <FaAngleDoubleDown fontSize={20} color={theme.color} />
+              // <FaAngleDoubleDown fontSize={20} color={theme.color} />
+              <KeyboardDoubleArrowDown />
             )}
           </Button>
           <Popper
