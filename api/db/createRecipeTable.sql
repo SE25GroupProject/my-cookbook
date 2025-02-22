@@ -29,6 +29,8 @@ CREATE TABLE Images (
     imageUrl TEXT NOT NULL,
 
     FOREIGN KEY (recipeId) REFERENCES Recipes(recipeId)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
 );
 
 -- The table holding the tags for the recipes
@@ -39,6 +41,8 @@ CREATE TABLE Tags (
     tag TEXT NOT NULL,
     
     FOREIGN KEY (recipeId) REFERENCES Recipes(recipeId)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
 );
 
 -- The table holding the ingredients for the recipes
@@ -50,6 +54,8 @@ CREATE TABLE Ingredients (
     amount REAL,
 
     FOREIGN KEY (recipeId) REFERENCES Recipes(recipeId)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
 );
 
 -- The table holding the instructions
@@ -61,4 +67,6 @@ CREATE TABLE Instructions (
     instruction TEXT NOT NULL,
 
     FOREIGN KEY (recipeId) REFERENCES Recipes(recipeId)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
 );

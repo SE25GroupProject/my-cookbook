@@ -202,7 +202,7 @@ async def signup(incomingUser: UserCred = Body(...)):
         # Creating a new user
         user: User = User(incomingUser.username, incomingUser.password)
         print(user)
-        if db.get_user(user.Username) is not None:
+        if db.get_user_by_name(user.Username) is not None:
             raise HTTPException(status_code=400, detail="User with that username already exists")
         userid: int = db.add_user(user)
 
@@ -215,7 +215,7 @@ async def signup(incomingUser: UserCred = Body(...)):
 async def login(incomingUser: UserCred = Body(...)):
     # try: 
     print(incomingUser.username)
-    user: User = db.get_user(incomingUser.username)
+    user: User = db.get_user_by_name(incomingUser.username)
     if user is None:
         raise HTTPException(status_code=400, detail="There is no user with that username")
     
@@ -234,7 +234,7 @@ async def login(incomingUser: UserCred = Body(...)):
 @userRouter.get("/getUser/{username}")
 async def getUser(username: str) -> dict:
     # try:
-        user: User = db.get_user(username)
+        user: User = db.get_user_by_name(username)
         if user is None:
             raise HTTPException(status_code=400, detail="There is no user with that username")
         
@@ -252,8 +252,8 @@ async def getRecipe(recipeId: int) -> Recipe:
 
 # Todo: This may have to change as I am not sure if this is the proper way to expect a body for a post request
 @recipeRouter.post("/createRecipe/")
-async def createRecipe(recipeObject: Recipe) -> bool:
-    success = db.create_recipe(recipeObject)
+async def createRecipe(recipeObject: Recipe, userId: int) -> bool:
+    success = db.create_recipe(recipeObject, userId)
     if success:
         return True
     
@@ -262,7 +262,19 @@ async def createRecipe(recipeObject: Recipe) -> bool:
 @recipeRouter.put("/updateRecipe/{recipeId}")
 async def updateRecipe(recipeId: int, newRecipe: Recipe):
     success = db.update_recipe(recipeId, newRecipe)
+    # Todo: Prob need to add a check here to make sure that we are the owner of the recipe to change it
     if success:
         return True
     
     return False
+
+@recipeRouter.get("/getUserRecipes/{userId}")
+async def getUserRecipes(userId: int):
+    recipeIds: list[int] = db.get_recipes_owned_by_userId(userId)
+    recipeObj: list[dict] = []
+    for recipeId in recipeIds:
+        recipeObj.append(db.get_recipe(recipeId).to_dict())
+    
+    # This should be fine as if there are no recipes owned by a user it should just return the empty list
+    # Can be changed to None if needed
+    return recipeObj

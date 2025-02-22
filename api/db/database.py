@@ -49,7 +49,7 @@ class Database_Connection():
         except:
             return False
         
-    def get_user(self, username: str) -> User:
+    def get_user_by_name(self, username: str) -> User:
         """Gets a user based on their username"""
         try: 
             commandString: str = "SELECT * FROM Users WHERE Username = ?"
@@ -60,7 +60,18 @@ class Database_Connection():
         except:
             return None
         
-    def create_recipe(self, recipe: Recipe):
+    def get_user_by_id(self, userId: int) -> User:
+        """Gets a user based on their username"""
+        try: 
+            commandString: str = "SELECT * FROM Users WHERE userId = ?"
+            self.cursor.execute(commandString, (userId,))
+            res = self.cursor.fetchone()
+            user: User = User(res[1], res[2], res[0])
+            return user
+        except:
+            return None
+        
+    def create_recipe(self, recipe: Recipe, userId: int):
         """Creates a recipe based on the object provided"""
         try:
             commandString: str = """INSERT INTO Recipes (name, cookTime, prepTime, totalTime, description, category, rating, calories, fat, saturatedFat, cholesterol, sodium, carbs, fiber, sugar, protein, servings)   
@@ -88,6 +99,9 @@ class Database_Connection():
             for instructions in recipe.Instructions:
                 commandString: str = """INSERT INTO Instructions (recipeId, step, instruction) VALUES (?, ?, ?)"""
                 self.cursor.execute(commandString, (recipeId, instructions.Step, instructions.Instruction,))
+
+            commandString: str = """INSERT INTO UserRecipes (recipeId, userId) VALUES (?, ?)"""
+            self.cursor.execute(commandString, (recipeId, userId,))
 
             self.conn.commit()
             return True
@@ -142,4 +156,42 @@ class Database_Connection():
     
     def update_recipe(self, oldRecipeId: int, newRecipe: Recipe):
         """Updates a recipe to have the data of the new recipe"""
-        pass
+        recipe_owner: int = self.get_recipe_owner(oldRecipeId)
+        self.delete_recipe(oldRecipeId)
+        self.create_recipe(newRecipe, recipe_owner)
+
+    def delete_recipe(self, recipeId: int):
+        """Deletes a recipe from the db"""
+        try:
+            commandString: str = """DELETE FROM Recipes WHERE recipeId = ?"""
+            self.cursor.execute(commandString, (recipeId,))
+            return True
+        
+        except Exception as e:
+            print(e)
+            return False
+        
+    def get_recipe_owner_by_recipeId(self, recipeId: int):
+        """Gets the owner of the recipe"""
+        try:
+            commandString: str = """SELECT userId FROM UserRecipes WHERE recipeId = ?"""
+            self.cursor.execute(commandString, (recipeId,))
+            res = self.cursor.fetchone()
+            userId = res[0]
+            user: User = self.get_user_by_id(userId)
+            return user
+        except Exception as e:
+            print(e)
+            return None
+        
+    def get_recipes_owned_by_userId(self, userId: int):
+        """Gets the owner of the recipe"""
+        try:
+            commandString: str = """SELECT recipeId FROM UserRecipes WHERE userId = ?"""
+            self.cursor.execute(commandString, (userId,))
+            res = self.cursor.fetchall()
+            return res
+        
+        except Exception as e:
+            print(e)
+            return None
