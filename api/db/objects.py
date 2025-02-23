@@ -2,7 +2,7 @@
 from models import Recipe
 from datetime import datetime
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 
 class User():
     def __init__(self, username: str, password: str, userId: int = -1):
@@ -24,6 +24,6 @@ class Post(BaseModel):
     message: str = Field(..., description="Content of the post")
     image: Optional[str] = Field(default=None, description="Base64-encoded image data")
     recipe: Optional[Recipe] = Field(default=None, description="Recipe associated with the post")
-    date: str = Field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d %H:%M:%S"), description="Timestamp of the post")
-    likes: int = Field(default=0, description="Number of likes")
-    dislikes: int = Field(default=0, description="Number of dislikes")
+    date: Optional[str] = Field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d %H:%M:%S"), description="Timestamp of the post")
+    likes: List[int] = Field(default_factory=list, description="List of UserIds who liked the post")
+    dislikes: List[int] = Field(default_factory=list, description="List of UserIds who disliked the post")
