@@ -5,6 +5,10 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@fortawesome/fontawesome-svg-core": "^6.7.2",
+    "@fortawesome/free-brands-svg-icons": "^6.7.2",
+    "@fortawesome/free-solid-svg-icons": "^6.7.2",
+    "@fortawesome/react-fontawesome": "^0.2.2",
     "@mui/icons-material": "^6.4.3",
     "@mui/lab": "^6.0.0-beta.26",
     "@mui/material": "^6.4.3",
@@ -15,15 +19,18 @@
     "@types/node": "^22.13.1",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
+    "ahooks": "^3.8.4",
     "concurrently": "^9.1.2",
     "dotenv": "^16.4.7",
     "eslint": "^9.19.0",
     "eslint-config-next": "^15.1.6",
+    "jsdoc": "^4.0.4",
+    "jsdoc-tsimport-plugin": "^1.0.5",
     "nodemon": "^3.1.9",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.54.2",
-    "react-icons": "^5.4.0",
+    "react-infinite-scroll-component": "^6.1.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^6.29.0",
     "react-scripts": "^5.0.1",
@@ -44,6 +51,7 @@
     "axios": "^0.27.2",
     "babel-core": "^6.26.3",
     "babel-jest": "^29.7.0",
+    "better-docs": "^2.7.3",
     "canvas": "^2.11.2",
     "eslint-config-prettier": "^10.0.1",
     "jest": "^29.7.0",
@@ -63,7 +71,8 @@
     "start:dev": "node -r dotenv/config dist/server.js",
     "dev:watch": "npx concurrently \"npm run build:watch\" \"npm run dev:run\"",
     "dev:run": "npx ts-node-dev src/index.tsx",
-    "build:watch": "npx typescript -w"
+    "build:watch": "npx typescript -w",
+    "docs": "jsdoc -c jsdoc.conf.json"
   },
   "eslintConfig": {
     "extends": [
@@ -82,5 +91,11 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "overrides": {
+    "ahooks": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    }
   }
 }

@@ -31,6 +31,8 @@ import { RECIPE_CATEGORIES, RECIPE_COOKTIME } from './recipeCategories'
 import { useTheme } from '../../Themes/themeContext'
 import {
   NutritionMax,
+  Recipe,
+  RecipeListData,
   RecipeListIngredientsRequest,
   RecipeListNutritionRequest,
   RecipeListResponse,
@@ -40,21 +42,12 @@ import {
   useGetRecipeListByNutritionMutation,
 } from './RecipeListSlice'
 import { SearchBarProps } from '../AppContent'
+import RecipeListItem from './RecipeLIstItem'
 /**
  * File name: RecipeList.tsx
  * Task - This component displays a list of recipes based on the ingredients inputed.
  * This component is a dynamic component and is seen only when you click on a recipe from the recipe list.
  */
-
-interface RecipeListData {
-  id: string
-  name: string
-  description: string
-  cookTime: string
-  prepTime: string
-  category: string
-  rating: string
-}
 
 interface RecipeListProps {
   ingredients: String[] | null
@@ -65,12 +58,10 @@ const RecipeList = ({ toggleSearchBar }: SearchBarProps) => {
   const { theme } = useTheme()
   const { state } = useLocation()
 
-  const navigateTo = useNavigate()
-
-  const [recipeList, setRecipeList] = useState<readonly RecipeListData[]>([])
-  const [filtedRecipeList, setFilteredRecipeList] = useState<
-    readonly RecipeListData[]
-  >([])
+  const [recipeList, setRecipeList] = useState<RecipeListData[]>([])
+  const [filtedRecipeList, setFilteredRecipeList] = useState<RecipeListData[]>(
+    []
+  )
   const [page, setPage] = useState<number>(1)
   const [totalCount, setTotalCount] = useState<number>(0)
   const [loading, setLoading] = useState<boolean>(false)
@@ -104,22 +95,7 @@ const RecipeList = ({ toggleSearchBar }: SearchBarProps) => {
   }
 
   function unwrapResponse(response: RecipeListResponse) {
-    if (Array.isArray(response.recipes)) {
-      setRecipeList([])
-      response.recipes.forEach((item: any, index: number) => {
-        setRecipeList((list) =>
-          list.concat({
-            id: item._id,
-            name: item.name,
-            description: item.description,
-            cookTime: item.cookTime,
-            prepTime: item.prepTime,
-            category: item.category,
-            rating: item.rating,
-          })
-        )
-      })
-    }
+    setRecipeList(response.recipes)
     setTotalCount(response.count)
   }
 
@@ -184,10 +160,6 @@ const RecipeList = ({ toggleSearchBar }: SearchBarProps) => {
       setFilteredRecipeList(recipeList)
     }
   }, [selectedCategory, selectedCookTime, recipeList])
-
-  const gotoRecipe = (id: string) => {
-    navigateTo('/recipe-details/' + id)
-  }
 
   const handlePageChange = (
     event: React.ChangeEvent<unknown>,
@@ -420,69 +392,8 @@ const RecipeList = ({ toggleSearchBar }: SearchBarProps) => {
           (selectedCategory && filtedRecipeList.length > 0
             ? filtedRecipeList
             : recipeList
-          ).map((data: any, index: number) => {
-            return (
-              <Card
-                variant="outlined"
-                sx={{
-                  width: 4 / 5,
-                  m: 1,
-                  backgroundColor: theme.background, // Card background from theme
-                  color: theme.color, // Card text color
-                  borderColor: theme.headerColor,
-                  borderWidth: '2px', // Set the desired border thickness
-                  borderStyle: 'solid', // Ensure the border style is solid
-                }}
-                key={index}
-              >
-                <CardActionArea onClick={() => gotoRecipe(data.id)}>
-                  <CardContent>
-                    <div className="d-flex flex-row">
-                      <Typography
-                        sx={{ fontWeight: 600, color: theme.color }} // Theme color for text
-                        gutterBottom
-                        variant="h5"
-                        component="div"
-                      >
-                        {data.name} |{' '}
-                        <StarIcon
-                          sx={{ color: '#dede04' }} // Star icon color
-                          fontSize="medium"
-                        />{' '}
-                        {data.rating}/5.0
-                      </Typography>
-                      <Typography
-                        gutterBottom
-                        variant="h6"
-                        component="span"
-                        className="supplemental-info"
-                        sx={{ color: theme.color }} // Theme color for text
-                      >
-                        {data.category}
-                      </Typography>
-                    </div>
-                    <Typography
-                      sx={{ textAlign: 'left', color: theme.color }} // Theme color for text
-                      variant="subtitle2"
-                    >
-                      Prep Time : {data.prepTime} | Cook Time : {data.cookTime}
-                    </Typography>
-
-                    <Typography
-                      sx={{
-                        textAlign: 'left',
-                        marginTop: 2,
-                        fontStyle: 'italic',
-                        color: theme.color, // Theme color for text
-                      }}
-                      variant="body2"
-                    >
-                      {data.description}
-                    </Typography>
-                  </CardContent>
-                </CardActionArea>
-              </Card>
-            )
+          ).map((recipe: RecipeListData, index: number) => {
+            return <RecipeListItem recipe={recipe} index={index} />
           })
         ) : (
           <Typography
