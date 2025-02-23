@@ -165,6 +165,10 @@ class User(BaseModel):
     password: str
 
 
+class UserCred(BaseModel):
+    username: str
+    password: str
+
 # class Token(BaseModel):
 #     access_token: str
 #     token_type: str
@@ -175,3 +179,9 @@ class ShoppingListItem(BaseModel):
     quantity: int
     unit: str
     checked: bool
+
+class MealPlanEntry(BaseModel):
+    user: int # id of the user to change
+    day: int  # 0-6 representing Monday-Sunday
+    recipeId: int  # The recipe id
+    recipeName: Optional[str]

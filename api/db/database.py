@@ -2,7 +2,7 @@
 
 import sqlite3
 from typing import List
-from api.models import RecipeListEntry
+from api.models import RecipeListEntry, ShoppingListItem
 from api.db.objects import User, Recipe, Ingredient, Instruction
 
 class Database_Connection():
@@ -39,6 +39,14 @@ class Database_Connection():
                 self.cursor.executescript(sql_script)
                 self.conn.commit()
 
+        # Checking if the Meal Plan table exist
+        mealPlanTable = self.cursor.execute("SELECT tbl_name FROM sqlite_master WHERE type='table' AND tbl_name='MealPlan'").fetchone()
+        shoppingTable = self.cursor.execute("SELECT tbl_name FROM sqlite_master WHERE type='table' AND tbl_name='ShoppingList'").fetchone()
+        if mealPlanTable is None or shoppingTable is None: 
+            with open("db/createMealPrepTable.sql", "r") as sql_file:
+                sql_script = sql_file.read()
+                self.cursor.executescript(sql_script)
+                self.conn.commit()
 
     def add_user(self, user: User) -> bool:
         """Adds a new user to the database"""
@@ -223,3 +231,70 @@ class Database_Connection():
         except Exception as e: 
                 print(e)
                 return[]
+    
+    def get_user_meal_plan(self, UserId: int):
+        try:
+            commandString: str = "SELECT * FROM MealPlan WHERE userId = ?;"
+            mealplan = self.cursor.execute(commandString, (UserId,)).fetchall()
+            formattedPlan = {mealitem[2]: mealitem[1] for mealitem in mealplan}
+            return formattedPlan
+        except Exception as e:
+            print(e)
+            return{}
+
+    def update_user_meal_plan(self, UserId: int, day: int, recipeId:int):
+        try: 
+            commandString: str = "INSERT INTO MealPlan(userId,recipeId,dayOfWeek) VALUES (?,?,?) ON CONFLICT(userId, dayOfWeek) DO UPDATE SET recipeId = excluded.recipeId;"
+            self.cursor.execute(commandString, (UserId, recipeId, day))
+            self.conn.commit()
+            return True
+        except Exception as e:
+            print(e)
+            return f"There was an error with updating the meal plan of user {UserId} for the day {day}"
+    
+    def remove_from_user_meal_plan(self, UserId: int, day: int):
+        try: 
+            exists = self.cursor.execute("SELECT FROM MealPlan WHERE userId = ? AND dayOfWeek = ?;", (UserId, day)).fetchone
+            if (exists is None):
+                return f"An isntance with userId of {UserId} and day of {day} does not exist in the database."
+            
+            commandString: str = "DELETE FROM MealPlan WHERE userId = ? AND dayOfWeek = ?"
+            self.cursor.execute(commandString, (UserId, day))
+            self.conn.commit()
+        except Exception as e:
+            print(e)
+            return f"There was an error removing the instance with userId of {UserId} and day of {day} from the database."
+    
+    def get_user_shopping_list(self, UserId: int):
+        try:
+            commandString: str = "SELECT * FROM ShoppingList WHERE userId = ?;"
+            shoppingList = self.cursor.execute(commandString, (UserId,)).fetchall()
+            formattedList = [ShoppingListItem(name=shoppingItem[1], quantity=shoppingItem[2], unit=shoppingItem[3], checked=shoppingItem[4]) for shoppingItem in shoppingList]
+            return formattedList
+        except Exception as e:
+            print(e)
+            return[]
+        
+    def update_shopping_list_item(self, UserId: int, name: str, quantity: int, unit: str, checked: bool):
+        try: 
+            commandString: str = "INSERT INTO ShoppingList(userId,name,quantity,unit,checked) VALUES (?,?,?,?,?) ON CONFLICT(userId, name) DO UPDATE SET quantity = excluded.quantity, unit = excluded.unit, checked = excluded.checked;"
+            self.cursor.execute(commandString, (UserId, name, quantity, unit, 1 if checked else 0,))
+            self.conn.commit()
+            return True
+        except Exception as e:
+            print(e)
+            return f"There was an error with updating the shopping list of user {UserId} for the item {name}"
+        
+    def remove_from_shopping_list(self, UserId: int, name: str):
+        try: 
+            exists = self.cursor.execute("SELECT * FROM ShoppingList WHERE userId = ? AND name = ?;", (UserId, name)).fetchone()
+            if (exists is None):
+                return f"An instance with userId of {UserId} and name of {name} does not exist in the database."
+
+            commandString: str = "DELETE FROM ShoppingList WHERE userId = ? AND name = ?;"
+            self.cursor.execute(commandString, (UserId, name))
+            self.conn.commit()
+            return True
+        except Exception as e:
+            print(e)
+            return f"There was an error removing the instance with userId of {UserId} and name of {name} from the database."

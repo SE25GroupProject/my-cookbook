@@ -29,6 +29,7 @@ CREATE TABLE Images (
     imageUrl TEXT NOT NULL,
 
     FOREIGN KEY (recipeId) REFERENCES Recipes(recipeId)
+       
 );
 
 -- The table holding the tags for the recipes
