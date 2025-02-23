@@ -18,6 +18,10 @@ def test_list_recipes_by_ingredients():
         "ingredients": ["tomato", "basil"],
         "page": 1
     }
+    
     response = client.post(f"recipe/search/", json=data)
+    print("hi")
+    print(response.json())
     assert response.status_code == 200
     assert "recipes" in response.json()
+    

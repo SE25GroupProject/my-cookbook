@@ -9,7 +9,7 @@ this file. If not, please write to: help.cookbook@gmail.com
 """
  
 from fastapi.middleware.cors import CORSMiddleware
-from routes import router, userRouter, mealPlanRouter, shoppingRouter
+from api.routes import router, userRouter, mealPlanRouter, shoppingRouter
 from pymongo import MongoClient
 from fastapi import FastAPI, HTTPException
 from api.models import ShoppingListItem
