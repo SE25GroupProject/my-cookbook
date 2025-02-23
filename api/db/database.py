@@ -1,7 +1,10 @@
 """Used to hold the information about the database and commands used with it"""
 
 import sqlite3
-from db.objects import User, Recipe, Ingredient, Instruction
+try:
+    from db.objects import User, Recipe, Ingredient, Instruction
+except Exception:
+    from objects import User, Recipe, Ingredient, Instruction
 
 class Database_Connection():
     """Used as a singleton to access the database"""
@@ -24,7 +27,7 @@ class Database_Connection():
         # Checking if the tables exist
         userTable = self.cursor.execute("SELECT tbl_name FROM sqlite_master WHERE type='table' AND tbl_name='Users'").fetchone()
         if userTable is None:
-            with open("createUserTable.sql", "r") as sql_file:
+            with open("db/createUserTable.sql", "r") as sql_file:
                 sql_script = sql_file.read()
                 self.cursor.executescript(sql_script)
                 self.conn.commit()
@@ -32,7 +35,15 @@ class Database_Connection():
         # Checking if the tables exist
         recipeTable = self.cursor.execute("SELECT tbl_name FROM sqlite_master WHERE type='table' AND tbl_name='Recipes'").fetchone()
         if recipeTable is None:
-            with open("createRecipeTable.sql", "r") as sql_file:
+            with open("db/createRecipeTable.sql", "r") as sql_file:
+                sql_script = sql_file.read()
+                self.cursor.executescript(sql_script)
+                self.conn.commit()
+
+        # Checking if the tables exist
+        userRecipeTable = self.cursor.execute("SELECT tbl_name FROM sqlite_master WHERE type='table' AND tbl_name='UserRecipes'").fetchone()
+        if userRecipeTable is None:
+            with open("db/createUserRecipeTable.sql", "r") as sql_file:
                 sql_script = sql_file.read()
                 self.cursor.executescript(sql_script)
                 self.conn.commit()
@@ -78,7 +89,7 @@ class Database_Connection():
                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
             
             self.cursor.execute(commandString, (recipe.Name, recipe.CookTime, recipe.PrepTime, recipe.TotalTime, recipe.Description, 
-                                                recipe.TotalTime, recipe.Category, recipe.Rating, recipe.Calories, recipe.Fat, recipe.SaturatedFat, 
+                                                recipe.Category, recipe.Rating, recipe.Calories, recipe.Fat, recipe.SaturatedFat, 
                                                 recipe.Cholesterol, recipe.Sodium, recipe.Carbs, recipe.Fiber, recipe.Sugar, recipe.Protein, recipe.Servings,))
             
             
@@ -104,9 +115,10 @@ class Database_Connection():
             self.cursor.execute(commandString, (recipeId, userId,))
 
             self.conn.commit()
-            return True
+            return recipeId
 
-        except Exception:
+        except Exception as e:
+            print(e)
             return False
         
     def get_recipe(self, recipeId: int):
@@ -156,7 +168,7 @@ class Database_Connection():
     
     def update_recipe(self, oldRecipeId: int, newRecipe: Recipe):
         """Updates a recipe to have the data of the new recipe"""
-        recipe_owner: int = self.get_recipe_owner(oldRecipeId)
+        recipe_owner: int = self.get_recipe_owner_by_recipeId(oldRecipeId)
         self.delete_recipe(oldRecipeId)
         self.create_recipe(newRecipe, recipe_owner)
 
@@ -217,3 +229,15 @@ class Database_Connection():
         except Exception as e:
             print(e)
             return False
+        
+    def get_favorite_recipes(self, userId: int):
+        """Gets someones favorite recipes"""
+        try:
+            commandString: str = """SELECT * FROM UserFavorites WHERE userId = ?"""
+            self.cursor.execute(commandString, (userId,))
+            res = self.cursor.fetchall()
+            return res
+        
+        except Exception as e:
+            print(e)
+            return None
