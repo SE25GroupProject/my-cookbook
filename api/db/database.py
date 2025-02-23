@@ -112,13 +112,15 @@ class Database_Connection():
             # Fetch likes and dislikes as lists of UserIds
             likes = self.get_post_reactions(post_id, 'LIKE')
             dislikes = self.get_post_reactions(post_id, 'DISLIKE')
-            date_value = post_data[4] if post_data[4] is not None else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            date_value = post_data[5] if post_data[5] is not None else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            recipe_value = post_data[4]  # Capture RecipeId
+            print(f"RecipeId value: {recipe_value}, type: {type(recipe_value)}")  # Debug type
             return Post(
                 postId=post_data[0],
                 userId=post_data[1],
                 message=post_data[2],
                 image=post_data[3],
-                recipe=None,  # To be updated when recipes are implemented
+                recipe=post_data[4],  # To be updated when recipes are implemented
                 date=date_value,
                 likes=likes,
                 dislikes=dislikes,
@@ -134,13 +136,13 @@ class Database_Connection():
         for post_data in posts_data:
             likes = self.get_post_reactions(post_data[0], 'LIKE')
             dislikes = self.get_post_reactions(post_data[0], 'DISLIKE')
-            date_value = post_data[4] if post_data[4] is not None else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            date_value = post_data[5] if post_data[5] is not None else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             posts.append(Post(
                 postId=post_data[0],
                 userId=post_data[1],
                 message=post_data[2],
                 image=post_data[3],
-                recipe=None,  # To be updated when recipes are implemented
+                recipe=post_data[4],  # To be updated when recipes are implemented
                 date=date_value,
                 likes=likes,
                 dislikes=dislikes,

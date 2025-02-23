@@ -8,7 +8,7 @@ CREATE TABLE Posts (
     Message TEXT NOT NULL,                   
     Image BLOB,                               
     RecipeId INTEGER,                     
-    Date DATETIME DEFAULT CURRENT_TIMESTAMP             
+    Date DATETIME DEFAULT CURRENT_TIMESTAMP,             
 
     -- Foreign key constraint to link Posts to Users
     FOREIGN KEY (UserId) REFERENCES Users(UserId)
