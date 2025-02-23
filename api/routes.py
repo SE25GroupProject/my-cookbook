@@ -21,11 +21,13 @@ import logging
 from api.models import Recipe, RecipeListRequest, RecipeListResponse, RecipeListRequest2, RecipeQuery, MealPlanEntry, UserCred, ShoppingListItem
 from api.db.objects import User
 from api.db.database import Database_Connection
+from api.dbMiddleware import DBConnectionMiddleware
 
 # from models import User
 
 load_dotenv()  # Load environment variables
 app = FastAPI()
+app.add_middleware(DBConnectionMiddleware, db_path="cookbook.db")
 users_db = {}
 db = Database_Connection()
 
@@ -285,9 +287,10 @@ def list_recipes_by_ingredient_old(ingredient: str, caloriesLow: int, caloriesUp
 
 # In Use - Refactored
 @shoppingRouter.get("/{userId}", response_description="Get the current user's shopping list", status_code=200, response_model=List[ShoppingListItem])
-async def get_shopping_list(userId: int):
+async def get_shopping_list(request: Request, userId: int):
     """Retrieves the current user's shopping list."""
     try:
+        db: Database_Connection = request.state.db
         return db.get_user_shopping_list(userId)
     except Exception as e:
         raise HTTPException(
@@ -482,9 +485,7 @@ async def login(incomingUser: UserCred = Body(...)):
     return "Incorrect Username or Password"
     # except:
     #     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occured when logging in this user")
-
-
-
+    
 @userRouter.get("/getUser/{username}")
 async def getUser(username: str) -> dict:
     # try:

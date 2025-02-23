@@ -18,9 +18,10 @@ class Database_Connection():
             self.instance = super(Database_Connection, self).__new__(self)
         return self.instance
     
-    def __init__(self):
+    def __init__(self, dbPath: str = 'cookbook.db'):
         """Handles initializing the class"""
-        self.conn = sqlite3.connect('db/cookbook.db')
+        print("Db Path: " + dbPath)
+        self.conn = sqlite3.connect(dbPath, check_same_thread=False)
         self.cursor = self.conn.cursor()
 
         # Checking if the tables exist

@@ -3,6 +3,10 @@ from unittest.mock import MagicMock
 from api.routes import db
 from fastapi.testclient import TestClient
 import pytest
+from os import path, remove
+import shutil
+from api.dbMiddleware import DBConnectionMiddleware
+from api.db.convertJsonToSql import insertData
 
 from api.main import app
 import api.routes
@@ -15,18 +19,34 @@ client = TestClient(app)
 #     assert response.status_code == 200
 #     assert response.json() == []
 
-@pytest.fixture(scope="function")
+MAIN_DB = "cookbook.db"
+TEST_DB = "test_cookbook.db"
+
+@pytest.fixture(scope="function", autouse=True)
 def setup_db():
-    """Fixture to mock the database and avoid actual database calls."""
-    # Mocking the database
-    db.conn = sqlite3.connect('db/cookbook.db')
-    db.cursor = db.conn.cursor()
-    yield 
-    db.conn.close()
+    """Copies the db to a testing db before each test"""
+    if path.exists(TEST_DB):
+        remove(TEST_DB)
+    shutil.copy(MAIN_DB, TEST_DB)
+    print("Copied")
+    insertData(MAIN_DB)
+    yield
+    remove(TEST_DB)
 
+@pytest.fixture(scope="module")
+def clientSetup():
+    app.add_middleware(DBConnectionMiddleware, db_path=TEST_DB)
+    with TestClient(app) as client:
+        yield client
 
-def test_update_shopping_list(setup_db):
+def test_update_shopping_list():
     """Test to update shopping list."""
+
+    response = client.post("/user/signup", {
+        "username": "test",
+        "password": "test",
+    })
+
     response = client.put("/shopping-list/0", json={
         "name": "Apple",
         "quantity": 5,
