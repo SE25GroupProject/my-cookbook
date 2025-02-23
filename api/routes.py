@@ -19,7 +19,7 @@ from groq import Groq
 from pydantic import BaseModel, conint, conlist, PositiveInt, Field
 import logging
 from models import Recipe, RecipeListRequest, RecipeListResponse, RecipeListRequest2, RecipeQuery
-from db.objects import User, Post
+from db.objects import User, Post, Comment
 from db.database import Database_Connection
 
 load_dotenv()  # Load environment variables
@@ -423,4 +423,71 @@ async def update_post(post_id: int, update: PostUpdate = Body(...), user_id: int
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred while updating the post: {str(e)}"
+        )
+
+@postRouter.post("/{post_id}/comments", response_description="Add a comment to a post", status_code=201)
+async def add_comment(post_id: int, comment: Comment):
+    """Adds a new comment to a post and returns the CommentId."""
+    # Ensure the comment's postId matches the URL parameter
+    comment.postId = post_id
+    # Check if the post exists
+    post = db.get_post(post_id)
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Post with ID {post_id} not found."
+        )
+    # Check if the user exists
+    if db.get_user_by_id(comment.userId) is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"User with ID {comment.userId} not found."
+        )
+    # Add the comment and get the CommentId
+    comment_id = db.add_comment(comment)
+    if comment_id:
+        return {"message": "Comment added successfully", "commentId": comment_id}
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to add comment."
+        )
+
+@postRouter.delete("/{post_id}/comments/{comment_id}", response_description="Delete a comment", status_code=200)
+async def delete_comment(post_id: int, comment_id: int, user_id: int = Body(..., embed=True)):
+    """Deletes a comment by its CommentId, ensuring the user owns it."""
+    # Check if the post exists
+    post = db.get_post(post_id)
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Post with ID {post_id} not found."
+        )
+    # Check if the user exists
+    user = db.get_user_by_id(user_id)
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"User with ID {user_id} not found."
+        )
+    # Fetch comments to verify ownership
+    comments = db.get_post_comments(post_id)
+    comment = next((c for c in comments if c.commentId == comment_id), None)
+    if not comment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Comment with ID {comment_id} not found for post {post_id}."
+        )
+    if comment.userId != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only delete your own comments."
+        )
+    # Delete the comment
+    if db.delete_comment(comment_id):
+        return {"message": "Comment deleted successfully"}
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to delete comment."
         )

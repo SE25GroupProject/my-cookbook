@@ -1,6 +1,7 @@
 import sqlite3
 from datetime import datetime
-from db.objects import User, Post
+from db.objects import User, Post, Comment
+from typing import List
 
 class Database_Connection():
     """Used as a singleton to access the database"""
@@ -43,6 +44,13 @@ class Database_Connection():
                 sql_script = sql_file.read()
                 self.cursor.executescript(sql_script)
                 self.conn.commit()
+        
+        # Check and create Comments table
+        comments_table = self.cursor.execute("SELECT tbl_name FROM sqlite_master WHERE type='table' AND tbl_name='Comments'").fetchone()
+        if comments_table is None:
+            with open("db/createCommentsTable.sql", "r") as sql_file:
+                self.cursor.executescript(sql_file.read())
+                self.conn.commit()
 
     def add_user(self, user: User) -> int | bool:
         """Adds a new user to the database, returns UserId on success"""
@@ -78,18 +86,9 @@ class Database_Connection():
         return None
 
     def add_post(self, post: Post) -> bool:
-        """Adds a new post to the database"""
         try:
-            command_string: str = """
-                INSERT INTO Posts (UserId, Message, Image, RecipeId, Date)
-                VALUES (?, ?, ?, ?, ?)
-            """
-
-            if post.recipe is None:
-                recipe_id = None  # Use None for NULL in SQLite
-            else:
-                recipe_id = post.recipe.id
-
+            command_string = "INSERT INTO Posts (UserId, Message, Image, RecipeId, Date) VALUES (?, ?, ?, ?, ?)"
+            recipe_id = post.recipe  # Already an int or None
             self.cursor.execute(command_string, (
                 post.userId,
                 post.message,
@@ -104,74 +103,80 @@ class Database_Connection():
             return False
 
     def get_post(self, post_id: int) -> Post:
-        """Gets a post based on its postId, including reaction data"""
-        command_string: str = "SELECT * FROM Posts WHERE PostId = ?"
+        """Gets a post based on its postId, including reaction and comment data"""
+        command_string = "SELECT PostId, UserId, Message, Image, RecipeId, Date FROM Posts WHERE PostId = ?"
         self.cursor.execute(command_string, (post_id,))
         post_data = self.cursor.fetchone()
         if post_data:
-            # Fetch likes and dislikes as lists of UserIds
             likes = self.get_post_reactions(post_id, 'LIKE')
             dislikes = self.get_post_reactions(post_id, 'DISLIKE')
+            comments = self.get_post_comments(post_id)  # Fetch comments
             date_value = post_data[5] if post_data[5] is not None else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            recipe_value = post_data[4]  # Capture RecipeId
-            print(f"RecipeId value: {recipe_value}, type: {type(recipe_value)}")  # Debug type
+            recipe_value = post_data[4]
+            if recipe_value is not None:
+                try:
+                    recipe_value = int(recipe_value)
+                except (ValueError, TypeError):
+                    recipe_value = None
             return Post(
                 postId=post_data[0],
                 userId=post_data[1],
                 message=post_data[2],
                 image=post_data[3],
-                recipe=post_data[4],  # To be updated when recipes are implemented
+                recipe=recipe_value,
                 date=date_value,
                 likes=likes,
                 dislikes=dislikes,
+                comments=comments,
             )
         return None
 
     def get_all_posts(self) -> list[Post]:
-        """Gets all posts from the database with their reactions"""
-        command_string: str = "SELECT * FROM Posts"
+        """Gets all posts from the database with their reactions and comments"""
+        command_string = "SELECT PostId, UserId, Message, Image, RecipeId, Date FROM Posts"
         self.cursor.execute(command_string)
         posts_data = self.cursor.fetchall()
         posts = []
         for post_data in posts_data:
             likes = self.get_post_reactions(post_data[0], 'LIKE')
             dislikes = self.get_post_reactions(post_data[0], 'DISLIKE')
+            comments = self.get_post_comments(post_data[0])  # Fetch comments
             date_value = post_data[5] if post_data[5] is not None else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            recipe_value = post_data[4]
+            if recipe_value is not None:
+                try:
+                    recipe_value = int(recipe_value)
+                except (ValueError, TypeError):
+                    recipe_value = None
             posts.append(Post(
                 postId=post_data[0],
                 userId=post_data[1],
                 message=post_data[2],
                 image=post_data[3],
-                recipe=post_data[4],  # To be updated when recipes are implemented
+                recipe=recipe_value,
                 date=date_value,
                 likes=likes,
                 dislikes=dislikes,
+                comments=comments,
             ))
         return posts
 
     def get_post_reactions(self, post_id: int, reaction_type: str) -> list[int]:
-        """Helper method to get list of UserIds for a specific reaction type"""
-        command_string: str = "SELECT UserId FROM PostReactions WHERE PostId = ? AND ReactionType = ?"
+        command_string = "SELECT UserId FROM PostReactions WHERE PostId = ? AND ReactionType = ?"
         self.cursor.execute(command_string, (post_id, reaction_type))
         return [row[0] for row in self.cursor.fetchall()]
 
     def add_post_reaction(self, post_id: int, user_id: int, reaction_type: str) -> bool:
-        """Adds or updates a user's reaction (LIKE or DISLIKE) to a post"""
         try:
-            # Check if the user already has a reaction
-            check_command: str = "SELECT ReactionType FROM PostReactions WHERE PostId = ? AND UserId = ?"
+            check_command = "SELECT ReactionType FROM PostReactions WHERE PostId = ? AND UserId = ?"
             self.cursor.execute(check_command, (post_id, user_id))
             existing_reaction = self.cursor.fetchone()
-
             if existing_reaction:
-                # Update existing reaction
-                update_command: str = "UPDATE PostReactions SET ReactionType = ? WHERE PostId = ? AND UserId = ?"
+                update_command = "UPDATE PostReactions SET ReactionType = ? WHERE PostId = ? AND UserId = ?"
                 self.cursor.execute(update_command, (reaction_type, post_id, user_id))
             else:
-                # Insert new reaction
-                insert_command: str = "INSERT INTO PostReactions (PostId, UserId, ReactionType) VALUES (?, ?, ?)"
+                insert_command = "INSERT INTO PostReactions (PostId, UserId, ReactionType) VALUES (?, ?, ?)"
                 self.cursor.execute(insert_command, (post_id, user_id, reaction_type))
-            
             self.conn.commit()
             return True
         except Exception as e:
@@ -179,9 +184,8 @@ class Database_Connection():
             return False
 
     def remove_post_reaction(self, post_id: int, user_id: int) -> bool:
-        """Removes a user's reaction from a post"""
         try:
-            command_string: str = "DELETE FROM PostReactions WHERE PostId = ? AND UserId = ?"
+            command_string = "DELETE FROM PostReactions WHERE PostId = ? AND UserId = ?"
             self.cursor.execute(command_string, (post_id, user_id))
             self.conn.commit()
             return True
@@ -190,10 +194,11 @@ class Database_Connection():
             return False
 
     def delete_post(self, post_id: int) -> bool:
-        """Deletes a post and its associated reactions from the database"""
+        """Deletes a post and its associated reactions and comments from the database"""
         try:
-            # Delete reactions first due to foreign key constraints
+            # Delete reactions and comments first due to foreign key constraints
             self.cursor.execute("DELETE FROM PostReactions WHERE PostId = ?", (post_id,))
+            self.cursor.execute("DELETE FROM Comments WHERE PostId = ?", (post_id,))
             self.cursor.execute("DELETE FROM Posts WHERE PostId = ?", (post_id,))
             self.conn.commit()
             return True
@@ -202,21 +207,63 @@ class Database_Connection():
             return False
     
     def update_post(self, post_id: int, update_data: dict) -> bool:
-        """Updates a post's fields in the database based on provided data."""
         try:
-            # Build the SET clause dynamically based on provided fields
             if not update_data:
-                return True  # Nothing to update
-            
+                return True
             set_clause = ", ".join(f"{key} = ?" for key in update_data.keys())
             command_string = f"UPDATE Posts SET {set_clause} WHERE PostId = ?"
-            
-            # Add PostId as the last parameter
             values = list(update_data.values()) + [post_id]
-            
             self.cursor.execute(command_string, values)
             self.conn.commit()
             return True
         except Exception as e:
             print(f"Error updating post: {e}")
             return False
+
+    def add_comment(self, comment: Comment) -> int | bool:
+            """Adds a new comment to a post and returns the CommentId"""
+            try:
+                command_string = "INSERT INTO Comments (PostId, UserId, Message, Date) VALUES (?, ?, ?, ?)"
+                self.cursor.execute(command_string, (
+                    comment.postId,
+                    comment.userId,
+                    comment.message,
+                    comment.date or datetime.now().strftime("%Y-%m-%d %H:%M:%S"),  
+                ))
+                self.conn.commit()
+
+                self.cursor.execute("SELECT last_insert_rowid()")
+                comment_id = self.cursor.fetchone()[0]
+                return comment_id
+            except Exception as e:
+                print(f"Error adding comment: {e}")
+                return False
+
+    def get_post_comments(self, post_id: int) -> List[Comment]:
+        """Fetches all comments for a given post"""
+        try:
+            command_string = "SELECT CommentId, UserId, PostId, Message, Date FROM Comments WHERE PostId = ?"
+            self.cursor.execute(command_string, (post_id,))
+            comments_data = self.cursor.fetchall()
+            return [Comment(
+                commentId=row[0],
+                userId=row[1],
+                postId=row[2],
+                message=row[3],
+                date=row[4] if row[4] is not None else datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            ) for row in comments_data]
+        except Exception as e:
+            print(f"Error fetching comments: {e}")
+            return []
+
+    def delete_comment(self, comment_id: int) -> bool:
+        """Deletes a comment by its CommentId"""
+        try:
+            command_string = "DELETE FROM Comments WHERE CommentId = ?"
+            self.cursor.execute(command_string, (comment_id,))
+            self.conn.commit()
+            return True
+        except Exception as e:
+            print(f"Error deleting comment: {e}")
+            return False
+    
