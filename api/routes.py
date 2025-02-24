@@ -178,7 +178,7 @@ async def recommend_recipes(query: RecipeQuery = Body(...)):
 @userRouter.post("/signup")
 async def signup(incomingUser: UserCred = Body(...)):
     user: User = User(incomingUser.username, incomingUser.password)
-    if db.get_user(user.Username) is not None:
+    if db.get_user_by_name(user.Username) is not None:
         raise HTTPException(status_code=400, detail="User with that username already exists")
     userid: int = db.add_user(user)
     return {"id": userid, "username": user.Username}
