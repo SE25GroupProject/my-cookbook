@@ -185,7 +185,7 @@ async def signup(incomingUser: UserCred = Body(...)):
 
 @userRouter.post("/login")
 async def login(incomingUser: UserCred = Body(...)):
-    user: User = db.get_user(incomingUser.username)
+    user: User = db.get_user_by_name(incomingUser.username)
     if user is None:
         raise HTTPException(status_code=400, detail="There is no user with that username")
     if user.Password == incomingUser.password:
@@ -194,7 +194,7 @@ async def login(incomingUser: UserCred = Body(...)):
 
 @userRouter.get("/getUser/{username}")
 async def getUser(username: str) -> dict:
-    user: User = db.get_user(username)
+    user: User = db.get_user_by_name(username)
     if user is None:
         raise HTTPException(status_code=400, detail="There is no user with that username")
     return user.to_dict()
