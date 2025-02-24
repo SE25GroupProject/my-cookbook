@@ -9,7 +9,8 @@ this file. If not, please write to: help.cookbook@gmail.com
 """
  
 from fastapi.middleware.cors import CORSMiddleware
-from api.routes import router, userRouter, mealPlanRouter, shoppingRouter
+from api.routes import router, userRouter, mealPlanRouter, shoppingRouter, postRouter
+
 from pymongo import MongoClient
 from fastapi import FastAPI, HTTPException
 from api.models import ShoppingListItem
@@ -63,6 +64,7 @@ app.include_router(router, tags=["recipes"], prefix="/recipe")
 app.include_router(userRouter, tags=["user"], prefix="/user")
 app.include_router(mealPlanRouter, tags=["mealplan"], prefix="/meal-plan")
 app.include_router(shoppingRouter, tags=["shopping"], prefix="/shopping-list")
+app.include_router(postRouter, tags=["post"], prefix="/posts")
 
 """ This api functions is for shopping list."""
 

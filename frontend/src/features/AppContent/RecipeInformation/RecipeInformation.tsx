@@ -36,11 +36,20 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import './RecipeInformation.css'
 import noImage from './no-image.png'
-import { FaWhatsapp, FaSlack, FaDiscord } from 'react-icons/fa'
 import axios from 'axios'
 import { useTheme } from '../../Themes/themeContext'
 import { useNavigate } from 'react-router-dom'
 import { useGetRecipeQuery } from './RecipeInfoSlice'
+import { Recipe, RecipeObject } from '../../api/types'
+
+import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon'
+import { WhatsApp } from '@mui/icons-material'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {
+  faDiscord,
+  faSlack,
+  faWhatsapp,
+} from '@fortawesome/free-brands-svg-icons'
 
 const store = applicationStore()
 
@@ -100,7 +109,7 @@ const CopyUrlModal = ({ open, onClose, url, platform }: any) => {
           fullWidth
           value={url}
           variant="outlined"
-          inputProps={{ readOnly: true }}
+          // inputProps={{ readOnly: true }}
           multiline
           rows={2}
           style={{ wordWrap: 'break-word', height: 'auto' }}
@@ -137,6 +146,7 @@ const RecipeInformationWrapped = () => {
   const [selectedDayIndex, setSelectedDayIndex] = useState(0)
 
   const { data: recipe, isLoading, isSuccess } = useGetRecipeQuery(id as string)
+  let images = recipe?.images ? [...recipe?.images] : []
 
   let triviaPaperStyles = {
     background: theme.background,
@@ -547,9 +557,10 @@ const RecipeInformationWrapped = () => {
                     (e.currentTarget.style.transform = 'scale(1)')
                   }
                 >
-                  <FaWhatsapp
+                  {/* <FaWhatsapp
                     style={{ marginRight: '10px', fontSize: '1.2em' }}
-                  />
+                  /> */}
+                  <FontAwesomeIcon icon={faWhatsapp} />
                   WhatsApp
                 </button>
                 <button
@@ -573,7 +584,8 @@ const RecipeInformationWrapped = () => {
                     (e.currentTarget.style.transform = 'scale(1)')
                   }
                 >
-                  <FaSlack style={{ marginRight: '10px', fontSize: '1.2em' }} />
+                  {/* <FaSlack style={{ marginRight: '10px', fontSize: '1.2em' }} /> */}
+                  <FontAwesomeIcon icon={faSlack} />
                   Slack
                 </button>
                 <button
@@ -597,9 +609,7 @@ const RecipeInformationWrapped = () => {
                     (e.currentTarget.style.transform = 'scale(1)')
                   }
                 >
-                  <FaDiscord
-                    style={{ marginRight: '10px', fontSize: '1.2em' }}
-                  />
+                  <FontAwesomeIcon icon={faDiscord} />
                   Discord
                 </button>
               </Grid2>
@@ -737,10 +747,10 @@ const RecipeInformationWrapped = () => {
             background: theme.headerColor,
           }}
         >
-          {recipe?.images?.length > 0 && recipe?.images[0] !== '' ? (
+          {images && images[0] !== '' ? (
             <Typography variant="subtitle1" gutterBottom>
               <Stack direction="column" spacing={2} padding="25px">
-                {recipe.images
+                {images
                   .reverse()
                   .slice(0, 3)
                   .map((imageLink: string, idx: number) => {

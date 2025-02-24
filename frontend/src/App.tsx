@@ -15,19 +15,19 @@ this file. If not, please write to: help.cookbook@gmail.com
  * Header and Search component remain static and app contents change according to the state of the application
  * @author Priyanka Ambawane - dearpriyankasa@gmail.com
  */
-import React, { createRef, JSX, ReactNode, useEffect, useState } from 'react'
+import React, { createRef, ReactElement, useEffect, useState } from 'react'
 import { Provider } from 'react-redux'
 import { BrowserRouter } from 'react-router-dom'
 import applicationStore from './store'
 import './App.css'
-import GetIngredients from './features/GetIngredients/GetIngredients'
-import Header from './features/Header/Header'
+import GetIngredients from './features/AppContent/GetIngredients/GetIngredients'
+import Header from './features/AppContent/Header/Header'
 import AppContent from './features/AppContent/AppContent'
 import GetTags from './features/AppContent/Tag/GetTags'
 import CustomizedAccordions from './features/AppContent/NutritionFilter/CustomizedAccordions'
 import { ThemeProvider, useTheme } from './features/Themes/themeContext'
-import Login from './features/AppContent/HomePage/Login'
-import Profile from './features/AppContent/HomePage/Profile'
+import Login from './features/AppContent/Authentication/Login'
+import Profile from './features/AppContent/Authentication/Profile'
 import {
   Box,
   Button,
@@ -37,14 +37,22 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material'
-import { FaAngleDoubleDown, FaAngleDoubleUp } from 'react-icons/fa'
-import AuthProvider from './features/Authentication/AuthProvider'
-import curlyArrow from './features/AppContent/HomePage/photos/curly-arrow.png'
+import AuthProvider from './features/AppContent/Authentication/AuthProvider'
+import curlyArrow from './features/AppContent/images/curly-arrow.png'
+import {
+  KeyboardDoubleArrowDown,
+  KeyboardDoubleArrowUp,
+} from '@mui/icons-material'
 
 const store = applicationStore()
 
 // Separate function for the main application content
-const AppContentLayout = () => {
+/**
+ * A function to return the layout for the app. This includes the major
+ * building blocks of the app.
+ * @returns {ReactElement} The current page of the app.
+ */
+const AppContentLayout: React.FC = () => {
   const { theme } = useTheme()
   const [searchOpen, setSearchOpen] = useState(false)
   const [alreadyVisited, setAlreadyVisited] = useState(
@@ -120,9 +128,11 @@ const AppContentLayout = () => {
               Search A Recipe
             </Typography>
             {searchOpen ? (
-              <FaAngleDoubleUp fontSize={20} color={theme.color} />
+              // <FaAngleDoubleUp fontSize={20} color={theme.color} />
+              <KeyboardDoubleArrowUp />
             ) : (
-              <FaAngleDoubleDown fontSize={20} color={theme.color} />
+              // <FaAngleDoubleDown fontSize={20} color={theme.color} />
+              <KeyboardDoubleArrowDown />
             )}
           </Button>
           <Popper

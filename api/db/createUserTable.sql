@@ -9,3 +9,16 @@ CREATE TABLE Users (
 
     UNIQUE(Username)
 );
+
+DROP TABLE IF EXISTS UserFavorites;
+
+CREATE TABLE UserFavorites (
+    UserId INTEGER NOT NULL,
+    RecipeId INTEGER NOT NULL,
+    FOREIGN KEY (recipeId) REFERENCES Recipes(recipeId)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    FOREIGN KEY (userId) REFERENCES Users(recipeId)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+)
