@@ -9,11 +9,16 @@ import {
   Autocomplete,
   Box,
   Button,
+  Card,
   Container,
+  Dialog,
+  DialogContent,
+  DialogContentText,
   Divider,
   Grid2,
   IconButton,
   InputAdornment,
+  InputLabel,
   OutlinedInput,
   Paper,
   Popover,
@@ -30,7 +35,8 @@ import { useAuth } from '../Authentication/AuthProvider'
 import { useFixScroll } from './FixScroll'
 import PostItem from './PostItem'
 import { testPosts, testRecipes } from '../testVariables'
-import { Post, PostRecipe } from '../../api/types'
+import { Post, PostComment, PostRecipe } from '../../api/types'
+import CommentItem from './CommentItem'
 
 const SocialMedia = () => {
   const auth = useAuth()
@@ -39,15 +45,43 @@ const SocialMedia = () => {
   const { handleSubmit, getValues } = formMethods
 
   const [posts, setPosts] = useState<Post[]>([...testPosts])
-
   const userRecipes: PostRecipe[] = [...testRecipes]
 
+  // Post creation
   const [imgAnchorEl, setImgAnchorEl] = useState<HTMLButtonElement | null>(null)
   const [postImg, setPostImg] = useState('')
-
   const [chosenRecipe, setChosenRecipe] = useState<PostRecipe | null>(null)
   const [newPostText, setNewPostText] = useState('')
 
+  // Post View Modal
+  const [postBeingViewed, setPostBeingViewed] = useState<Post | null>(null)
+  const postModalOpen = postBeingViewed ? true : false
+  const [newCommentText, setNewCommentText] = useState('')
+
+  const handleOpenPostView = (post: Post) => {
+    setPostBeingViewed(post)
+  }
+
+  const handleClosePostView = () => {
+    setPostBeingViewed(null)
+    setNewCommentText('')
+  }
+
+  const handleCreateComment = () => {
+    if (newCommentText) {
+      let comment: PostComment = {
+        content: newCommentText,
+        liked: false,
+        disliked: false,
+      }
+
+      console.log(comment)
+
+      setNewCommentText('')
+    }
+  }
+
+  // Post endless scroll
   const postsPerPage = 10
 
   const [currentPosts, setCurrentPosts] = useState<Post[]>(
@@ -84,6 +118,9 @@ const SocialMedia = () => {
         recipe: chosenRecipe,
         img: postImg,
         content: newPostText,
+        liked: false,
+        disliked: false,
+        comments: [],
       }
 
       console.log(post)
@@ -176,6 +213,9 @@ const SocialMedia = () => {
               />
             </Stack>
 
+            <InputLabel htmlFor="whats-cookin" sx={{ visibility: 'hidden' }}>
+              What's Cookin'?
+            </InputLabel>
             <OutlinedInput
               value={newPostText}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -186,7 +226,10 @@ const SocialMedia = () => {
               minRows={1}
               maxRows={4}
               fullWidth
+              id="whats-cookin"
               placeholder="What's Cookin'?"
+              label="What's Cookin'?"
+              aria-label="What's Cookin'?"
               sx={{
                 '& fieldset': {
                   borderRadius: 8,
@@ -197,6 +240,7 @@ const SocialMedia = () => {
                   <IconButton
                     onClick={handleCreatePost}
                     disabled={!(chosenRecipe && newPostText)}
+                    aria-label="Submit Recipe"
                   >
                     <Send />
                   </IconButton>
@@ -223,10 +267,114 @@ const SocialMedia = () => {
               scrollableTarget="scrollableDiv"
             >
               {currentPosts.map((post, index) => (
-                <PostItem post={post} index={index} />
+                <PostItem
+                  post={post}
+                  index={index}
+                  openModal={handleOpenPostView}
+                />
               ))}
             </InfiniteScroll>
           </Box>
+
+          <Dialog
+            open={postModalOpen}
+            onClose={handleClosePostView}
+            fullWidth
+            maxWidth="md"
+          >
+            <DialogContent>
+              <Grid2 container spacing={2}>
+                <Grid2 size={6}>
+                  <Stack spacing={2}>
+                    <Card sx={{ p: 1 }}>
+                      <Typography
+                        variant="h4"
+                        aria-label={'Modal Recipe Title'}
+                      >
+                        Recipe {postBeingViewed?.recipe.name}
+                      </Typography>
+                    </Card>
+
+                    {postBeingViewed?.img ? (
+                      <img
+                        src={postBeingViewed.img}
+                        alt={`${postBeingViewed.recipe.name} Image`}
+                        aria-label={'Modal Post Image'}
+                        style={{
+                          maxWidth: '150px',
+                          maxHeight: '115px',
+                        }}
+                      />
+                    ) : (
+                      <></>
+                    )}
+
+                    <Box>
+                      <Typography variant="body1">
+                        {postBeingViewed?.content}
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </Grid2>
+                <Grid2
+                  size={6}
+                  sx={{
+                    maxHeight: '80vh',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <Stack spacing={2}>
+                    <Box>
+                      <OutlinedInput
+                        value={newCommentText}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                          setNewCommentText(e.target.value)
+                        }}
+                        size="small"
+                        multiline
+                        minRows={1}
+                        maxRows={2}
+                        fullWidth
+                        id="whats-cookin"
+                        label="Comment"
+                        aria-label="Comment"
+                        sx={{
+                          '& fieldset': {
+                            borderRadius: 8,
+                          },
+                        }}
+                        endAdornment={
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={handleCreateComment}
+                              disabled={!newCommentText}
+                              aria-label="Submit Comment"
+                            >
+                              <Send />
+                            </IconButton>
+                          </InputAdornment>
+                        }
+                      />
+                    </Box>
+                    <Stack
+                      spacing={2}
+                      sx={{
+                        overflowY: 'auto',
+                        pr: 3,
+                        pl: 1,
+                        width: '100%',
+                      }}
+                    >
+                      {postBeingViewed?.comments.map((comment, index) => {
+                        console.log(comment)
+                        return <CommentItem comment={comment} index={index} />
+                      })}
+                    </Stack>
+                  </Stack>
+                </Grid2>
+              </Grid2>
+            </DialogContent>
+          </Dialog>
         </Box>
       </Stack>
     </Container>

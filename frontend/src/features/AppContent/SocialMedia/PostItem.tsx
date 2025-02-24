@@ -7,11 +7,12 @@ import {
   Typography,
 } from '@mui/material'
 import { Post } from '../../api/types'
-import { ThumbDownOutlined, ThumbUp } from '@mui/icons-material'
+import { Comment, ThumbDownOutlined, ThumbUp } from '@mui/icons-material'
 
 interface PostItemProp {
   post: Post
   index: number
+  openModal: (post: Post) => void
 }
 
 const PostItem = (props: PostItemProp) => {
@@ -71,14 +72,23 @@ const PostItem = (props: PostItemProp) => {
           alignItems="center"
           justifyContent="space-evenly"
         >
-          <Grid2 size={6}>
+          <Grid2 size={4}>
             <IconButton>
               <ThumbUp />
             </IconButton>
           </Grid2>
-          <Grid2 size={6}>
+          <Grid2 size={4}>
             <IconButton>
               <ThumbDownOutlined />
+            </IconButton>
+          </Grid2>
+          <Grid2 size={4}>
+            <IconButton
+              onClick={(e) => {
+                props.openModal(props.post)
+              }}
+            >
+              <Comment />
             </IconButton>
           </Grid2>
         </Grid2>

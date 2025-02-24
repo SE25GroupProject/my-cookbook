@@ -92,6 +92,12 @@ export interface RecipeListResponse {
  */
 export type PostRecipe = Pick<Recipe, 'id' | 'name'>
 
+export interface PostComment {
+  content: string
+  liked: boolean
+  disliked: boolean
+}
+
 /**
  * A Post object that stores a message, image, and recipe added by a user.
  *
@@ -103,6 +109,9 @@ export interface Post {
   recipe: PostRecipe
   img: string
   content: string
+  liked: boolean
+  disliked: boolean
+  comments: PostComment[]
 }
 
 export type RecipeListData = Pick<

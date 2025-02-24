@@ -35,6 +35,18 @@ const Profile = () => {
   const formMethods = useForm()
   const { handleSubmit, getValues } = formMethods
 
+  // Post View Modal
+  const [postBeingViewed, setPostBeingViewed] = useState<Post | null>(null)
+  const postModalOpen = postBeingViewed ? true : false
+
+  const handleOpenPostView = (post: Post) => {
+    setPostBeingViewed(post)
+  }
+
+  const handleClosePostView = () => {
+    setPostBeingViewed(null)
+  }
+
   const myPosts: Post[] = [...testPosts]
   const userRecipes: Recipe[] = [mockRecipe, mockRecipeTwo]
   const favRecipes: Recipe[] = [mockRecipeTwo, mockRecipe]
@@ -170,7 +182,11 @@ const Profile = () => {
                 </Box>
               </Popover>
             </FormProvider>
-            <Typography variant="h3" textTransform={'capitalize'}>
+            <Typography
+              variant="h3"
+              textTransform={'capitalize'}
+              aria-label="Users Name"
+            >
               {auth?.user.username}'s Profile
             </Typography>
           </Stack>
@@ -212,7 +228,11 @@ const Profile = () => {
                     height={440}
                   >
                     {myPosts.map((post, index) => (
-                      <PostItem post={post} index={index} />
+                      <PostItem
+                        post={post}
+                        index={index}
+                        openModal={handleOpenPostView}
+                      />
                     ))}
                   </InfiniteScroll>
                 </Box>
