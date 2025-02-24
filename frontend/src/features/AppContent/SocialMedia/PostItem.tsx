@@ -31,7 +31,7 @@ const PostItem = (props: PostItemProp) => {
           height="100%"
         >
           <Button onClick={(e) => handleClickRecipe(props.post.recipe.id)}>
-            <Typography variant="h6">
+            <Typography variant="h6" aria-label={'Recipe Title'}>
               Recipe {props.post.recipe.name}
             </Typography>
           </Button>
@@ -39,8 +39,10 @@ const PostItem = (props: PostItemProp) => {
             <img
               src={props.post.img}
               alt={`${props.post.recipe.name} Image`}
+              aria-label={'Post Image'}
               style={{
                 maxWidth: '150px',
+                maxHeight: '115px',
               }}
             />
           ) : (
@@ -51,7 +53,11 @@ const PostItem = (props: PostItemProp) => {
           <Divider orientation="vertical" />
         </Grid2>
         <Grid2 container alignItems="center" size={8} paddingY="30px">
-          <Typography variant="body1" textAlign="left">
+          <Typography
+            variant="body1"
+            textAlign="left"
+            aria-label={'Post Content'}
+          >
             {props.post.content}
           </Typography>
         </Grid2>
