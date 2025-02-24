@@ -32,7 +32,7 @@ jobs:
       - name: Install dependencies (frontend)
         working-directory: ./frontend
         run: |
-          npm install
+          npm install --force
 
       - name: Run tests
         working-directory: ./frontend

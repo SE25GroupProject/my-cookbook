@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: App.tsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: App.tsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/*
+
+Copyright (C) 2022 SE CookBook - All Rights Reserved
+You may use, distribute and modify this code under the
+terms of the MIT license.
+You should have received a copy of the MIT license with
+this file. If not, please write to: help.cookbook@gmail.com
+
+*/
+
+/**
+ * File name: App.tsx
+ * Task - This is the parent component of the application. It creates the basic UI skeleton
+ * viz the header, the search component and the app contents
+ * Header and Search component remain static and app contents change according to the state of the application
+ * @author Priyanka Ambawane - dearpriyankasa@gmail.com
+ */
+import React, { createRef, ReactElement, useEffect, useState } from 'react'
+import { Provider } from 'react-redux'
+import { BrowserRouter } from 'react-router-dom'
+import applicationStore from './store'
+import './App.css'
+import GetIngredients from './features/AppContent/GetIngredients/GetIngredients'
+import Header from './features/AppContent/Header/Header'
+import AppContent from './features/AppContent/AppContent'
+import GetTags from './features/AppContent/Tag/GetTags'
+import CustomizedAccordions from './features/AppContent/NutritionFilter/CustomizedAccordions'
+import { ThemeProvider, useTheme } from './features/Themes/themeContext'
+import Login from './features/AppContent/Authentication/Login'
+import Profile from './features/AppContent/Authentication/Profile'
+import {
+  Box,
+  Button,
+  Fade,
+  Popper,
+  Stack,
+  Toolbar,
+  Typography,
+} from '@mui/material'
+import AuthProvider from './features/AppContent/Authentication/AuthProvider'
+import curlyArrow from './features/AppContent/images/curly-arrow.png'
+import {
+  KeyboardDoubleArrowDown,
+  KeyboardDoubleArrowUp,
+} from '@mui/icons-material'
+
+const store = applicationStore()
+
+// Separate function for the main application content
+/**
+ * A function to return the layout for the app. This includes the major
+ * building blocks of the app.
+ * @returns {ReactElement} The current page of the app.
+ */
+const AppContentLayout: React.FC = () => {
+  const { theme } = useTheme()
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [alreadyVisited, setAlreadyVisited] = useState(
+    localStorage.getItem('alreadyVisited') || ''
+  )
+
+  const [visitedEl, setVisitedEl] = useState&lt;HTMLButtonElement | null>(null)
+  const buttonRef = createRef&lt;HTMLButtonElement>()
+
+  useEffect(() => {
+    if (!alreadyVisited) {
+      localStorage.setItem('alreadyVisited', 'true')
+      setAlreadyVisited('true')
+      setVisitedEl(buttonRef.current)
+
+      setTimeout(() => {
+        // setVisitedEl(null)
+      }, 10000)
+    }
+  }, [])
+
+  const toggleSearchBar = (forceState: boolean | null) => {
+    const open = forceState ?? !searchOpen
+    setSearchOpen(open)
+    if (open) setVisitedEl(null)
+  }
+
+  return (
+    &lt;div
+      className="App"
+      style={{ backgroundColor: theme.background, color: theme.color }}
+    >
+      &lt;Header />
+      &lt;div className="search-bar-container">
+        &lt;div className={`search-bar ${searchOpen ? '' : 'hidden'}`}>
+          &lt;div
+            className="search-helper"
+            data-testid="search-comp-43"
+            style={{ backgroundColor: theme.background }}
+          >
+            &lt;GetIngredients />
+          &lt;/div>
+          &lt;div
+            className="search-helper"
+            data-testid="header-comp-44"
+            style={{ backgroundColor: theme.background }}
+          >
+            &lt;GetTags />
+          &lt;/div>
+          &lt;div
+            className="search-helper"
+            data-testid="header-comp-45"
+            style={{ backgroundColor: theme.background }}
+          >
+            &lt;CustomizedAccordions />
+          &lt;/div>
+        &lt;/div>
+        &lt;div className="search-expand">
+          &lt;Button
+            onClick={(e) => toggleSearchBar(null)}
+            variant="outlined"
+            sx={{ borderColor: theme.color }}
+            ref={buttonRef}
+          >
+            &lt;Typography
+              color={theme.color}
+              variant="h6"
+              sx={{
+                textTransform: 'initial',
+                mr: 2,
+              }}
+            >
+              Search A Recipe
+            &lt;/Typography>
+            {searchOpen ? (
+              // &lt;FaAngleDoubleUp fontSize={20} color={theme.color} />
+              &lt;KeyboardDoubleArrowUp />
+            ) : (
+              // &lt;FaAngleDoubleDown fontSize={20} color={theme.color} />
+              &lt;KeyboardDoubleArrowDown />
+            )}
+          &lt;/Button>
+          &lt;Popper
+            open={Boolean(visitedEl)}
+            anchorEl={visitedEl}
+            placement="bottom"
+            transition
+          >
+            {({ TransitionProps }) => (
+              &lt;Fade {...TransitionProps} timeout={350}>
+                &lt;Box
+                  sx={{
+                    p: 1,
+                  }}
+                >
+                  &lt;Stack direction={'row'} spacing={2} alignItems={'center'}>
+                    &lt;Typography
+                      variant="h5"
+                      sx={{
+                        bgcolor: theme.background,
+                        borderColor: theme.color,
+                        border: 1,
+                        borderRadius: 3,
+                        p: 1,
+                      }}
+                    >
+                      Click Here to Start!
+                    &lt;/Typography>
+                    &lt;img
+                      src={curlyArrow} // Fallback image if no profile photo
+                      alt="Arrow"
+                      className="curly-arrow"
+                      style={{
+                        width: '150px',
+                        // height: '80px',
+                      }}
+                    />
+                  &lt;/Stack>
+                &lt;/Box>
+              &lt;/Fade>
+            )}
+          &lt;/Popper>
+        &lt;/div>
+      &lt;/div>
+      &lt;div
+        className="App-body"
+        data-testid="body-comp-43"
+        style={{ backgroundColor: theme.background }}
+      >
+        &lt;AppContent toggleSearchBar={toggleSearchBar} />
+      &lt;/div>
+    &lt;/div>
+  )
+}
+
+// Main App component
+const App: React.FC = () => {
+  return (
+    &lt;Provider store={store}>
+      &lt;BrowserRouter
+        future={{
+          v7_relativeSplatPath: true,
+          v7_startTransition: true,
+        }}
+      >
+        &lt;AuthProvider>
+          &lt;ThemeProvider>
+            &lt;AppContentLayout />
+          &lt;/ThemeProvider>
+        &lt;/AuthProvider>
+      &lt;/BrowserRouter>
+    &lt;/Provider>
+  )
+}
+
+export default App
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Interfaces</h3><ul><li><a href="ActionTypes.html">ActionTypes</a></li><li><a href="Post.html">Post</a></li><li><a href="RecipeFormProps.html">RecipeFormProps</a></li><li><a href="RecipeListProps.html">RecipeListProps</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AppContentLayout">AppContentLayout</a></li><li><a href="global.html#Header">Header</a></li><li><a href="global.html#Navbar">Navbar</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Sat Feb 22 2025 13:28:59 GMT-0500 (Eastern Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
