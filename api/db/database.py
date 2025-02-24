@@ -75,7 +75,7 @@ class Database_Connection():
         try:
             getIdCommand: str = "INSERT INTO Users (Username, Password) VALUES (?, ?)"
             self.cursor.execute(getIdCommand, (user.Username, user.Password))
-            return self.cursor.lastrowid
+            return self.get_user_by_name(user.Username).UserId
         except Exception as e:
             print(f"Error adding user: {e}")
             return False
