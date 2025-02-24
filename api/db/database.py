@@ -73,8 +73,8 @@ class Database_Connection():
     def add_user(self, user: User) -> int | bool:
         """Adds a new user to the database, returns UserId on success"""
         try:
-            getIdCommand: str = "SELECT UserId FROM Users WHERE Username = ?"
-            self.cursor.execute(getIdCommand, (user.Username,))
+            getIdCommand: str = "INSERT INTO Users (Username, Password) VALUES (?, ?)"
+            self.cursor.execute(getIdCommand, (user.Username, user.Password))
             userid = self.cursor.fetchone()
             return userid[0] if userid else False
         except Exception as e:
