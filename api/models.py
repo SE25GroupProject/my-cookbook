@@ -18,8 +18,7 @@ from pydantic import BaseModel, EmailStr
 
 class Recipe(BaseModel):
     """A data model representing a recipe"""
-    id: str = Field(default_factory=uuid.uuid4,
-                    alias="_id")  # Unique identifier for the recip
+    id: Optional[int]  # Unique identifier for the recipe
     name: str  # Name of the recipe
     cookTime: Optional[str] = None
     prepTime: Optional[str] = None
@@ -47,7 +46,7 @@ class Recipe(BaseModel):
         schema_extra = {
 
             "example": {
-                "id": "abcd-efgh-jklm-nopq-rstuv",
+                "id": 1,
                 "name": "Low-Fat Berry Blue Frozen Dessert",
                 "cookTime": "24H",
                 "prepTime": "45M",
@@ -169,10 +168,10 @@ class UserCred(BaseModel):
     username: str
     password: str
 
-# class Token(BaseModel):
-#     access_token: str
-#     token_type: str
-
+class PostUpdate(BaseModel):
+    message: Optional[str] = Field(None, description="Updated content of the post")
+    image: Optional[str] = Field(None, description="Updated Base64-encoded image data")
+    recipe_id: Optional[int] = Field(None, description="Updated Recipe ID associated with the post")
 
 class ShoppingListItem(BaseModel):
     name: str

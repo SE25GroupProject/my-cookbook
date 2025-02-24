@@ -5,7 +5,7 @@ from api.models import RecipeListEntry, ShoppingListItem
 try:
     from api.db.objects import User, Recipe, Ingredient, Instruction, Post, Comment
 except Exception:
-    from objects import User, Recipe, Ingredient, Instruction
+    from objects import User, Recipe, Ingredient, Instruction, Post, Comment
 from datetime import datetime
 
 class Database_Connection():
@@ -17,7 +17,7 @@ class Database_Connection():
             self.instance = super(Database_Connection, self).__new__(self)
         return self.instance
     
-    def __init__(self, dbPath: str = 'cookbook.db'):
+    def __init__(self, dbPath: str = 'db/cookbook.db'):
         """Handles initializing the class"""
         print("Db Path: " + dbPath)
         self.conn = sqlite3.connect(dbPath, check_same_thread=False)
@@ -124,6 +124,7 @@ class Database_Connection():
     def create_recipe(self, recipe: Recipe, userId: int):
         """Creates a recipe based on the object provided"""
         try:
+            print(recipe)
             commandString: str = """INSERT INTO Recipes (name, cookTime, prepTime, totalTime, description, category, rating, calories, fat, saturatedFat, cholesterol, sodium, carbs, fiber, sugar, protein, servings)   
                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
             
@@ -163,9 +164,12 @@ class Database_Connection():
     def get_recipe(self, recipeId: int):
         """Gets a recipe based on its id"""
         try:
-            commandString: str = """SELECT * FROM Recipes WHERE _id = ?"""
+            commandString: str = """SELECT * FROM Recipes WHERE recipeId = ?"""
             self.cursor.execute(commandString, (recipeId,))
             recipeRes = self.cursor.fetchone()
+            if not recipeRes:
+                print("No recipe value found.")
+                return None
 
             commandString: str = """SELECT * FROM Images WHERE recipeId = ?"""
             self.cursor.execute(commandString, (recipeId,))
@@ -197,7 +201,7 @@ class Database_Connection():
 
             recipe: Recipe = Recipe(recipeRes[1], recipeRes[2], recipeRes[3], recipeRes[4], recipeRes[5], recipeRes[6], recipeRes[7], 
                 recipeRes[8], recipeRes[9], recipeRes[10], recipeRes[11], recipeRes[12], recipeRes[13], recipeRes[14], recipeRes[15],
-                recipeRes[16], recipeRes[17], imageList, tagsList, ingredientsList, instructionsList)
+                recipeRes[16], recipeRes[17], imageList, tagsList, ingredientsList, instructionsList, recipeId=recipeRes[0])
 
             return recipe
         
@@ -306,7 +310,7 @@ class Database_Connection():
             res = self.cursor.execute(commandString, (*ings, len(ings), per_page, page * per_page ))
             recipeIds = (*res.fetchall(),)
 
-            recipeCommand: str = """SELECT * FROM recipes WHERE _id IN (%s)"""%','.join('?'*len(recipeIds))
+            recipeCommand: str = """SELECT * FROM recipes WHERE recipeId IN (%s)"""%','.join('?'*len(recipeIds))
             res = self.cursor.execute(recipeCommand, tuple(id for recipeRecord in recipeIds for id in recipeRecord))
 
             recipeObjs = res.fetchall()
