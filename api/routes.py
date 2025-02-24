@@ -375,26 +375,6 @@ async def getUser(username: str) -> dict:
         user: User = db.get_user_by_name(username)
         if user is None:
             raise HTTPException(status_code=400, detail="There is no user with that username")
-
-@postRouter.put("/{post_id}", response_description="Update a post", response_model=Post)
-async def update_post(post_id: int, update: PostUpdate = Body(...), user_id: int = Body(..., embed=True)):
-    """Allows a user to edit their own post's message, image, or recipe."""
-    try:
-        # Fetch the existing post
-        post = db.get_post(post_id)
-        if not post:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Post with ID {post_id} not found."
-            )
-        
-        # Check if the user owns the post
-        if post.userId != user_id:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="You can only edit your own posts."
-            )
-        
         
 
 @recipeRouter.get("/getRecipe/{recipeId}")
