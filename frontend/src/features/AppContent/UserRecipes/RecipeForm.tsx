@@ -160,7 +160,7 @@ const RecipeForm = () => {
       setPrepTime(transformStringToTime(recipe.prepTime))
       setCookTime(transformStringToTime(recipe.cookTime))
       setIngredients(recipe.ingredients)
-      setSteps(recipe.instructions)
+      setSteps(recipe.instructions.map((inst) => inst.instruction))
     }
   }, [reset, recipe])
 
@@ -189,7 +189,10 @@ const RecipeForm = () => {
     data.totalTime = transformTimeToString(totalTime)
 
     data.ingredients = ingredients
-    data.instructions = steps
+    data.instructions = steps.map((inst, index) => ({
+      step: index,
+      instruction: inst,
+    }))
 
     console.log(data)
   })
