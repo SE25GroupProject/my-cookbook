@@ -585,8 +585,8 @@ async def get_user_posts(user_id: int):
     user_posts = [post for post in posts if post.userId == user_id]
     return user_posts
 
-@postRouter.put("/{post_id}/like", response_description="Like a post", status_code=200)
-async def like_post(post_id: int, user_id: int = Body(..., embed=True)):
+@postRouter.put("/like/{post_id}", response_description="Like a post", status_code=200)
+async def like_post(post_id: int, user_id: int = Body(...)):
     """Handles liking a post with toggle and switch logic."""
     try:
         post = db.get_post(post_id)
@@ -638,8 +638,8 @@ async def like_post(post_id: int, user_id: int = Body(..., embed=True)):
             detail=f"An error occurred while liking the post: {str(e)}"
         )
 
-@postRouter.put("/{post_id}/dislike", response_description="Dislike a post", status_code=200)
-async def dislike_post(post_id: int, user_id: int = Body(..., embed=True)):
+@postRouter.put("/dislike/{post_id}", response_description="Dislike a post", status_code=200)
+async def dislike_post(post_id: int, user_id: int = Body(...)):
     """Handles disliking a post with toggle and switch logic."""
     try:
         post = db.get_post(post_id)
@@ -777,7 +777,7 @@ async def update_post(post_id: int, update: PostUpdate = Body(...)):
                 detail=f"An error occurred while updating the post: {str(e)}"
             )
 
-@postRouter.post("/{post_id}/comments", response_description="Add a comment to a post", status_code=201)
+@postRouter.post("/comments/{post_id}", response_description="Add a comment to a post", status_code=201)
 async def add_comment(post_id: int, comment: Comment):
     """Adds a new comment to a post and returns the CommentId."""
     # Ensure the comment's postId matches the URL parameter
@@ -805,32 +805,32 @@ async def add_comment(post_id: int, comment: Comment):
             detail="Failed to add comment."
         )
 
-@postRouter.delete("/{post_id}/comments/{comment_id}", response_description="Delete a comment", status_code=200)
-async def delete_comment(post_id: int, comment_id: int, user_id: int = Body(..., embed=True)):
+@postRouter.delete("/comments/{comment_id}", response_description="Delete a comment", status_code=200)
+async def delete_comment(comment_id: int, postId: int = Body(..., embed=True), userId: int = Body(..., embed=True)):
     """Deletes a comment by its CommentId, ensuring the user owns it."""
     # Check if the post exists
-    post = db.get_post(post_id)
+    post = db.get_post(postId)
     if not post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Post with ID {post_id} not found."
+            detail=f"Post with ID {postId} not found."
         )
     # Check if the user exists
-    user = db.get_user_by_id(user_id)
+    user = db.get_user_by_id(userId)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"User with ID {user_id} not found."
+            detail=f"User with ID {userId} not found."
         )
     # Fetch comments to verify ownership
-    comments = db.get_post_comments(post_id)
+    comments = db.get_post_comments(postId)
     comment = next((c for c in comments if c.commentId == comment_id), None)
     if not comment:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Comment with ID {comment_id} not found for post {post_id}."
+            detail=f"Comment with ID {comment_id} not found for post {postId}."
         )
-    if comment.userId != user_id:
+    if comment.userId != userId:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You can only delete your own comments."

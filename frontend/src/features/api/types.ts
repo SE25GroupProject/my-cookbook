@@ -94,8 +94,16 @@ export interface RecipeListResponse {
 export type PostRecipe = Pick<Recipe, 'recipeId' | 'name'>
 
 export interface PostComment {
+  commentId: number
+  postId: number
+  userId: number
   message: string
 }
+
+export type PostCommentRequest = Pick<
+  PostComment,
+  'postId' | 'userId' | 'message'
+>
 
 /**
  * A Post object that stores a message, image, and recipe added by a user.
@@ -119,6 +127,8 @@ export type PostRequest = Pick<
   Post,
   'postId' | 'userId' | 'image' | 'message' | 'recipe'
 >
+
+export type PostUpdate = Pick<Post, 'postId' | 'userId'>
 // & {
 //   recipe: number
 // }

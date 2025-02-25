@@ -1,5 +1,9 @@
 import {
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
   Grid2,
   IconButton,
@@ -7,7 +11,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
-import { Post } from '../../api/types'
+import { Post, PostUpdate } from '../../api/types'
 import {
   Comment,
   Delete,
@@ -18,7 +22,12 @@ import {
   ThumbUpOutlined,
 } from '@mui/icons-material'
 import { useAuth } from '../Authentication/AuthProvider'
-import { useDeletePostMutation } from './SocialSlice'
+import {
+  useDeletePostMutation,
+  useDislikePostMutation,
+  useLikePostMutation,
+} from './SocialSlice'
+import { useState } from 'react'
 
 interface PostItemProp {
   post: Post
@@ -30,6 +39,7 @@ interface PostItemProp {
 const PostItem = (props: PostItemProp) => {
   const auth = useAuth()
 
+  // Like and Dislike
   const userLiked = auth?.user
     ? props.post.likes.includes(auth?.user.id)
     : false
@@ -37,14 +47,43 @@ const PostItem = (props: PostItemProp) => {
     ? props.post.dislikes.includes(auth?.user.id)
     : false
 
+  const [likePost] = useLikePostMutation()
+  const [dislikePost] = useDislikePostMutation()
+
+  const handleLike = () => {
+    if (auth) {
+      let postUpdate: PostUpdate = {
+        postId: props.post.postId,
+        userId: auth?.user.id,
+      }
+      likePost(postUpdate)
+    }
+  }
+
+  const handleDislike = () => {
+    if (auth) {
+      let postUpdate: PostUpdate = {
+        postId: props.post.postId,
+        userId: auth?.user.id,
+      }
+      dislikePost(postUpdate)
+    }
+  }
+
+  // Recipe Click
   const handleClickRecipe = (recipeId: number) => {
     console.log('Recipe Id: ', recipeId)
   }
 
+  // Delete and Delete Modal
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [deletePost] = useDeletePostMutation()
 
+  const handleCloseDeleteModal = () => {
+    setDeleteModalOpen(false)
+  }
+
   const handleDeletePost = () => {
-    console.log('haha')
     deletePost(props.post)
   }
 
@@ -74,12 +113,7 @@ const PostItem = (props: PostItemProp) => {
           )}
           <Divider orientation="vertical" />
         </Grid2>
-        <Grid2
-          container
-          alignItems="flex-start"
-          size={auth?.user.id == props.post.userId ? 9 : 10}
-          padding="10px"
-        >
+        <Grid2 container alignItems="flex-start" size={10} padding="10px">
           <Stack spacing={2}>
             <Button
               onClick={(e) => handleClickRecipe(props.post.recipe.recipeId)}
@@ -112,16 +146,33 @@ const PostItem = (props: PostItemProp) => {
           alignItems="center"
           justifyContent="space-evenly"
         >
-          <Grid2 size={4} container justifyContent={'center'}>
-            <IconButton>
-              {userLiked ? <ThumbUp /> : <ThumbUpOutlined />}
-            </IconButton>
-          </Grid2>
-          <Grid2 size={4} container justifyContent={'center'}>
-            <IconButton>
-              {userDisliked ? <ThumbDown /> : <ThumbDownOutlined />}
-            </IconButton>
-          </Grid2>
+          {auth?.user.id == props.post.userId ? (
+            <>
+              <Grid2 container justifyContent={'center'} size={6}>
+                <IconButton onClick={(e) => props.openModalEdit(props.post)}>
+                  <Edit />
+                </IconButton>
+              </Grid2>
+              <Grid2 container justifyContent={'center'} size={6}>
+                <IconButton onClick={(e) => setDeleteModalOpen(true)}>
+                  <Delete />
+                </IconButton>
+              </Grid2>
+            </>
+          ) : (
+            <>
+              <Grid2 size={4} container justifyContent={'center'}>
+                <IconButton onClick={handleLike}>
+                  {userLiked ? <ThumbUp /> : <ThumbUpOutlined />}
+                </IconButton>
+              </Grid2>
+              <Grid2 size={4} container justifyContent={'center'}>
+                <IconButton onClick={handleDislike}>
+                  {userDisliked ? <ThumbDown /> : <ThumbDownOutlined />}
+                </IconButton>
+              </Grid2>
+            </>
+          )}
           <Grid2 size={4} container justifyContent={'center'}>
             <IconButton
               onClick={(e) => {
@@ -132,34 +183,24 @@ const PostItem = (props: PostItemProp) => {
             </IconButton>
           </Grid2>
         </Grid2>
-        {auth?.user.id == props.post.userId ? (
-          <Grid2 container direction="row" size={1} columns={12} spacing={0}>
-            <Grid2 size={1}>
-              <Divider orientation="vertical" />
-            </Grid2>
-            <Grid2
-              container
-              direction="column"
-              alignItems="center"
-              justifyContent="space-evenly"
-              size={11}
-            >
-              <Grid2 container justifyContent={'center'} size={6}>
-                <IconButton onClick={(e) => props.openModalEdit(props.post)}>
-                  <Edit />
-                </IconButton>
-              </Grid2>
-              <Grid2 container justifyContent={'center'} size={6}>
-                <IconButton onClick={handleDeletePost}>
-                  <Delete />
-                </IconButton>
-              </Grid2>
-            </Grid2>
-          </Grid2>
-        ) : (
-          <></>
-        )}
       </Grid2>
+
+      <Dialog open={deleteModalOpen} onClose={handleCloseDeleteModal}>
+        <DialogTitle>
+          <Typography>Are you sure?</Typography>
+        </DialogTitle>
+        <DialogContent>
+          Are you sure you would like to delete this post: {props.post.message}
+        </DialogContent>
+        <DialogActions>
+          <Button variant="outlined" onClick={handleCloseDeleteModal}>
+            Cancel
+          </Button>{' '}
+          <Button variant="contained" onClick={handleDeletePost}>
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Paper>
   )
 }

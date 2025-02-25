@@ -92,7 +92,6 @@ const SocialMedia = () => {
   useEffect(() => {
     if (posts) {
       setCurrentPosts([...posts].splice(0, postsPerPage))
-      console.log(posts)
     }
   }, [posts])
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import './Profile.css' // Optional, for styling
 import { useAuth } from './AuthProvider'
 import {
@@ -30,6 +30,7 @@ import InfiniteScroll from 'react-infinite-scroll-component'
 import { useFixScroll } from '../SocialMedia/FixScroll'
 import RecipeListItem from '../RecipeList/RecipeLIstItem'
 import PostModal from '../SocialMedia/PostModal'
+import { useGetPostsByUserQuery } from '../SocialMedia/SocialSlice'
 
 const Profile = () => {
   const auth = useAuth()
@@ -55,36 +56,48 @@ const Profile = () => {
     setPostBeingViewed(null)
   }
 
-  const myPosts: Post[] = [...testPosts]
+  // const myPosts: Post[] = [...testPosts]
+  const userId = auth ? auth.user.id : -1
+  const {
+    data: myPosts,
+    isLoading,
+    isSuccess,
+  } = useGetPostsByUserQuery(userId, { skip: userId == -1 })
+
   const userRecipes: Recipe[] = [mockRecipe, mockRecipeTwo]
   const favRecipes: Recipe[] = [mockRecipeTwo, mockRecipe]
 
   const postsPerPage = 10
 
-  const [currentPosts, setCurrentPosts] = useState<Post[]>(
-    [...myPosts].splice(
-      0,
-      myPosts.length < postsPerPage ? myPosts.length : postsPerPage
-    )
-  )
+  const [currentPosts, setCurrentPosts] = useState<Post[]>([])
+
+  useEffect(() => {
+    if (myPosts) {
+      setCurrentPosts([...myPosts].splice(0, postsPerPage))
+      console.log(myPosts)
+    }
+  }, [myPosts])
+
   const [hasMore, setHasMore] = useState(true)
 
   const fetchData = () => {
-    if (myPosts.length == currentPosts.length) {
-      setHasMore(false)
+    if (myPosts) {
+      if (myPosts.length == currentPosts.length) {
+        setHasMore(false)
+      }
+
+      var postCopy = [...myPosts]
+      var postsToDisplay = postCopy.splice(
+        currentPosts.length,
+        myPosts.length < postsPerPage ? myPosts.length : postsPerPage
+      )
+
+      // a fake async api call like which sends
+      // 20 more records in .5 secs
+      setTimeout(() => {
+        setCurrentPosts(currentPosts.concat(postsToDisplay))
+      }, 1500)
     }
-
-    var postCopy = [...myPosts]
-    var postsToDisplay = postCopy.splice(
-      currentPosts.length,
-      myPosts.length < postsPerPage ? myPosts.length : postsPerPage
-    )
-
-    // a fake async api call like which sends
-    // 20 more records in .5 secs
-    setTimeout(() => {
-      setCurrentPosts(currentPosts.concat(postsToDisplay))
-    }, 1500)
   }
 
   useFixScroll(hasMore, fetchData)
@@ -235,7 +248,7 @@ const Profile = () => {
                     scrollableTarget="scrollable"
                     height={440}
                   >
-                    {myPosts.map((post, index) => (
+                    {currentPosts.map((post, index) => (
                       <PostItem
                         post={post}
                         index={index}

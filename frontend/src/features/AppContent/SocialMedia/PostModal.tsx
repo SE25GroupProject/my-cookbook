@@ -17,15 +17,25 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import { Post, PostComment, PostRecipe, PostRequest } from '../../api/types'
+import {
+  Post,
+  PostComment,
+  PostCommentRequest,
+  PostRecipe,
+  PostRequest,
+} from '../../api/types'
 import { Send } from '@mui/icons-material'
 import CommentItem from './CommentItem'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { testRecipes } from '../testVariables'
 import ImageInput from '../../../components/ImageInput'
 import { FormProvider, useForm } from 'react-hook-form'
 import { useAuth } from '../Authentication/AuthProvider'
-import { useEditPostMutation } from './SocialSlice'
+import {
+  useAddCommentMutation,
+  useEditPostMutation,
+  useGetPostByIdQuery,
+} from './SocialSlice'
 
 interface PostModalProps {
   post: Post
@@ -37,6 +47,8 @@ interface PostModalProps {
 const PostModal = (props: PostModalProps) => {
   // Auth
   const auth = useAuth()
+
+  const { data: postRef } = useGetPostByIdQuery(props.post.postId)
 
   // Image Upload State
   const [imgAnchorEl, setImgAnchorEl] = useState<HTMLButtonElement | null>(null)
@@ -56,14 +68,19 @@ const PostModal = (props: PostModalProps) => {
 
   // Comments
   const [newCommentText, setNewCommentText] = useState('')
+  const [addComment] = useAddCommentMutation()
 
   const handleCreateComment = () => {
-    if (newCommentText) {
-      let comment: PostComment = {
+    if (newCommentText && auth) {
+      let comment: PostCommentRequest = {
         message: newCommentText,
+        postId: props.post.postId,
+        userId: auth?.user.id,
       }
 
       console.log(comment)
+
+      addComment(comment)
 
       setNewCommentText('')
     }
@@ -90,7 +107,7 @@ const PostModal = (props: PostModalProps) => {
 
       editPost(post)
         .unwrap()
-        .then((response: Post) => {
+        .then((response) => {
           console.log(response)
         })
         .catch((err) => console.log(err))
@@ -293,18 +310,23 @@ const PostModal = (props: PostModalProps) => {
                       pr: 3,
                       pl: 1,
                       width: '100%',
+                      maxHeight: '72vh',
                     }}
                   >
-                    {props.post.comments.map((comment, index) => {
-                      console.log(comment)
-                      return (
-                        <CommentItem
-                          comment={comment}
-                          index={index}
-                          key={index}
-                        />
-                      )
-                    })}
+                    {postRef ? (
+                      postRef.comments.map((comment, index) => {
+                        return (
+                          <CommentItem
+                            comment={comment}
+                            index={index}
+                            postId={props.post.postId}
+                            key={index}
+                          />
+                        )
+                      })
+                    ) : (
+                      <></>
+                    )}
                   </Stack>
                 </Stack>
               </Paper>

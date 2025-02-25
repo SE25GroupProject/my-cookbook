@@ -134,18 +134,33 @@ export const testPosts: Post[] = [
     comments: [
       {
         message: 'comment 1',
+        postId: 1,
+        userId: 1,
+        commentId: 1,
       },
       {
         message: 'comment 2',
+        postId: 1,
+        userId: 1,
+        commentId: 2,
       },
       {
         message: 'comment 3',
+        postId: 1,
+        userId: 1,
+        commentId: 3,
       },
       {
         message: 'comment 4',
+        postId: 1,
+        userId: 2,
+        commentId: 4,
       },
       {
         message: 'comment 5',
+        postId: 1,
+        userId: 2,
+        commentId: 5,
       },
     ],
   },
