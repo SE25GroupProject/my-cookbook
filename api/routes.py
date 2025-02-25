@@ -176,7 +176,8 @@ async def recommend_recipes(query: RecipeQuery = Body(...)):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred")
 
 @userRouter.post("/signup")
-async def signup(incomingUser: UserCred = Body(...)):
+async def signup(request: Request, incomingUser: UserCred = Body(...)):
+    db: Database_Connection = request.state.db
     user: User = User(incomingUser.username, incomingUser.password)
     if db.get_user_by_name(user.Username) is not None:
         raise HTTPException(status_code=400, detail="User with that username already exists")
@@ -184,7 +185,8 @@ async def signup(incomingUser: UserCred = Body(...)):
     return {"id": userid, "username": user.Username}
 
 @userRouter.post("/login")
-async def login(incomingUser: UserCred = Body(...)):
+async def login(request: Request, incomingUser: UserCred = Body(...)):
+    db: Database_Connection = request.state.db
     user: User = db.get_user_by_name(incomingUser.username)
     if user is None:
         raise HTTPException(status_code=400, detail="There is no user with that username")
@@ -193,7 +195,8 @@ async def login(incomingUser: UserCred = Body(...)):
     raise HTTPException(status_code=401, detail="Incorrect Username or Password")
 
 @userRouter.get("/getUser/{username}")
-async def getUser(username: str) -> dict:
+async def getUser(username: str, request: Request) -> dict:
+    db: Database_Connection = request.state.db
     user: User = db.get_user_by_name(username)
     if user is None:
         raise HTTPException(status_code=400, detail="There is no user with that username")
@@ -201,8 +204,9 @@ async def getUser(username: str) -> dict:
 
 # Updated Post Routes
 @postRouter.post("/", response_description="Create a new post", status_code=201)
-async def create_post(post: Post):
+async def create_post(post: Post, request: Request):
     """Creates a new post in the database."""
+    db: Database_Connection = request.state.db
     try:
         if db.add_post(post):
             return {"message": "Post created successfully."}
@@ -218,8 +222,9 @@ async def create_post(post: Post):
         )
 
 @postRouter.get("/{post_id}", response_description="Get a post by ID", response_model=Post)
-async def get_post(post_id: int):
+async def get_post(post_id: int, request: Request):
     """Retrieves a post by its ID."""
+    db: Database_Connection = request.state.db
     post = db.get_post(post_id)
     if post:
         return post
@@ -229,21 +234,24 @@ async def get_post(post_id: int):
     )
 
 @postRouter.get("/", response_description="List all posts", response_model=List[Post])
-async def list_posts():
+async def list_posts(request: Request):
     """Retrieves all posts from the database."""
+    db: Database_Connection = request.state.db
     posts = db.get_all_posts()
     return posts
 
 @postRouter.get("/user/{user_id}", response_description="List all posts by a user", response_model=List[Post])
-async def get_user_posts(user_id: int):
+async def get_user_posts(user_id: int, request: Request):
     """Retrieves all posts by a specific user from the database."""
+    db: Database_Connection = request.state.db
     posts = db.get_all_posts()
     user_posts = [post for post in posts if post.userId == user_id]
     return user_posts
 
 @postRouter.put("/{post_id}/like", response_description="Like a post", status_code=200)
-async def like_post(post_id: int, user_id: int = Body(..., embed=True)):
+async def like_post(request: Request, post_id: int, user_id: int = Body(..., embed=True)):
     """Handles liking a post with toggle and switch logic."""
+    db: Database_Connection = request.state.db
     try:
         post = db.get_post(post_id)
         if not post:
@@ -295,8 +303,9 @@ async def like_post(post_id: int, user_id: int = Body(..., embed=True)):
         )
 
 @postRouter.put("/{post_id}/dislike", response_description="Dislike a post", status_code=200)
-async def dislike_post(post_id: int, user_id: int = Body(..., embed=True)):
+async def dislike_post(request: Request, post_id: int, user_id: int = Body(..., embed=True)):
     """Handles disliking a post with toggle and switch logic."""
+    db: Database_Connection = request.state.db
     try:
         post = db.get_post(post_id)
         if not post:
@@ -348,8 +357,9 @@ async def dislike_post(post_id: int, user_id: int = Body(..., embed=True)):
         )
 
 @postRouter.delete("/{post_id}", response_description="Delete a post", status_code=200)
-async def delete_post(post_id: int):
+async def delete_post(request: Request, post_id: int):
     """Deletes a post by its ID, including all related reactions."""
+    db: Database_Connection = request.state.db
     try:
         if db.delete_post(post_id):
             return {"message": "Post deleted successfully."}
@@ -370,15 +380,17 @@ class PostUpdate(BaseModel):
     recipe_id: Optional[int] = Field(None, description="Updated Recipe ID associated with the post")
 
 @userRouter.get("/getUser/{username}")
-async def getUser(username: str) -> dict:
+async def getUser(request: Request, username: str) -> dict:
     # try:
-        user: User = db.get_user_by_name(username)
-        if user is None:
-            raise HTTPException(status_code=400, detail="There is no user with that username")
+    db: Database_Connection = request.state.db
+    user: User = db.get_user_by_name(username)
+    if user is None:
+        raise HTTPException(status_code=400, detail="There is no user with that username")
         
 
 @recipeRouter.get("/getRecipe/{recipeId}")
-async def getRecipe(recipeId: int) -> Recipe:
+async def getRecipe(request: Request, recipeId: int) -> Recipe:
+    db: Database_Connection = request.state.db
     recipe: Recipe = db.get_recipe(recipeId)
     if recipe is None:
         raise HTTPException(status_code=400, detail="There is not recipe with that Id")
@@ -386,7 +398,8 @@ async def getRecipe(recipeId: int) -> Recipe:
 
 # Todo: This may have to change as I am not sure if this is the proper way to expect a body for a post request
 @recipeRouter.post("/createRecipe/")
-async def createRecipe(recipeObject: Recipe, userId: int) -> bool:
+async def createRecipe(request: Request, recipeObject: Recipe, userId: int) -> bool:
+    db: Database_Connection = request.state.db
     success = db.create_recipe(recipeObject, userId)
     if success:
         return True
@@ -394,7 +407,8 @@ async def createRecipe(recipeObject: Recipe, userId: int) -> bool:
     return False
 
 @recipeRouter.put("/updateRecipe/{recipeId}")
-async def updateRecipe(recipeId: int, newRecipe: Recipe):
+async def updateRecipe(request: Request, recipeId: int, newRecipe: Recipe):
+    db: Database_Connection = request.state.db
     success = db.update_recipe(recipeId, newRecipe)
     # Todo: Prob need to add a check here to make sure that we are the owner of the recipe to change it
     if success:
@@ -403,7 +417,8 @@ async def updateRecipe(recipeId: int, newRecipe: Recipe):
     return False
 
 @recipeRouter.get("/getUserRecipes/{userId}")
-async def getUserRecipes(userId: int):
+async def getUserRecipes(request: Request, userId: int):
+    db: Database_Connection = request.state.db
     recipeIds: list[int] = db.get_recipes_owned_by_userId(userId)
     recipeObj: list[dict] = []
     for recipeId in recipeIds:
@@ -414,7 +429,8 @@ async def getUserRecipes(userId: int):
     return recipeObj
 
 @recipeRouter.put("/favoriteRecipe/{recipeId}/{userId}")
-async def favoriteRecipe(recipeId: int, userId: int):
+async def favoriteRecipe(request: Request, recipeId: int, userId: int):
+    db: Database_Connection = request.state.db
     success: bool = db.favorite_recipe(userId, recipeId)
     if success:
         return True
@@ -422,149 +438,13 @@ async def favoriteRecipe(recipeId: int, userId: int):
     return False
 
 @recipeRouter.put("/unfavoriteRecipe/{recipeId}/{userId}")
-async def favoriteRecipe(recipeId: int, userId: int):
+async def favoriteRecipe(request: Request, recipeId: int, userId: int):
+    db: Database_Connection = request.state.db
     success: bool = db.unfavorite_recipe(userId, recipeId)
     if success:
         return True
     
     return False
-
-@postRouter.get("/", response_description="List all posts", response_model=List[Post])
-async def list_posts():
-    """Retrieves all posts from the database."""
-    posts = db.get_all_posts()
-    return posts
-
-@postRouter.get("/user/{user_id}", response_description="List all posts by a user", response_model=List[Post])
-async def get_user_posts(user_id: int):
-    """Retrieves all posts by a specific user from the database."""
-    posts = db.get_all_posts()
-    user_posts = [post for post in posts if post.userId == user_id]
-    return user_posts
-
-@postRouter.put("/{post_id}/like", response_description="Like a post", status_code=200)
-async def like_post(post_id: int, user_id: int = Body(..., embed=True)):
-    """Handles liking a post with toggle and switch logic."""
-    try:
-        post = db.get_post(post_id)
-        if not post:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Post with ID {post_id} not found."
-            )
-        if db.get_user_by_id(user_id) is None:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"User with ID {user_id} not found."
-            )
-        
-        # Check current reaction
-        current_likes = db.get_post_reactions(post_id, "LIKE")
-        current_dislikes = db.get_post_reactions(post_id, "DISLIKE")
-        
-        if user_id in current_likes:
-            # User already liked it, so remove the like (toggle off)
-            if db.remove_post_reaction(post_id, user_id):
-                return {"message": "Like removed successfully."}
-            else:
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="Failed to remove like."
-                )
-        elif user_id in current_dislikes:
-            # User disliked it, remove dislike and add like
-            if db.remove_post_reaction(post_id, user_id) and db.add_post_reaction(post_id, user_id, "LIKE"):
-                return {"message": "Changed from dislike to like successfully."}
-            else:
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="Failed to switch from dislike to like."
-                )
-        else:
-            # No existing reaction, add like
-            if db.add_post_reaction(post_id, user_id, "LIKE"):
-                return {"message": "Post liked successfully."}
-            else:
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="Failed to like post."
-                )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"An error occurred while liking the post: {str(e)}"
-        )
-
-@postRouter.put("/{post_id}/dislike", response_description="Dislike a post", status_code=200)
-async def dislike_post(post_id: int, user_id: int = Body(..., embed=True)):
-    """Handles disliking a post with toggle and switch logic."""
-    try:
-        post = db.get_post(post_id)
-        if not post:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Post with ID {post_id} not found."
-            )
-        if db.get_user_by_id(user_id) is None:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"User with ID {user_id} not found."
-            )
-        
-        # Check current reaction
-        current_likes = db.get_post_reactions(post_id, "LIKE")
-        current_dislikes = db.get_post_reactions(post_id, "DISLIKE")
-        
-        if user_id in current_dislikes:
-            # User already disliked it, so remove the dislike (toggle off)
-            if db.remove_post_reaction(post_id, user_id):
-                return {"message": "Dislike removed successfully."}
-            else:
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="Failed to remove dislike."
-                )
-        elif user_id in current_likes:
-            # User liked it, remove like and add dislike
-            if db.remove_post_reaction(post_id, user_id) and db.add_post_reaction(post_id, user_id, "DISLIKE"):
-                return {"message": "Changed from like to dislike successfully."}
-            else:
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="Failed to switch from like to dislike."
-                )
-        else:
-            # No existing reaction, add dislike
-            if db.add_post_reaction(post_id, user_id, "DISLIKE"):
-                return {"message": "Post disliked successfully."}
-            else:
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="Failed to dislike post."
-                )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"An error occurred while disliking the post: {str(e)}"
-        )
-  
-@postRouter.delete("/{post_id}", response_description="Delete a post", status_code=200)
-async def delete_post(post_id: int):
-    """Deletes a post by its ID, including all related reactions."""
-    try:
-        if db.delete_post(post_id):
-            return {"message": "Post deleted successfully."}
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Post with ID {post_id} not found."
-            )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"An error occurred while deleting the post: {str(e)}"
-        )
-
   
 class PostUpdate(BaseModel):
     message: Optional[str] = Field(None, description="Updated content of the post")
