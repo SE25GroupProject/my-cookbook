@@ -759,65 +759,8 @@ async def delete_post(request: Request, post_id: int, user_id: int = Body(...)):
             detail=f"An error occurred while deleting the post: {str(e)}"
         )
 
-class PostUpdate(BaseModel):
-    message: Optional[str] = Field(None, description="Updated content of the post")
-    image: Optional[str] = Field(None, description="Updated Base64-encoded image data")
-    recipe_id: Optional[int] = Field(None, description="Updated Recipe ID associated with the post")
-
-@userRouter.get("/getUser/{username}")
-async def getUser(request: Request, username: str) -> dict:
-    # try:
-    db: Database_Connection = request.state.db
-    user: User = db.get_user_by_name(username)
-    if user is None:
-        raise HTTPException(status_code=400, detail="There is no user with that username")
-        
-        return user
-    # except: 
-    #     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occured when trying to get this user")
-        
-
-@recipeRouter.get("/getRecipe/{recipeId}")
-async def getRecipe(request: Request, recipeId: int) -> Recipe:
-    db: Database_Connection = request.state.db
-    recipe: Recipe = db.get_recipe(recipeId)
-    if recipe is None:
-        raise HTTPException(status_code=400, detail="There is not recipe with that Id")
-    return recipe
-
 @router.get("/user/{userId}")
-async def get_user_recipes(userId: int):
-    recipeIds: list[int] = db.get_recipes_owned_by_userId(userId)
-    recipeObj: list[dict] = []
-    for recipeId in recipeIds:
-        recipeObj.append(db.get_recipe(recipeId).to_dict())
-    
-    # This should be fine as if there are no recipes owned by a user it should just return the empty list
-    # Can be changed to None if needed
-    return recipeObj
-
-# Todo: This may have to change as I am not sure if this is the proper way to expect a body for a post request
-@recipeRouter.post("/createRecipe/")
-async def createRecipe(request: Request, recipeObject: Recipe, userId: int) -> bool:
-    db: Database_Connection = request.state.db
-    success = db.create_recipe(recipeObject, userId)
-    if success:
-        return True
-    
-    return False
-
-@recipeRouter.put("/updateRecipe/{recipeId}")
-async def updateRecipe(request: Request, recipeId: int, newRecipe: Recipe):
-    db: Database_Connection = request.state.db
-    success = db.update_recipe(recipeId, newRecipe)
-    # Todo: Prob need to add a check here to make sure that we are the owner of the recipe to change it
-    if success:
-        return True
-    
-    return False
-
-@recipeRouter.get("/getUserRecipes/{userId}")
-async def getUserRecipes(request: Request, userId: int):
+async def get_user_recipes(request: Request, userId: int):
     db: Database_Connection = request.state.db
     recipeIds: list[int] = db.get_recipes_owned_by_userId(userId)
     recipeObj: list[dict] = []
@@ -827,29 +770,6 @@ async def getUserRecipes(request: Request, userId: int):
     # This should be fine as if there are no recipes owned by a user it should just return the empty list
     # Can be changed to None if needed
     return recipeObj
-
-@recipeRouter.put("/favoriteRecipe/{recipeId}/{userId}")
-async def favoriteRecipe(request: Request, recipeId: int, userId: int):
-    db: Database_Connection = request.state.db
-    success: bool = db.favorite_recipe(userId, recipeId)
-    if success:
-        return True
-    
-    return False
-
-@recipeRouter.put("/unfavoriteRecipe/{recipeId}/{userId}")
-async def favoriteRecipe(request: Request, recipeId: int, userId: int):
-    db: Database_Connection = request.state.db
-    success: bool = db.unfavorite_recipe(userId, recipeId)
-    if success:
-        return True
-    
-    return False
-  
-class PostUpdate(BaseModel):
-    message: Optional[str] = Field(None, description="Updated content of the post")
-    image: Optional[str] = Field(None, description="Updated Base64-encoded image data")
-    recipe_id: Optional[int] = Field(None, description="Updated Recipe ID associated with the post")
 
 @postRouter.put("/{post_id}", response_description="Update a post", response_model=Post)
 async def update_post(request: Request, post_id: int, update: PostUpdate = Body(...)):
