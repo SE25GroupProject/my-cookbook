@@ -1,7 +1,7 @@
 import json
 import sqlite3
 
-def insertData(path):
+def insertData(path, recipesJson):
     conn = sqlite3.connect(path)
     cursor = conn.cursor()
 
@@ -10,7 +10,7 @@ def insertData(path):
         cursor.executescript(sql_script)
         conn.commit()
 
-    with open('db/recipes.json', 'r') as f:
+    with open(recipesJson, 'r') as f:
         data = json.load(f)
 
         counter = 0

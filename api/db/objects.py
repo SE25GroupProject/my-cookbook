@@ -1,5 +1,4 @@
 """Holds classes of all objects for database use"""
-from models import Recipe
 from datetime import datetime
 from pydantic import BaseModel, Field
 from typing import Optional, List
