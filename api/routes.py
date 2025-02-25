@@ -204,6 +204,7 @@ async def getUser(username: str) -> dict:
 async def create_post(post: Post):
     """Creates a new post in the database."""
     try:
+        print(post)
         if db.add_post(post):
             return {"message": "Post created successfully."}
         else:

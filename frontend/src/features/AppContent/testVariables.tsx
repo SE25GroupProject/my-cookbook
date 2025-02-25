@@ -124,6 +124,7 @@ export const mockRecipeTwo: Recipe = {
 
 export const testPosts: Post[] = [
   {
+    postId: 1,
     recipe: { id: 58, name: 'Test 1' },
     img: '',
     content: 'This is a test post',
@@ -158,6 +159,7 @@ export const testPosts: Post[] = [
     ],
   },
   {
+    postId: 2,
     recipe: { id: 58, name: 'Test 2' },
     img: '',
     content: 'This is test post 2',
@@ -166,6 +168,7 @@ export const testPosts: Post[] = [
     comments: [],
   },
   {
+    postId: 3,
     recipe: { id: 58, name: 'Test 3' },
     img: '',
     content: 'This is test post 3',
@@ -174,6 +177,7 @@ export const testPosts: Post[] = [
     comments: [],
   },
   {
+    postId: 4,
     recipe: { id: 58, name: 'Test 4' },
     img: '',
     content: 'This is test post 4',
@@ -182,6 +186,7 @@ export const testPosts: Post[] = [
     comments: [],
   },
   {
+    postId: 5,
     recipe: { id: 58, name: 'Test 5' },
     img: '',
     content: 'This is test post 5',
@@ -190,6 +195,7 @@ export const testPosts: Post[] = [
     comments: [],
   },
   {
+    postId: 6,
     recipe: { id: 58, name: 'Test 6' },
     img: '',
     content: 'This is test post 6',
@@ -198,6 +204,7 @@ export const testPosts: Post[] = [
     comments: [],
   },
   {
+    postId: 7,
     recipe: { id: 58, name: 'Test 7' },
     img: '',
     content: 'This is test post 7',
@@ -206,6 +213,7 @@ export const testPosts: Post[] = [
     comments: [],
   },
   {
+    postId: 8,
     recipe: { id: 58, name: 'Test 8' },
     img: '',
     content: 'This is test post 8',
@@ -214,6 +222,7 @@ export const testPosts: Post[] = [
     comments: [],
   },
   {
+    postId: 9,
     recipe: { id: 58, name: 'Test 9' },
     img: '',
     content: 'This is test post 9',
@@ -222,6 +231,7 @@ export const testPosts: Post[] = [
     comments: [],
   },
   {
+    postId: 10,
     recipe: { id: 58, name: 'Test 10' },
     img: '',
     content: 'This is test post 10',
@@ -230,6 +240,7 @@ export const testPosts: Post[] = [
     comments: [],
   },
   {
+    postId: 11,
     recipe: { id: 58, name: 'Test 11' },
     img: '',
     content: 'This is test post 11',
@@ -238,6 +249,7 @@ export const testPosts: Post[] = [
     comments: [],
   },
   {
+    postId: 12,
     recipe: { id: 58, name: 'Test 12' },
     img: '',
     content: 'This is test post 12',
@@ -246,6 +258,7 @@ export const testPosts: Post[] = [
     comments: [],
   },
   {
+    postId: 13,
     recipe: { id: 58, name: 'Test 13' },
     img: '',
     content: 'This is test post 13',
@@ -254,6 +267,7 @@ export const testPosts: Post[] = [
     comments: [],
   },
   {
+    postId: 14,
     recipe: { id: 58, name: 'Test 14' },
     img: '',
     content: 'This is test post 14',
@@ -262,6 +276,7 @@ export const testPosts: Post[] = [
     comments: [],
   },
   {
+    postId: 15,
     recipe: { id: 58, name: 'Test 15' },
     img: '',
     content: 'This is test post 15',
@@ -270,6 +285,7 @@ export const testPosts: Post[] = [
     comments: [],
   },
   {
+    postId: 16,
     recipe: { id: 58, name: 'Test 16' },
     img: '',
     content: 'This is test post 16',
@@ -278,6 +294,7 @@ export const testPosts: Post[] = [
     comments: [],
   },
   {
+    postId: 17,
     recipe: { id: 58, name: 'Test 17' },
     img: '',
     content: 'This is test post 17',
@@ -286,6 +303,7 @@ export const testPosts: Post[] = [
     comments: [],
   },
   {
+    postId: 18,
     recipe: { id: 58, name: 'Test 18' },
     img: '',
     content: 'This is test post 18',
@@ -294,6 +312,7 @@ export const testPosts: Post[] = [
     comments: [],
   },
   {
+    postId: 19,
     recipe: { id: 58, name: 'Test 19' },
     img: '',
     content: 'This is test post 19',
@@ -302,6 +321,7 @@ export const testPosts: Post[] = [
     comments: [],
   },
   {
+    postId: 20,
     recipe: { id: 58, name: 'Test 20' },
     img: '',
     content: 'This is test post 20',
@@ -310,6 +330,7 @@ export const testPosts: Post[] = [
     comments: [],
   },
   {
+    postId: 21,
     recipe: { id: 58, name: 'Test 21' },
     img: '',
     content: 'This is test post 21',
@@ -318,6 +339,7 @@ export const testPosts: Post[] = [
     comments: [],
   },
   {
+    postId: 22,
     recipe: { id: 58, name: 'Test 22' },
     img: '',
     content: 'This is test post 22',
@@ -326,6 +348,7 @@ export const testPosts: Post[] = [
     comments: [],
   },
   {
+    postId: 23,
     recipe: { id: 58, name: 'Test 23' },
     img: '',
     content: 'This is test post 23',

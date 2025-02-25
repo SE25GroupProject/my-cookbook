@@ -7,7 +7,13 @@ import {
   Typography,
 } from '@mui/material'
 import { PostComment, Post } from '../../api/types'
-import { Comment, ThumbDownOutlined, ThumbUp } from '@mui/icons-material'
+import {
+  Comment,
+  ThumbDown,
+  ThumbDownOutlined,
+  ThumbUp,
+  ThumbUpOutlined,
+} from '@mui/icons-material'
 
 interface CommentItemProp {
   comment: PostComment
@@ -42,12 +48,12 @@ const CommentItem = (props: CommentItemProp) => {
         >
           <Grid2 size={6}>
             <IconButton>
-              <ThumbUp />
+              {props.comment.liked ? <ThumbUp /> : <ThumbUpOutlined />}
             </IconButton>
           </Grid2>
           <Grid2 size={6}>
             <IconButton>
-              <ThumbDownOutlined />
+              {props.comment.disliked ? <ThumbDown /> : <ThumbDownOutlined />}
             </IconButton>
           </Grid2>
         </Grid2>

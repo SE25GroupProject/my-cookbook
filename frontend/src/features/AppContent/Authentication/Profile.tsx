@@ -29,6 +29,7 @@ import PostItem from '../SocialMedia/PostItem'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import { useFixScroll } from '../SocialMedia/FixScroll'
 import RecipeListItem from '../RecipeList/RecipeLIstItem'
+import PostModal from '../SocialMedia/PostModal'
 
 const Profile = () => {
   const auth = useAuth()
@@ -256,12 +257,15 @@ const Profile = () => {
         </Stack>
       </Paper>
 
-      {/* <div
-        className="profile-container"
-        style={{ padding: '20px', textAlign: 'center' }}
-      >
-        <h2>Your Profile</h2>
-      </div> */}
+      {postBeingViewed ? (
+        <PostModal
+          post={postBeingViewed}
+          isOpen={postModalOpen}
+          handleClose={handleClosePostView}
+        />
+      ) : (
+        <></>
+      )}
     </Container>
   )
 }

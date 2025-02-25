@@ -106,6 +106,7 @@ export interface PostComment {
  * @property {string} img The image information that can be used to display and store the image.
  */
 export interface Post {
+  postId: number
   recipe: PostRecipe
   img: string
   content: string

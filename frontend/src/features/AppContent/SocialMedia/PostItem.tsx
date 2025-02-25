@@ -7,7 +7,13 @@ import {
   Typography,
 } from '@mui/material'
 import { Post } from '../../api/types'
-import { Comment, ThumbDownOutlined, ThumbUp } from '@mui/icons-material'
+import {
+  Comment,
+  ThumbDown,
+  ThumbDownOutlined,
+  ThumbUp,
+  ThumbUpOutlined,
+} from '@mui/icons-material'
 
 interface PostItemProp {
   post: Post
@@ -74,12 +80,12 @@ const PostItem = (props: PostItemProp) => {
         >
           <Grid2 size={4}>
             <IconButton>
-              <ThumbUp />
+              {props.post.liked ? <ThumbUp /> : <ThumbUpOutlined />}
             </IconButton>
           </Grid2>
           <Grid2 size={4}>
             <IconButton>
-              <ThumbDownOutlined />
+              {props.post.disliked ? <ThumbDown /> : <ThumbDownOutlined />}
             </IconButton>
           </Grid2>
           <Grid2 size={4}>
