@@ -41,7 +41,7 @@ import axios from 'axios'
 import { useTheme } from '../../Themes/themeContext'
 import { useNavigate } from 'react-router-dom'
 import { useGetRecipeQuery } from './RecipeInfoSlice'
-import { Recipe, RecipeObject } from '../../api/types'
+import { Instruction, Recipe, RecipeObject } from '../../api/types'
 
 import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon'
 import { WhatsApp } from '@mui/icons-material'
@@ -232,6 +232,8 @@ const RecipeInformationWrapped = () => {
     )
   } else if (isSuccess) {
     // const recipe = recipeInfo.getRecipeInfoData // The recipe object containing all necessary information
+    const instructionArr = recipe.instructions.map((inst) => inst.instruction)
+
     const recipeDetailsforLLM = `
       Name: ${recipe.name}
       Ingredients: ${recipe.ingredients ? recipe.ingredients.join(', ') : []}
@@ -245,7 +247,7 @@ const RecipeInformationWrapped = () => {
       Cook Time: ${recipe.cookTime}
       Cholesterol: ${recipe.cholesterol}mg/dl
       Fat: ${recipe.fat}g
-      Instructions: ${recipe.instructions ? recipe.instructions.join(' ') : []}
+      Instructions: ${instructionArr ? instructionArr.join(' ') : []}
     `
     const handleSubmit = async () => {
       try {
@@ -681,7 +683,7 @@ const RecipeInformationWrapped = () => {
                     ))}
                   </select>
                 </div>
-                {recipe?.instructions?.map((inst: string, idx: number) => (
+                {recipe?.instructions?.map((inst: Instruction, idx: number) => (
                   <div
                     style={{
                       backgroundColor: theme.background, // Card background from theme
@@ -692,12 +694,12 @@ const RecipeInformationWrapped = () => {
                     }}
                     key={idx}
                     className="step"
-                    onClick={() => speakInstructions(inst)}
+                    onClick={() => speakInstructions(inst.instruction)}
                   >
                     <Typography variant="h6">
-                      Step {idx + 1}:
+                      Step {inst.step}:
                       <Typography variant="body1" gutterBottom>
-                        {inst}
+                        {inst.instruction}
                       </Typography>
                     </Typography>
                   </div>

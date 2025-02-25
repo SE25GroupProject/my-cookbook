@@ -35,14 +35,24 @@ export const mockRecipe: Recipe = {
   protein: 16,
   servings: 6,
   instructions: [
-    'Melt butter and oil together in sauté pan.',
-    'Add garlic, sauté for one minute, and add shrimp.',
-    'Sauté for one minute, add wine, lemon juice, salt, and pepper.',
-    'Sauté quickly while sauce reduces and shrimp turns pink.',
-    'Do not overcook.',
-    'Sprinkle with parsley before serving.',
-    'Serve with sauce over noodles or rice.',
-    'Garnish with lemon wedges.',
+    { instruction: 'Melt butter and oil together in sauté pan.', step: 1 },
+    {
+      instruction: 'Add garlic, sauté for one minute, and add shrimp.',
+      step: 2,
+    },
+    {
+      instruction:
+        'Sauté for one minute, add wine, lemon juice, salt, and pepper.',
+      step: 3,
+    },
+    {
+      instruction: 'Sauté quickly while sauce reduces and shrimp turns pink.',
+      step: 4,
+    },
+    { instruction: 'Do not overcook.', step: 5 },
+    { instruction: 'Sprinkle with parsley before serving.', step: 6 },
+    { instruction: 'Serve with sauce over noodles or rice.', step: 7 },
+    { instruction: 'Garnish with lemon wedges.', step: 8 },
   ],
 }
 
@@ -109,16 +119,36 @@ export const mockRecipeTwo: Recipe = {
   protein: 29.8,
   servings: 6,
   instructions: [
-    'Trim fat from beef, cut into 1-inch pieces.',
-    'In Dutch oven, heat oil over medium high hunt until hot. Add beef (half at a time) and brown evenly, stirring occasionally.',
-    'Pour off drippings.',
-    'Season with thyme, salt and pepper.',
-    'Stir in broth, wine and garlic. Bring to boil; reduce heat to low.',
-    'Cover tightly and simmer 1 1/2 hours.',
-    'Add carrots and onions.',
-    'Cover and continue cooking 35 to 40 minutes or until beef and vegetables are tender.',
-    'Bring beef stew to a boil over medium-high heat. Add cornstarch mixture; cook and stir 1 minute. Stir in sugar snap peas.',
-    'Reduce heat to medium and cook 3 to 4 minutes or until peas are heated through.',
+    { instruction: 'Trim fat from beef, cut into 1-inch pieces.', step: 1 },
+    {
+      instruction:
+        'In Dutch oven, heat oil over medium high hunt until hot. Add beef (half at a time) and brown evenly, stirring occasionally.',
+      step: 2,
+    },
+    { instruction: 'Pour off drippings.', step: 3 },
+    { instruction: 'Season with thyme, salt and pepper.', step: 4 },
+    {
+      instruction:
+        'Stir in broth, wine and garlic. Bring to boil; reduce heat to low.',
+      step: 5,
+    },
+    { instruction: 'Cover tightly and simmer 1 1/2 hours.', step: 6 },
+    { instruction: 'Add carrots and onions.', step: 7 },
+    {
+      instruction:
+        'Cover and continue cooking 35 to 40 minutes or until beef and vegetables are tender.',
+      step: 8,
+    },
+    {
+      instruction:
+        'Bring beef stew to a boil over medium-high heat. Add cornstarch mixture; cook and stir 1 minute. Stir in sugar snap peas.',
+      step: 9,
+    },
+    {
+      instruction:
+        'Reduce heat to medium and cook 3 to 4 minutes or until peas are heated through.',
+      step: 10,
+    },
   ],
 }
 

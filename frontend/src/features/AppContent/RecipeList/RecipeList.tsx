@@ -25,6 +25,7 @@ import {
   SelectChangeEvent,
   Box,
   FormHelperText,
+  Stack,
 } from '@mui/material'
 import './RecipeList.css'
 import { RECIPE_CATEGORIES, RECIPE_COOKTIME } from './recipeCategories'
@@ -112,6 +113,7 @@ const RecipeList = ({ toggleSearchBar }: SearchBarProps) => {
 
   useEffect(() => {
     toggleSearchBar(false)
+    console.log('recipe list', recipeList)
   }, [recipeList])
 
   function convertToMinutes(timeString: string) {
@@ -131,8 +133,8 @@ const RecipeList = ({ toggleSearchBar }: SearchBarProps) => {
   }
 
   function unwrapResponse(response: RecipeListResponse) {
+    console.log(response)
     setRecipeList(response.recipes)
-    setTotalCount(response.count)
   }
 
   function RequestList() {
@@ -425,22 +427,37 @@ const RecipeList = ({ toggleSearchBar }: SearchBarProps) => {
       </Box>
       {!(ingredientsLoading || nutritionLoading) ? (
         totalCount > 0 ? (
-          (selectedCategory && filtedRecipeList.length > 0
-            ? filtedRecipeList
-            : recipeList
-          ).map((recipe: RecipeListData, index: number) => {
-            return <RecipeListItem recipe={recipe} index={index} />
-          })
+          <Box overflow={'hidden'} width={'100%'}>
+            <Stack
+              spacing={2}
+              alignItems={'center'}
+              height={'50vh'}
+              overflow={'auto'}
+              width={'102%'}
+            >
+              {(selectedCategory && filtedRecipeList.length > 0
+                ? filtedRecipeList
+                : recipeList
+              ).map((recipe: RecipeListData, index: number) => {
+                return (
+                  <RecipeListItem recipe={recipe} index={index} key={index} />
+                )
+              })}
+            </Stack>
+          </Box>
         ) : !(ingCountLoading || nutrCountLoading) ? (
-          <Typography
-            variant="h5"
-            component="div"
-            sx={{ m: 4, color: theme.color }} // Theme color for no recipes found
-            className="no-recipe-found"
-          >
-            Currently our database does not have any recipes with the selected
-            ingredients. Check back in later for any updates.
-          </Typography>
+          <Box height={'50vh'}>
+            <Typography
+              variant="h5"
+              component="div"
+              sx={{ m: 4, color: theme.color }} // Theme color for no recipes found
+              className="no-recipe-found"
+            >
+              Currently our database does not have any recipes with the selected
+              ingredients. Check back in later for any updates.
+              {totalCount}
+            </Typography>
+          </Box>
         ) : (
           <CircularProgress
             style={{ color: theme.color, margin: '50px' }} // Theme color for loader

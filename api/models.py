@@ -16,9 +16,13 @@ from pydantic import BaseModel, Field
 from pydantic import BaseModel, EmailStr
 
 
+class Instruction(BaseModel):
+    step: int
+    instruction: str
+
 class Recipe(BaseModel):
     """A data model representing a recipe"""
-    id: Optional[int]  # Unique identifier for the recipe
+    recipeId: Optional[int]  # Unique identifier for the recipe
     name: str  # Name of the recipe
     cookTime: Optional[str] = None
     prepTime: Optional[str] = None
@@ -27,7 +31,7 @@ class Recipe(BaseModel):
     images: Optional[list] = None  # URLs of images related to the recipe
     category: str
     tags: List[str]
-    ingredientQuantities: list
+    ingredientQuantities: Optional[list[int]]
     ingredients: List[str]  # List of ingredients required
     rating: Optional[str] = None
     calories: Optional[str] = None
@@ -40,7 +44,7 @@ class Recipe(BaseModel):
     sugar: Optional[str] = None
     protein: Optional[str] = None
     servings: Optional[str] = None
-    instructions: List[str]
+    instructions: List[Instruction]
 
     class Config:
         schema_extra = {
@@ -111,7 +115,7 @@ class Recipe(BaseModel):
 
 class RecipeListEntry(BaseModel):
     """A data model representing a recipe"""
-    id: int
+    recipeId: int
     name: str  # Name of the recipe
     cookTime: Optional[str] = None
     prepTime: Optional[str] = None

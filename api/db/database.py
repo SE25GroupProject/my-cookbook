@@ -1,17 +1,17 @@
 import sqlite3
 from typing import List
-from api.models import MealPlanEntry, RecipeListEntry, ShoppingListItem, Post, Comment, PostRecipe, Recipe
+from models import MealPlanEntry, RecipeListEntry, ShoppingListItem, Post, Comment, PostRecipe, Recipe, Instruction
 
 try:
-    from api.db.objects import User, Ingredient, Instruction
+    from api.db.objects import User, Ingredient
 except Exception:
-    from objects import User, Ingredient, Instruction
+    from db.objects import User, Ingredient
 from datetime import datetime
 
 class Database_Connection():
     """Used as a singleton to access the database"""
     
-    def __new__(self):
+    def __new__(self, dbPath: str = 'db/cookbook.db'):
         """Handles ensuring that this class is a singleton"""
         if not hasattr(self, 'instance'):
             self.instance = super(Database_Connection, self).__new__(self)
@@ -138,21 +138,21 @@ class Database_Connection():
             
             recipeId: int = self.cursor.lastrowid
 
-            for image in recipe.Images:
+            for image in recipe.images:
                 commandString: str = """INSERT INTO Images (recipeId, imageUrl) VALUES (?, ?)"""
                 self.cursor.execute(commandString, (recipeId, image,))
 
-            for tag in recipe.Tags:
+            for tag in recipe.tags:
                 commandString: str = """INSERT INTO Tags (recipeId, tag) VALUES (?, ?)"""
                 self.cursor.execute(commandString, (recipeId, tag,))
 
-            for ingredient in recipe.Ingredients:
+            for ingredient in recipe.ingredients:
                 commandString: str = """INSERT INTO Ingredients (recipeId, name, amount) VALUES (?, ?, ?)"""
-                self.cursor.execute(commandString, (recipeId, ingredient.Name, ingredient.Amount,))
+                self.cursor.execute(commandString, (recipeId, ingredient, 0,))
 
-            for instructions in recipe.Instructions:
+            for instructions in recipe.instructions:
                 commandString: str = """INSERT INTO Instructions (recipeId, step, instruction) VALUES (?, ?, ?)"""
-                self.cursor.execute(commandString, (recipeId, instructions.Step, instructions.Instruction,))
+                self.cursor.execute(commandString, (recipeId, instructions.step, instructions.instruction,))
 
             commandString: str = """INSERT INTO UserRecipes (recipeId, userId) VALUES (?, ?)"""
             self.cursor.execute(commandString, (recipeId, userId,))
@@ -173,6 +173,8 @@ class Database_Connection():
             if not recipeRes:
                 print("No recipe value found.")
                 return None
+            
+            print(recipeRes)
 
             commandString: str = """SELECT * FROM Images WHERE recipeId = ?"""
             self.cursor.execute(commandString, (recipeId,))
@@ -188,23 +190,29 @@ class Database_Connection():
             for tag in tagsRes:
                 tagsList.append(tag[1])
 
+            print("got tags")
             commandString: str = """SELECT * FROM Ingredients WHERE recipeId = ?"""
             self.cursor.execute(commandString, (recipeId,))
             ingredientsRes = self.cursor.fetchall()
-            ingredientsList: list[Ingredient] = []
+            ingredientsList: list[str] = []
             for _, ingredient, amount in ingredientsRes:
-                ingredientsList.append(Ingredient(ingredient, amount))
-
+                ingredientsList.append(ingredient)
+            print("got ingredients")
             commandString: str = """SELECT * FROM Instructions WHERE recipeId = ?"""
             self.cursor.execute(commandString, (recipeId,))
             instructionsRes = self.cursor.fetchall()
             instructionsList: list[Instruction] = []
             for _, step, instruction in instructionsRes:
-                instructionsList.append(Instruction(step, instruction))
+                instructionsList.append(Instruction(step = step, instruction = instruction))
 
-            recipe: Recipe = Recipe(recipeRes[1], recipeRes[2], recipeRes[3], recipeRes[4], recipeRes[5], recipeRes[6], recipeRes[7], 
-                recipeRes[8], recipeRes[9], recipeRes[10], recipeRes[11], recipeRes[12], recipeRes[13], recipeRes[14], recipeRes[15],
-                recipeRes[16], recipeRes[17], imageList, tagsList, ingredientsList, instructionsList, recipeId=recipeRes[0])
+            print(instructionsList)
+            recipe: Recipe = Recipe(recipeId = recipeRes[0], name = recipeRes[1], cookTime = recipeRes[2], 
+                                    prepTime = recipeRes[3], totalTime = recipeRes[4], description = recipeRes[5],
+                                    category = recipeRes[6], rating = recipeRes[7], calories = recipeRes[8], 
+                                    fat = recipeRes[9], saturatedFat = recipeRes[10], cholesterol = recipeRes[11], 
+                                    sodium = recipeRes[12], carbs = recipeRes[13], fiber = recipeRes[14], sugar = recipeRes[15],
+                                    protein = recipeRes[16], servings = recipeRes[17], images = imageList, tags = tagsList, 
+                                    ingredients = ingredientsList, instructions = instructionsList)
 
             return recipe
         
@@ -324,7 +332,7 @@ class Database_Connection():
                                     description=recipe[5], category=recipe[6], rating=recipe[7], calories=recipe[8], 
                                     fat=recipe[9], saturatedFat=recipe[10], cholesterol=recipe[11], sodium=recipe[12], 
                                     carbs=recipe[13], fiber=recipe[14], sugar=recipe[15], protein=recipe[16], 
-                                    servings=recipe[17], id=recipe[0]))
+                                    servings=recipe[17], recipeId=recipe[0]))
 
             return recipes
         except Exception as e: 
@@ -357,7 +365,7 @@ class Database_Connection():
                                     description=recipe[5], category=recipe[6], rating=recipe[7], calories=recipe[8], 
                                     fat=recipe[9], saturatedFat=recipe[10], cholesterol=recipe[11], sodium=recipe[12], 
                                     carbs=recipe[13], fiber=recipe[14], sugar=recipe[15], protein=recipe[16], 
-                                    servings=recipe[17], id=recipe[0]))
+                                    servings=recipe[17], recipeId=recipe[0]))
 
             return recipes
         except Exception as e: 

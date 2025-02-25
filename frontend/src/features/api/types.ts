@@ -1,3 +1,5 @@
+import internal from 'stream'
+
 export interface User {
   id: number
   username: string
@@ -6,6 +8,11 @@ export interface User {
 
 export type UserCred = Pick<User, 'username' | 'password'>
 export type UserInfo = Pick<User, 'id' | 'username'>
+
+export interface Instruction {
+  step: number
+  instruction: string
+}
 
 export interface Recipe {
   recipeId: number
@@ -30,7 +37,7 @@ export interface Recipe {
   sugar: number
   protein: number
   servings: number
-  instructions: string[]
+  instructions: Instruction[]
 }
 
 export class RecipeObject implements Recipe {
@@ -56,7 +63,7 @@ export class RecipeObject implements Recipe {
   sugar!: number
   protein!: number
   servings!: number
-  instructions!: string[]
+  instructions!: Instruction[]
 }
 
 export interface NutritionMax {

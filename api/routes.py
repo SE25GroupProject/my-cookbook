@@ -25,12 +25,10 @@ from api.dbMiddleware import DBConnectionMiddleware
 
 
 load_dotenv()  # Load environment variables
-app = FastAPI()
-app.add_middleware(DBConnectionMiddleware, db_path="db/cookbook.db")
-users_db = {}
-db = Database_Connection()
 
-# print(os.getenv("GROQ_API_KEY"))
+
+users_db = {}
+database_con = Database_Connection()
 
 config = {
     "ATLAS_URI": os.getenv("ATLAS_URI"),
@@ -286,6 +284,8 @@ def list_recipes_by_ingredient_old(ingredient: str, caloriesLow: int, caloriesUp
 @shoppingRouter.get("/{userId}", response_description="Get the current user's shopping list", status_code=200, response_model=List[ShoppingListItem])
 async def get_shopping_list(request: Request, userId: int):
     """Retrieves the current user's shopping list."""
+    db:Database_Connection = request.state.db
+
     try:
         return db.get_user_shopping_list(userId)
     except Exception as e:
@@ -296,8 +296,9 @@ async def get_shopping_list(request: Request, userId: int):
     
 # In Use - Refactored
 @shoppingRouter.put("/{userId}", response_description="Update the current user's shopping list", status_code=200)
-async def update_shopping_list(userId: int, listItem: ShoppingListItem = Body(...)):
+async def update_shopping_list(request: Request, userId: int, listItem: ShoppingListItem = Body(...)):
     """Update the current user's shopping list."""
+    db:Database_Connection = request.state.db
     try:
         res = db.update_shopping_list_item(userId, listItem.name, listItem.quantity, listItem.unit, listItem.checked)
         if(isinstance(res, str)):
@@ -311,8 +312,9 @@ async def update_shopping_list(userId: int, listItem: ShoppingListItem = Body(..
     
 # In Use - Refactored
 @shoppingRouter.post("/delete/{userId}", response_description="Remove an item from current user's shopping list", status_code=200)
-async def remove_from_shopping_list(userId: int, name: str = Body(...)):
+async def remove_from_shopping_list(request: Request, userId: int, name: str = Body(...)):
     """Remove an item from the current user's shopping list."""
+    db:Database_Connection = request.state.db
     try:
         res = db.remove_from_shopping_list(userId, name)
         if(isinstance(res, str)):
@@ -332,6 +334,7 @@ async def remove_from_shopping_list(userId: int, name: str = Body(...)):
 @mealPlanRouter.get("/{userId}", response_description="Get the entire meal plan for the week", status_code=200)
 async def get_meal_plan(userId: int, request: Request):
     """Retrieves the meal plan for the week."""
+    db:Database_Connection = request.state.db
     try:
         return db.get_user_meal_plan(userId)
     except Exception as e:
@@ -344,6 +347,7 @@ async def get_meal_plan(userId: int, request: Request):
 @mealPlanRouter.put("/{userId}", response_description="Add/Update an item for a user's meal plan on a specific day", status_code=200)
 async def update_meal_plan(userId: int, request: Request, entry: MealPlanEntry = Body(...)):
     """Adds an item to the user's meal plan, or updates the current item at that day"""
+    db:Database_Connection = request.state.db
     try:
         res = db.update_user_meal_plan(userId, entry.day, entry.recipe.recipeId)
         if(isinstance(res, str)):
@@ -357,8 +361,9 @@ async def update_meal_plan(userId: int, request: Request, entry: MealPlanEntry =
 
 # In Use - New
 @mealPlanRouter.post("/delete/{userId}", response_description="Get the entire meal plan for the week", status_code=200)
-async def delete_from_meal_plan(userId: int,  day: int = Body(...)):
+async def delete_from_meal_plan(request: Request, userId: int,  day: int = Body(...)):
     """Removes a meal plan item from a user's meal plan."""
+    db:Database_Connection = request.state.db
     try:
         res = db.remove_from_user_meal_plan(userId, day)
         if(isinstance(res, str)):
@@ -379,6 +384,7 @@ async def delete_from_meal_plan(userId: int,  day: int = Body(...)):
 @router.post("/search/count/", response_description="Get the count of all recipes that match the ingredients in the request", status_code=200, response_model=int)
 async def count_recipes_by_ingredients(request: Request, inp: RecipeListRequest = Body(...)):
     """Total count of recipes matching the filter criteria"""
+    db:Database_Connection = request.state.db
     count = db.get_count_recipes_by_ingredients(inp.ingredients)
     return count
 
@@ -386,6 +392,7 @@ async def count_recipes_by_ingredients(request: Request, inp: RecipeListRequest 
 @router.post("/search/", response_description="Get Recipes that match all the ingredients in the request", status_code=200, response_model=RecipeListResponse)
 async def list_recipes_by_ingredients(request: Request, inp: RecipeListRequest = Body(...)):
     """Lists recipes matching all provided ingredients"""
+    db:Database_Connection = request.state.db
     # Request list of recipes that have {ing} in the ingredients list with limit and offset. Sort these by rating and id.
     res = db.get_recipes_by_ingredient(inp.ingredients, inp.page - 1)
     return RecipeListResponse(recipes=res, page=inp.page)
@@ -395,7 +402,7 @@ async def list_recipes_by_ingredients(request: Request, inp: RecipeListRequest =
 async def list_recipes_by_nutrition(request: Request, inp: RecipeListRequest2 = Body(...)):
     """Lists recipes matching all provided ingredients"""
     # Get a page worth of recipes that have stats less than provided
-
+    db:Database_Connection = request.state.db   
     res = db.get_recipes_by_nutrition(inp.caloriesMax, inp.fatMax, inp.sugMax, inp.proMax, inp.page - 1)
     response = RecipeListResponse(recipes=res, page=inp.page)
     return response
@@ -405,6 +412,7 @@ async def list_recipes_by_nutrition(request: Request, inp: RecipeListRequest2 = 
 async def count_recipes_by_nutrition(request: Request, inp: RecipeListRequest2 = Body(...)):
     """Lists recipes matching all provided ingredients"""
     # Request list of recipes that have {ing} in the ingredients list with limit and offset. Sort these by rating and id.
+    db:Database_Connection = request.state.db
     count = db.get_count_recipes_by_nutrition(inp.caloriesMax, inp.fatMax, inp.sugMax, inp.proMax)
 
     return count
@@ -414,6 +422,7 @@ async def count_recipes_by_nutrition(request: Request, inp: RecipeListRequest2 =
 async def list_ingredients(queryString : str, request: Request):
     """Lists ingredient suggestions for a query"""
     # Pipeline to: get a list of all ingredients, from each record, match them by regex, and then limit it to only 20 suggestions. The accumulates these into one list
+    db:Database_Connection = request.state.db
     data = db.get_ingredient_list(queryString)
     if(len(data) <= 0):
         return []
@@ -424,7 +433,8 @@ async def list_ingredients(queryString : str, request: Request):
 
 # In Use - Good, no refactor needed
 @router.post("/recommend-recipes/", response_model=dict)
-async def recommend_recipes(query: RecipeQuery = Body(...)):
+async def recommend_recipes(request: Request, query: RecipeQuery = Body(...)):
+    db:Database_Connection = request.state.db
     try:
         query.query = query.query.replace('\n', ' ').replace('\t', ' ').replace('  ', ' ').strip()
         query.context = query.context.strip()
@@ -453,7 +463,8 @@ async def recommend_recipes(query: RecipeQuery = Body(...)):
 # --------------------------------------------------------
 
 @userRouter.post("/signup")
-async def signup(incomingUser: UserCred = Body(...)):
+async def signup(request: Request, incomingUser: UserCred = Body(...)):
+    db:Database_Connection = request.state.db
     user: User = User(incomingUser.username, incomingUser.password)
     if db.get_user_by_name(user.Username) is not None:
         raise HTTPException(status_code=400, detail="User with that username already exists")
@@ -461,7 +472,8 @@ async def signup(incomingUser: UserCred = Body(...)):
     return {"id": userid, "username": user.Username}
 
 @userRouter.post("/login")
-async def login(incomingUser: UserCred = Body(...)):
+async def login(request: Request, incomingUser: UserCred = Body(...)):
+    db:Database_Connection = request.state.db
     user: User = db.get_user_by_name(incomingUser.username)
     if user is None:
         raise HTTPException(status_code=400, detail="There is no user with that username")
@@ -470,7 +482,8 @@ async def login(incomingUser: UserCred = Body(...)):
     raise HTTPException(status_code=401, detail="Incorrect Username or Password")
 
 @userRouter.get("/getUser/{username}")
-async def getUser(username: str) -> dict:
+async def getUser(request: Request, username: str) -> dict:
+    db:Database_Connection = request.state.db
     user: User = db.get_user_by_name(username)
     if user is None:
         raise HTTPException(status_code=400, detail="There is no user with that username")
@@ -481,14 +494,17 @@ async def getUser(username: str) -> dict:
 # --------------------------------------------------------
 
 @router.get("/{recipeId}")
-async def get_recipe(recipeId: int) -> Recipe:
+async def get_recipe(request: Request, recipeId: int) -> Recipe:
+    db:Database_Connection = request.state.db
+    print(f"getting {recipeId}")
     recipe: Recipe = db.get_recipe(recipeId)
     if recipe is None:
         raise HTTPException(status_code=400, detail="There is not recipe with that Id")
     return recipe
 
 @router.get("/batch")
-async def get_recipes(recipeIds: List[int]) -> Recipe:
+async def get_recipes(request: Request, recipeIds: List[int]) -> Recipe:
+    db:Database_Connection = request.state.db
     recipes = {}
     for recipeId in recipeIds:
         recipe: Recipe = db.get_recipe(recipeId)
@@ -498,7 +514,8 @@ async def get_recipes(recipeIds: List[int]) -> Recipe:
     return recipes
 
 @router.get("/user/{userId}")
-async def get_user_recipes(userId: int):
+async def get_user_recipes(request: Request, userId: int):
+    db:Database_Connection = request.state.db
     recipeIds: list[int] = db.get_recipes_owned_by_userId(userId)
     recipeObj: list[dict] = []
     for recipeId in recipeIds:
@@ -510,8 +527,8 @@ async def get_user_recipes(userId: int):
 
 # Todo: This may have to change as I am not sure if this is the proper way to expect a body for a post request
 @router.post("/")
-async def create_user_recipe(recipeObject: Recipe, userId: int) -> bool:
-    print(recipeObject)
+async def create_user_recipe(request: Request, recipeObject: Recipe, userId: int) -> bool:
+    db:Database_Connection = request.state.db
     success = db.create_recipe(recipeObject, userId)
     if success:
         return True
@@ -519,7 +536,8 @@ async def create_user_recipe(recipeObject: Recipe, userId: int) -> bool:
     return False
 
 @router.put("/{recipeId}")
-async def update_user_recipe(recipeId: int, newRecipe: Recipe, userId: int):
+async def update_user_recipe(request: Request, recipeId: int, newRecipe: Recipe, userId: int):
+    db:Database_Connection = request.state.db
     recipes = db.get_recipes_owned_by_userId(userId)
 
     if (any(recipe.recipeId == recipeId for recipe in recipes)):
@@ -532,7 +550,8 @@ async def update_user_recipe(recipeId: int, newRecipe: Recipe, userId: int):
 
 
 @router.put("/favorite/{recipeId}/{userId}")
-async def favorite_recipe(recipeId: int, userId: int):
+async def favorite_recipe(request: Request, recipeId: int, userId: int):
+    db:Database_Connection = request.state.db
     success: bool = db.favorite_recipe(userId, recipeId)
     if success:
         return True
@@ -540,7 +559,8 @@ async def favorite_recipe(recipeId: int, userId: int):
     return False
 
 @router.put("/unfavorite/{recipeId}/{userId}")
-async def unfavorite_recipe(recipeId: int, userId: int):
+async def unfavorite_recipe(request: Request, recipeId: int, userId: int):
+    db:Database_Connection = request.state.db
     success: bool = db.unfavorite_recipe(userId, recipeId)
     if success:
         return True
@@ -554,8 +574,9 @@ async def unfavorite_recipe(recipeId: int, userId: int):
 
 # Updated Post Routes
 @postRouter.post("/", response_description="Create a new post", status_code=201)
-async def create_post(post: Post):
+async def create_post(request: Request, post: Post):
     """Creates a new post in the database."""
+    db:Database_Connection = request.state.db
     try:
         if db.add_post(post):
             return {"message": "Post created successfully."}
@@ -571,8 +592,9 @@ async def create_post(post: Post):
         )
 
 @postRouter.get("/{post_id}", response_description="Get a post by ID", response_model=Post)
-async def get_post(post_id: int):
+async def get_post(request: Request, post_id: int):
     """Retrieves a post by its ID."""
+    db:Database_Connection = request.state.db
     post = db.get_post(post_id)
     if post:
         return post
@@ -582,21 +604,24 @@ async def get_post(post_id: int):
     )
 
 @postRouter.get("/", response_description="List all posts", response_model=List[Post])
-async def list_posts():
+async def list_posts(request: Request, ):
     """Retrieves all posts from the database."""
+    db:Database_Connection = request.state.db
     posts = db.get_all_posts()
     return posts
 
 @postRouter.get("/user/{user_id}", response_description="List all posts by a user", response_model=List[Post])
-async def get_user_posts(user_id: int):
+async def get_user_posts(request: Request, user_id: int):
     """Retrieves all posts by a specific user from the database."""
+    db:Database_Connection = request.state.db
     posts = db.get_all_posts()
     user_posts = [post for post in posts if post.userId == user_id]
     return user_posts
 
 @postRouter.put("/like/{post_id}", response_description="Like a post", status_code=200)
-async def like_post(post_id: int, user_id: int = Body(...)):
+async def like_post(request: Request, post_id: int, user_id: int = Body(...)):
     """Handles liking a post with toggle and switch logic."""
+    db:Database_Connection = request.state.db
     try:
         post = db.get_post(post_id)
         if not post:
@@ -648,8 +673,9 @@ async def like_post(post_id: int, user_id: int = Body(...)):
         )
 
 @postRouter.put("/dislike/{post_id}", response_description="Dislike a post", status_code=200)
-async def dislike_post(post_id: int, user_id: int = Body(...)):
+async def dislike_post(request: Request, post_id: int, user_id: int = Body(...)):
     """Handles disliking a post with toggle and switch logic."""
+    db:Database_Connection = request.state.db
     try:
         post = db.get_post(post_id)
         if not post:
@@ -701,8 +727,9 @@ async def dislike_post(post_id: int, user_id: int = Body(...)):
         )
 
 @postRouter.delete("/{post_id}", response_description="Delete a post", status_code=200)
-async def delete_post(post_id: int, user_id: int = Body(...)):
+async def delete_post(request: Request, post_id: int, user_id: int = Body(...)):
     """Deletes a post by its ID, including all related reactions."""
+    db:Database_Connection = request.state.db
     try:
         post = db.get_post(post_id)
 
@@ -727,8 +754,9 @@ async def delete_post(post_id: int, user_id: int = Body(...)):
   
 
 @postRouter.put("/{post_id}", response_description="Update a post", response_model=Post)
-async def update_post(post_id: int, update: PostUpdate = Body(...)):
+async def update_post(request: Request, post_id: int, update: PostUpdate = Body(...)):
     """Allows a user to edit their own post's message, image, or recipe."""
+    db:Database_Connection = request.state.db
     try:
         # Fetch the existing post
         post = db.get_post(post_id)
@@ -787,8 +815,9 @@ async def update_post(post_id: int, update: PostUpdate = Body(...)):
             )
 
 @postRouter.post("/comments/{post_id}", response_description="Add a comment to a post", status_code=201)
-async def add_comment(post_id: int, comment: Comment):
+async def add_comment(request: Request, post_id: int, comment: Comment):
     """Adds a new comment to a post and returns the CommentId."""
+    db:Database_Connection = request.state.db
     # Ensure the comment's postId matches the URL parameter
     comment.postId = post_id
     # Check if the post exists
@@ -815,8 +844,9 @@ async def add_comment(post_id: int, comment: Comment):
         )
 
 @postRouter.delete("/comments/{comment_id}", response_description="Delete a comment", status_code=200)
-async def delete_comment(comment_id: int, postId: int = Body(..., embed=True), userId: int = Body(..., embed=True)):
+async def delete_comment(request: Request, comment_id: int, postId: int = Body(..., embed=True), userId: int = Body(..., embed=True)):
     """Deletes a comment by its CommentId, ensuring the user owns it."""
+    db:Database_Connection = request.state.db
     # Check if the post exists
     post = db.get_post(postId)
     if not post:
