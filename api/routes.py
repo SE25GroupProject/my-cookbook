@@ -454,25 +454,18 @@ async def recommend_recipes(query: RecipeQuery = Body(...)):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred")
     
 @userRouter.post("/signup")
-async def signup(incomingUser: UserCred = Body(...)):
-    # try:
-        # Creating a new user
-        user: User = User(incomingUser.username, incomingUser.password)
-        print(user)
-        if db.get_user(user.Username) is not None:
-            raise HTTPException(status_code=400, detail="User with that username already exists")
-        userid: int = db.add_user(user)
-
-        return {"id": userid, "username": user.Username}
-    # except:
-    #     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occured when signing up this user")
-
+async def signup(request: Request, incomingUser: UserCred = Body(...)):
+    db: Database_Connection = request.state.db
+    user: User = User(incomingUser.username, incomingUser.password)
+    if db.get_user_by_name(user.Username) is not None:
+        raise HTTPException(status_code=400, detail="User with that username already exists")
+    userid: int = db.add_user(user)
+    return {"id": userid, "username": user.Username}
 
 @userRouter.post("/login")
-async def login(incomingUser: UserCred = Body(...)):
-    # try: 
-    print(incomingUser.username)
-    user: User = db.get_user(incomingUser.username)
+async def login(request: Request, incomingUser: UserCred = Body(...)):
+    db: Database_Connection = request.state.db
+    user: User = db.get_user_by_name(incomingUser.username)
     if user is None:
         raise HTTPException(status_code=400, detail="There is no user with that username")
     
@@ -486,12 +479,200 @@ async def login(incomingUser: UserCred = Body(...)):
     # except:
     #     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occured when logging in this user")
     
+    raise HTTPException(status_code=401, detail="Incorrect Username or Password")
+
 @userRouter.get("/getUser/{username}")
-async def getUser(username: str) -> dict:
+async def getUser(username: str, request: Request) -> dict:
+    db: Database_Connection = request.state.db
+    user: User = db.get_user_by_name(username)
+    if user is None:
+        raise HTTPException(status_code=400, detail="There is no user with that username")
+    return user.to_dict()
+
+# Updated Post Routes
+@postRouter.post("/", response_description="Create a new post", status_code=201)
+async def create_post(post: Post, request: Request):
+    """Creates a new post in the database."""
+    db: Database_Connection = request.state.db
+    try:
+        if db.add_post(post):
+            return {"message": "Post created successfully."}
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to create post."
+            )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while creating the post: {str(e)}"
+        )
+
+@postRouter.get("/{post_id}", response_description="Get a post by ID", response_model=Post)
+async def get_post(post_id: int, request: Request):
+    """Retrieves a post by its ID."""
+    db: Database_Connection = request.state.db
+    post = db.get_post(post_id)
+    if post:
+        return post
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Post with ID {post_id} not found."
+    )
+
+@postRouter.get("/", response_description="List all posts", response_model=List[Post])
+async def list_posts(request: Request):
+    """Retrieves all posts from the database."""
+    db: Database_Connection = request.state.db
+    posts = db.get_all_posts()
+    return posts
+
+@postRouter.get("/user/{user_id}", response_description="List all posts by a user", response_model=List[Post])
+async def get_user_posts(user_id: int, request: Request):
+    """Retrieves all posts by a specific user from the database."""
+    db: Database_Connection = request.state.db
+    posts = db.get_all_posts()
+    user_posts = [post for post in posts if post.userId == user_id]
+    return user_posts
+
+@postRouter.put("/{post_id}/like", response_description="Like a post", status_code=200)
+async def like_post(request: Request, post_id: int, user_id: int = Body(..., embed=True)):
+    """Handles liking a post with toggle and switch logic."""
+    db: Database_Connection = request.state.db
+    try:
+        post = db.get_post(post_id)
+        if not post:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Post with ID {post_id} not found."
+            )
+        if db.get_user_by_id(user_id) is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"User with ID {user_id} not found."
+            )
+        
+        # Check current reaction
+        current_likes = db.get_post_reactions(post_id, "LIKE")
+        current_dislikes = db.get_post_reactions(post_id, "DISLIKE")
+        
+        if user_id in current_likes:
+            # User already liked it, so remove the like (toggle off)
+            if db.remove_post_reaction(post_id, user_id):
+                return {"message": "Like removed successfully."}
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to remove like."
+                )
+        elif user_id in current_dislikes:
+            # User disliked it, remove dislike and add like
+            if db.remove_post_reaction(post_id, user_id) and db.add_post_reaction(post_id, user_id, "LIKE"):
+                return {"message": "Changed from dislike to like successfully."}
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to switch from dislike to like."
+                )
+        else:
+            # No existing reaction, add like
+            if db.add_post_reaction(post_id, user_id, "LIKE"):
+                return {"message": "Post liked successfully."}
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to like post."
+                )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while liking the post: {str(e)}"
+        )
+
+@postRouter.put("/{post_id}/dislike", response_description="Dislike a post", status_code=200)
+async def dislike_post(request: Request, post_id: int, user_id: int = Body(..., embed=True)):
+    """Handles disliking a post with toggle and switch logic."""
+    db: Database_Connection = request.state.db
+    try:
+        post = db.get_post(post_id)
+        if not post:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Post with ID {post_id} not found."
+            )
+        if db.get_user_by_id(user_id) is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"User with ID {user_id} not found."
+            )
+        
+        # Check current reaction
+        current_likes = db.get_post_reactions(post_id, "LIKE")
+        current_dislikes = db.get_post_reactions(post_id, "DISLIKE")
+        
+        if user_id in current_dislikes:
+            # User already disliked it, so remove the dislike (toggle off)
+            if db.remove_post_reaction(post_id, user_id):
+                return {"message": "Dislike removed successfully."}
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to remove dislike."
+                )
+        elif user_id in current_likes:
+            # User liked it, remove like and add dislike
+            if db.remove_post_reaction(post_id, user_id) and db.add_post_reaction(post_id, user_id, "DISLIKE"):
+                return {"message": "Changed from like to dislike successfully."}
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to switch from like to dislike."
+                )
+        else:
+            # No existing reaction, add dislike
+            if db.add_post_reaction(post_id, user_id, "DISLIKE"):
+                return {"message": "Post disliked successfully."}
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to dislike post."
+                )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while disliking the post: {str(e)}"
+        )
+
+@postRouter.delete("/{post_id}", response_description="Delete a post", status_code=200)
+async def delete_post(request: Request, post_id: int):
+    """Deletes a post by its ID, including all related reactions."""
+    db: Database_Connection = request.state.db
+    try:
+        if db.delete_post(post_id):
+            return {"message": "Post deleted successfully."}
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Post with ID {post_id} not found."
+            )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while deleting the post: {str(e)}"
+        )
+
+class PostUpdate(BaseModel):
+    message: Optional[str] = Field(None, description="Updated content of the post")
+    image: Optional[str] = Field(None, description="Updated Base64-encoded image data")
+    recipe_id: Optional[int] = Field(None, description="Updated Recipe ID associated with the post")
+
+@userRouter.get("/getUser/{username}")
+async def getUser(request: Request, username: str) -> dict:
     # try:
-        user: User = db.get_user(username)
-        if user is None:
-            raise HTTPException(status_code=400, detail="There is no user with that username")
+    db: Database_Connection = request.state.db
+    user: User = db.get_user_by_name(username)
+    if user is None:
+        raise HTTPException(status_code=400, detail="There is no user with that username")
         
         return user
     # except: 
@@ -499,7 +680,8 @@ async def getUser(username: str) -> dict:
         
 
 @recipeRouter.get("/getRecipe/{recipeId}")
-async def getRecipe(recipeId: int) -> Recipe:
+async def getRecipe(request: Request, recipeId: int) -> Recipe:
+    db: Database_Connection = request.state.db
     recipe: Recipe = db.get_recipe(recipeId)
     if recipe is None:
         raise HTTPException(status_code=400, detail="There is not recipe with that Id")
@@ -507,17 +689,178 @@ async def getRecipe(recipeId: int) -> Recipe:
 
 # Todo: This may have to change as I am not sure if this is the proper way to expect a body for a post request
 @recipeRouter.post("/createRecipe/")
-async def createRecipe(recipeObject: Recipe) -> bool:
-    success = db.create_recipe(recipeObject)
+async def createRecipe(request: Request, recipeObject: Recipe, userId: int) -> bool:
+    db: Database_Connection = request.state.db
+    success = db.create_recipe(recipeObject, userId)
     if success:
         return True
     
     return False
 
 @recipeRouter.put("/updateRecipe/{recipeId}")
-async def updateRecipe(recipeId: int, newRecipe: Recipe):
+async def updateRecipe(request: Request, recipeId: int, newRecipe: Recipe):
+    db: Database_Connection = request.state.db
     success = db.update_recipe(recipeId, newRecipe)
+    # Todo: Prob need to add a check here to make sure that we are the owner of the recipe to change it
     if success:
         return True
     
     return False
+
+@recipeRouter.get("/getUserRecipes/{userId}")
+async def getUserRecipes(request: Request, userId: int):
+    db: Database_Connection = request.state.db
+    recipeIds: list[int] = db.get_recipes_owned_by_userId(userId)
+    recipeObj: list[dict] = []
+    for recipeId in recipeIds:
+        recipeObj.append(db.get_recipe(recipeId).to_dict())
+    
+    # This should be fine as if there are no recipes owned by a user it should just return the empty list
+    # Can be changed to None if needed
+    return recipeObj
+
+@recipeRouter.put("/favoriteRecipe/{recipeId}/{userId}")
+async def favoriteRecipe(request: Request, recipeId: int, userId: int):
+    db: Database_Connection = request.state.db
+    success: bool = db.favorite_recipe(userId, recipeId)
+    if success:
+        return True
+    
+    return False
+
+@recipeRouter.put("/unfavoriteRecipe/{recipeId}/{userId}")
+async def favoriteRecipe(request: Request, recipeId: int, userId: int):
+    db: Database_Connection = request.state.db
+    success: bool = db.unfavorite_recipe(userId, recipeId)
+    if success:
+        return True
+    
+    return False
+  
+class PostUpdate(BaseModel):
+    message: Optional[str] = Field(None, description="Updated content of the post")
+    image: Optional[str] = Field(None, description="Updated Base64-encoded image data")
+    recipe_id: Optional[int] = Field(None, description="Updated Recipe ID associated with the post")
+
+@postRouter.put("/{post_id}", response_description="Update a post", response_model=Post)
+async def update_post(post_id: int, update: PostUpdate = Body(...), user_id: int = Body(..., embed=True)):
+    """Allows a user to edit their own post's message, image, or recipe."""
+    try:
+        # Fetch the existing post
+        post = db.get_post(post_id)
+        if not post:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Post with ID {post_id} not found."
+            )
+        
+        # Check if the user owns the post
+        if post.userId != user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You can only edit your own posts."
+            )
+        
+        # Check if the user exists
+        if db.get_user_by_id(user_id) is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"User with ID {user_id} not found."
+            )       
+        
+        # Prepare update data (only include fields that were provided)
+        update_data = {}
+        if update.message is not None:
+            update_data["Message"] = update.message
+        if update.image is not None:
+            update_data["Image"] = update.image
+        if update.recipe_id is not None:
+            update_data["RecipeId"] = update.recipe_id
+        
+        # If no fields provided, return the current post without changes
+        if not update_data:
+            return post
+        
+        # Update the post in the database
+        if not db.update_post(post_id, update_data):
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to update post."
+            )
+        
+        # Fetch and return the updated post
+        updated_post = db.get_post(post_id)
+        return updated_post
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while updating the post: {str(e)}"
+        )
+
+@postRouter.post("/{post_id}/comments", response_description="Add a comment to a post", status_code=201)
+async def add_comment(post_id: int, comment: Comment):
+    """Adds a new comment to a post and returns the CommentId."""
+    # Ensure the comment's postId matches the URL parameter
+    comment.postId = post_id
+    # Check if the post exists
+    post = db.get_post(post_id)
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Post with ID {post_id} not found."
+        )
+    # Check if the user exists
+    if db.get_user_by_id(comment.userId) is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"User with ID {comment.userId} not found."
+        )
+    # Add the comment and get the CommentId
+    comment_id = db.add_comment(comment)
+    if comment_id:
+        return {"message": "Comment added successfully", "commentId": comment_id}
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to add comment."
+        )
+
+@postRouter.delete("/{post_id}/comments/{comment_id}", response_description="Delete a comment", status_code=200)
+async def delete_comment(post_id: int, comment_id: int, user_id: int = Body(..., embed=True)):
+    """Deletes a comment by its CommentId, ensuring the user owns it."""
+    # Check if the post exists
+    post = db.get_post(post_id)
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Post with ID {post_id} not found."
+        )
+    # Check if the user exists
+    user = db.get_user_by_id(user_id)
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"User with ID {user_id} not found."
+        )
+    # Fetch comments to verify ownership
+    comments = db.get_post_comments(post_id)
+    comment = next((c for c in comments if c.commentId == comment_id), None)
+    if not comment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Comment with ID {comment_id} not found for post {post_id}."
+        )
+    if comment.userId != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only delete your own comments."
+        )
+    # Delete the comment
+    if db.delete_comment(comment_id):
+        return {"message": "Comment deleted successfully"}
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to delete comment."
+        )
