@@ -18,8 +18,7 @@ from pydantic import BaseModel, EmailStr
 
 class Recipe(BaseModel):
     """A data model representing a recipe"""
-    id: str = Field(default_factory=uuid.uuid4,
-                    alias="_id")  # Unique identifier for the recip
+    id: Optional[int]  # Unique identifier for the recipe
     name: str  # Name of the recipe
     cookTime: Optional[str] = None
     prepTime: Optional[str] = None
@@ -47,7 +46,7 @@ class Recipe(BaseModel):
         schema_extra = {
 
             "example": {
-                "id": "abcd-efgh-jklm-nopq-rstuv",
+                "id": 1,
                 "name": "Low-Fat Berry Blue Frozen Dessert",
                 "cookTime": "24H",
                 "prepTime": "45M",
@@ -110,6 +109,26 @@ class Recipe(BaseModel):
             }
         }
 
+class RecipeListEntry(BaseModel):
+    """A data model representing a recipe"""
+    id: int
+    name: str  # Name of the recipe
+    cookTime: Optional[str] = None
+    prepTime: Optional[str] = None
+    totalTime: Optional[str] = None
+    description: Optional[str] = None
+    category: str
+    rating: Optional[str] = None
+    calories: Optional[str] = None
+    fat: Optional[str] = None
+    saturatedFat: Optional[str] = None
+    cholesterol: Optional[str] = None
+    sodium: Optional[str] = None
+    carbs: Optional[str] = None
+    fiber: Optional[str] = None
+    sugar: Optional[str] = None
+    protein: Optional[str] = None
+    servings: Optional[str] = None
 
 class RecipeListRequest(BaseModel):
     ingredients: List[str] = Field(...,
@@ -118,22 +137,20 @@ class RecipeListRequest(BaseModel):
 
 
 class RecipeListResponse(BaseModel):
-    recipes: List[Recipe] = Field(...,
+    recipes: List[RecipeListEntry] = Field(...,
                                   description="List of recipes matching the filter criteria")
-    page: int = Field(..., description="Current page number")
-    count: int = Field(...,
-                       description="Total count of recipes matching the filter criteria")
+    page: int = Field(..., ge=1, description="Current page number, must be at least 1")
 
 
 class RecipeListRequest2(BaseModel):
-    page: int = Field(..., ge=1, description="Page number, must be at least 1")
-    caloriesUp: float = Field(..., ge=0, le=4000,
+    page: int = Field(..., ge=1, description="Current page number, must be at least 1")
+    caloriesMax: float = Field(..., ge=0, le=4000,
                               description="Calories upper limit, between 0 and 100")
-    fatUp: float = Field(..., ge=0, le=140,
+    fatMax: float = Field(..., ge=0, le=140,
                          description="Fat upper limit, between 0 and 100")
-    sugUp: float = Field(..., ge=0, le=150,
+    sugMax: float = Field(..., ge=0, le=150,
                          description="Sugar upper limit, between 0 and 100")
-    proUp: float = Field(..., ge=0, le=250,
+    proMax: float = Field(..., ge=0, le=250,
                          description="Protein upper limit, between 0 and 100")
 
 
@@ -147,13 +164,23 @@ class User(BaseModel):
     password: str
 
 
-# class Token(BaseModel):
-#     access_token: str
-#     token_type: str
+class UserCred(BaseModel):
+    username: str
+    password: str
 
+class PostUpdate(BaseModel):
+    message: Optional[str] = Field(None, description="Updated content of the post")
+    image: Optional[str] = Field(None, description="Updated Base64-encoded image data")
+    recipe_id: Optional[int] = Field(None, description="Updated Recipe ID associated with the post")
 
 class ShoppingListItem(BaseModel):
     name: str
     quantity: int
     unit: str
     checked: bool
+
+class MealPlanEntry(BaseModel):
+    user: int # id of the user to change
+    day: int  # 0-6 representing Monday-Sunday
+    recipeId: int  # The recipe id
+    recipeName: Optional[str]
