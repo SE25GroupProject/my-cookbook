@@ -1,10 +1,12 @@
 import sqlite3
-try:
-    from db.objects import User, Recipe, Ingredient, Instruction, Post, Comment
-except Exception:
-    from objects import User, Recipe, Ingredient, Instruction
-from datetime import datetime
 from typing import List
+from api.models import RecipeListEntry, ShoppingListItem
+
+try:
+    from api.db.objects import User, Recipe, Ingredient, Instruction, Post, Comment
+except Exception:
+    from objects import User, Recipe, Ingredient, Instruction, Post, Comment
+from datetime import datetime
 
 class Database_Connection():
     """Used as a singleton to access the database"""
@@ -15,9 +17,10 @@ class Database_Connection():
             self.instance = super(Database_Connection, self).__new__(self)
         return self.instance
     
-    def __init__(self):
+    def __init__(self, dbPath: str = 'db/cookbook.db'):
         """Handles initializing the class"""
-        self.conn = sqlite3.connect('cookbook.db')
+        print("Db Path: " + dbPath)
+        self.conn = sqlite3.connect(dbPath, check_same_thread=False)
         self.cursor = self.conn.cursor()
 
         # Checking if the tables exist
@@ -48,6 +51,15 @@ class Database_Connection():
                 self.cursor.executescript(sql_script)
                 self.conn.commit()
 
+        # Checking if the Meal Plan table exist
+        mealPlanTable = self.cursor.execute("SELECT tbl_name FROM sqlite_master WHERE type='table' AND tbl_name='MealPlan'").fetchone()
+        shoppingTable = self.cursor.execute("SELECT tbl_name FROM sqlite_master WHERE type='table' AND tbl_name='ShoppingList'").fetchone()
+        if mealPlanTable is None or shoppingTable is None: 
+            with open("db/createMealPrepTable.sql", "r") as sql_file:
+                sql_script = sql_file.read()
+                self.cursor.executescript(sql_script)
+                self.conn.commit()
+
         # Checking if the tables exist
         userRecipeTable = self.cursor.execute("SELECT tbl_name FROM sqlite_master WHERE type='table' AND tbl_name='UserRecipes'").fetchone()
         if userRecipeTable is None:
@@ -70,6 +82,10 @@ class Database_Connection():
                 self.cursor.executescript(sql_file.read())
                 self.conn.commit()
 
+    # ------------------------------------------------------
+    # User Interactions
+    # ------------------------------------------------------
+
     def add_user(self, user: User) -> int | bool:
         """Adds a new user to the database, returns UserId on success"""
         try:
@@ -90,21 +106,25 @@ class Database_Connection():
             return user
         except:
             return None
-        
-    def get_user_by_id(self, userId: int) -> User:
+
+    
+    def get_user_by_id(self, id: int) -> User:
         """Gets a user based on their username"""
-        try: 
-            commandString: str = "SELECT * FROM Users WHERE userId = ?"
-            self.cursor.execute(commandString, (userId,))
-            res = self.cursor.fetchone()
-            user: User = User(res[1], res[2], res[0])
-            return user
-        except:
-            return None
+        command_string: str = "SELECT * FROM Users WHERE UserId = ?"
+        self.cursor.execute(command_string, (id,))
+        user_data = self.cursor.fetchone()
+        if user_data:
+            return User(userId=user_data[0], username=user_data[1], password=user_data[2])
+        return None
+
+    # ------------------------------------------------------
+    # User Recipe Interactions
+    # ------------------------------------------------------
         
     def create_recipe(self, recipe: Recipe, userId: int):
         """Creates a recipe based on the object provided"""
         try:
+            print(recipe)
             commandString: str = """INSERT INTO Recipes (name, cookTime, prepTime, totalTime, description, category, rating, calories, fat, saturatedFat, cholesterol, sodium, carbs, fiber, sugar, protein, servings)   
                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
             
@@ -147,6 +167,9 @@ class Database_Connection():
             commandString: str = """SELECT * FROM Recipes WHERE recipeId = ?"""
             self.cursor.execute(commandString, (recipeId,))
             recipeRes = self.cursor.fetchone()
+            if not recipeRes:
+                print("No recipe value found.")
+                return None
 
             commandString: str = """SELECT * FROM Images WHERE recipeId = ?"""
             self.cursor.execute(commandString, (recipeId,))
@@ -178,7 +201,7 @@ class Database_Connection():
 
             recipe: Recipe = Recipe(recipeRes[1], recipeRes[2], recipeRes[3], recipeRes[4], recipeRes[5], recipeRes[6], recipeRes[7], 
                 recipeRes[8], recipeRes[9], recipeRes[10], recipeRes[11], recipeRes[12], recipeRes[13], recipeRes[14], recipeRes[15],
-                recipeRes[16], recipeRes[17], imageList, tagsList, ingredientsList, instructionsList)
+                recipeRes[16], recipeRes[17], imageList, tagsList, ingredientsList, instructionsList, recipeId=recipeRes[0])
 
             return recipe
         
@@ -202,7 +225,7 @@ class Database_Connection():
         except Exception as e:
             print(e)
             return False
-        
+    
     def get_recipe_owner_by_recipeId(self, recipeId: int):
         """Gets the owner of the recipe"""
         try:
@@ -228,6 +251,10 @@ class Database_Connection():
             print(e)
             return None
         
+    # ------------------------------------------------------
+    # Favorite Recipe Interactions
+    # ------------------------------------------------------
+
     def unfavorite_recipe(self, userId: int, recipeId: int):
         """Unfavorites a recipe"""
         try:
@@ -261,15 +288,167 @@ class Database_Connection():
         except Exception as e:
             print(e)
             return None
+
+    # ------------------------------------------------------
+    # Recipe Search Interactions
+    # ------------------------------------------------------
     
-    def get_user_by_id(self, id: int) -> User:
-        """Gets a user based on their username"""
-        command_string: str = "SELECT * FROM Users WHERE UserId = ?"
-        self.cursor.execute(command_string, (id,))
-        user_data = self.cursor.fetchone()
-        if user_data:
-            return User(userId=user_data[0], username=user_data[1], password=user_data[2])
-        return None
+    def get_count_recipes_by_ingredients(self, ings: List[str], ):
+        try:
+            countCommand: str = """SELECT recipeId FROM (SELECT DISTINCT name, recipeId FROM ingredients WHERE name IN (%s)) GROUP BY recipeId HAVING COUNT(name) >= ? ;""" %','.join('?'*len(ings))
+            res = self.cursor.execute(countCommand, (*ings, len(ings), ))
+            count = len(res.fetchall())
+            return count
+        except Exception as e: 
+            print(e)
+            return -1
+        
+    def get_recipes_by_ingredient(self, ings: List[str], page: int, per_page: int = 10):
+        """Retrieves a list of recipe ids containing the given ingredients limited by the number per page"""
+        try:
+            commandString: str = """SELECT recipeId FROM (SELECT DISTINCT name, recipeId FROM ingredients WHERE name IN (%s)) GROUP BY recipeId HAVING COUNT(name) >= ? LIMIT ? OFFSET ?;""" %','.join('?'*len(ings))
+            res = self.cursor.execute(commandString, (*ings, len(ings), per_page, page * per_page ))
+            recipeIds = (*res.fetchall(),)
+
+            recipeCommand: str = """SELECT * FROM recipes WHERE recipeId IN (%s)"""%','.join('?'*len(recipeIds))
+            res = self.cursor.execute(recipeCommand, tuple(id for recipeRecord in recipeIds for id in recipeRecord))
+
+            recipeObjs = res.fetchall()
+
+            recipes = []
+            for recipe in recipeObjs:
+                recipes.append(RecipeListEntry(name=recipe[1], cookTime=recipe[2], prepTime=recipe[3], totalTime=recipe[4], 
+                                    description=recipe[5], category=recipe[6], rating=recipe[7], calories=recipe[8], 
+                                    fat=recipe[9], saturatedFat=recipe[10], cholesterol=recipe[11], sodium=recipe[12], 
+                                    carbs=recipe[13], fiber=recipe[14], sugar=recipe[15], protein=recipe[16], 
+                                    servings=recipe[17], id=recipe[0]))
+
+            return recipes
+        except Exception as e: 
+            print(e)
+            return[]
+        
+    def get_count_recipes_by_nutrition(self, caloriesMax: int, fatMax: int, sugMax: int, proMax: int, ):
+        try:
+            countCommand: str = """SELECT * FROM recipes WHERE calories <= ? AND fat <= ? AND sugar <= ? and protein <= ? ;""" 
+            res = self.cursor.execute(countCommand, (caloriesMax, fatMax, sugMax, proMax,))
+
+            count = len(res.fetchall())
+            return count
+        except Exception as e: 
+            print(e)
+            return -1
+
+    def get_recipes_by_nutrition(self, caloriesMax: int, fatMax: int, sugMax: int, proMax: int, page: int, per_page: int = 10):
+        """Retrieves a list of recipe ids containing the given ingredients limited by the number per page"""
+        try:
+            commandString: str = """SELECT * FROM recipes WHERE calories <= ? AND fat <= ? AND sugar <= ? and protein <= ? LIMIT ? OFFSET ?; """
+            print(commandString)
+            res = self.cursor.execute(commandString, (caloriesMax, fatMax, sugMax, proMax, per_page, page * per_page,))
+
+            recipeObjs = res.fetchall()
+
+            recipes = []
+            for recipe in recipeObjs:
+                recipes.append(RecipeListEntry(name=recipe[1], cookTime=recipe[2], prepTime=recipe[3], totalTime=recipe[4], 
+                                    description=recipe[5], category=recipe[6], rating=recipe[7], calories=recipe[8], 
+                                    fat=recipe[9], saturatedFat=recipe[10], cholesterol=recipe[11], sodium=recipe[12], 
+                                    carbs=recipe[13], fiber=recipe[14], sugar=recipe[15], protein=recipe[16], 
+                                    servings=recipe[17], id=recipe[0]))
+
+            return recipes
+        except Exception as e: 
+            print(e)
+            return[]
+        
+    def get_ingredient_list(self, ing: str): 
+        try: 
+            commandString: str = """SELECT name FROM ingredients WHERE name LIKE ? GROUP BY name LIMIT 10;"""
+            res = self.cursor.execute(commandString, (f"%{ing}%", ))
+
+            return res.fetchall()
+        except Exception as e: 
+                print(e)
+                return[]
+    
+    # ------------------------------------------------------
+    # Meal Plan Interactions
+    # ------------------------------------------------------
+
+    def get_user_meal_plan(self, UserId: int):
+        try:
+            commandString: str = "SELECT * FROM MealPlan WHERE userId = ?;"
+            mealplan = self.cursor.execute(commandString, (UserId,)).fetchall()
+            formattedPlan = {mealitem[2]: mealitem[1] for mealitem in mealplan}
+            return formattedPlan
+        except Exception as e:
+            print(e)
+            return{}
+
+    def update_user_meal_plan(self, UserId: int, day: int, recipeId:int):
+        try: 
+            commandString: str = "INSERT INTO MealPlan(userId,recipeId,dayOfWeek) VALUES (?,?,?) ON CONFLICT(userId, dayOfWeek) DO UPDATE SET recipeId = excluded.recipeId;"
+            self.cursor.execute(commandString, (UserId, recipeId, day))
+            self.conn.commit()
+            return True
+        except Exception as e:
+            print(e)
+            return f"There was an error with updating the meal plan of user {UserId} for the day {day}"
+    
+    def remove_from_user_meal_plan(self, UserId: int, day: int):
+        try: 
+            exists = self.cursor.execute("SELECT FROM MealPlan WHERE userId = ? AND dayOfWeek = ?;", (UserId, day)).fetchone
+            if (exists is None):
+                return f"An isntance with userId of {UserId} and day of {day} does not exist in the database."
+            
+            commandString: str = "DELETE FROM MealPlan WHERE userId = ? AND dayOfWeek = ?"
+            self.cursor.execute(commandString, (UserId, day))
+            self.conn.commit()
+        except Exception as e:
+            print(e)
+            return f"There was an error removing the instance with userId of {UserId} and day of {day} from the database."
+    
+    # ------------------------------------------------------
+    # Shopping List Interactions
+    # ------------------------------------------------------
+
+    def get_user_shopping_list(self, UserId: int):
+        try:
+            commandString: str = "SELECT * FROM ShoppingList WHERE userId = ?;"
+            shoppingList = self.cursor.execute(commandString, (UserId,)).fetchall()
+            formattedList = [ShoppingListItem(name=shoppingItem[1], quantity=shoppingItem[2], unit=shoppingItem[3], checked=shoppingItem[4]) for shoppingItem in shoppingList]
+            return formattedList
+        except Exception as e:
+            print(e)
+            return[]
+        
+    def update_shopping_list_item(self, UserId: int, name: str, quantity: int, unit: str, checked: bool):
+        try: 
+            commandString: str = "INSERT INTO ShoppingList(userId,name,quantity,unit,checked) VALUES (?,?,?,?,?) ON CONFLICT(userId, name) DO UPDATE SET quantity = excluded.quantity, unit = excluded.unit, checked = excluded.checked;"
+            self.cursor.execute(commandString, (UserId, name, quantity, unit, 1 if checked else 0,))
+            self.conn.commit()
+            return True
+        except Exception as e:
+            print(e)
+            return f"There was an error with updating the shopping list of user {UserId} for the item {name}"
+        
+    def remove_from_shopping_list(self, UserId: int, name: str):
+        try: 
+            exists = self.cursor.execute("SELECT * FROM ShoppingList WHERE userId = ? AND name = ?;", (UserId, name)).fetchone()
+            if (exists is None):
+                return f"An instance with userId of {UserId} and name of {name} does not exist in the database."
+
+            commandString: str = "DELETE FROM ShoppingList WHERE userId = ? AND name = ?;"
+            self.cursor.execute(commandString, (UserId, name))
+            self.conn.commit()
+            return True
+        except Exception as e:
+            print(e)
+            return f"There was an error removing the instance with userId of {UserId} and name of {name} from the database."
+
+    # ------------------------------------------------------
+    # Post Interactions
+    # ------------------------------------------------------
 
     def add_post(self, post: Post) -> bool:
         try:
@@ -405,6 +584,10 @@ class Database_Connection():
         except Exception as e:
             print(f"Error updating post: {e}")
             return False
+
+    # ------------------------------------------------------
+    # Post Comment Interactions
+    # ------------------------------------------------------
 
     def add_comment(self, comment: Comment) -> int | bool:
             """Adds a new comment to a post and returns the CommentId"""

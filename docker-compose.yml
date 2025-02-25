@@ -12,7 +12,7 @@ services:
     networks:
       - fastapi-network
     volumes:
-      - ./api:/app
+      - ./api:/api
 
   frontend:
     build:

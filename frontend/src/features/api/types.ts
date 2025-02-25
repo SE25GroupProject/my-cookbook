@@ -58,11 +58,12 @@ export class RecipeObject implements Recipe {
   servings!: number
   instructions!: string[]
 }
+
 export interface NutritionMax {
-  caloriesUp: number
-  fatUp: number
-  sugUp: number
-  proUp: number
+  caloriesMax: number
+  fatMax: number
+  sugMax: number
+  proMax: number
 }
 
 export interface RecipeListIngredientsRequest {
@@ -71,10 +72,10 @@ export interface RecipeListIngredientsRequest {
 }
 
 export interface RecipeListNutritionRequest {
-  caloriesUp: number
-  fatUp: number
-  sugUp: number
-  proUp: number
+  caloriesMax: number
+  fatMax: number
+  sugMax: number
+  proMax: number
   page: number
 }
 
