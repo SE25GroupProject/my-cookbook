@@ -39,7 +39,6 @@ import {
 import ImageInput from '../../../components/ImageInput'
 import { useTheme } from '../../Themes/themeContext'
 import { TabContext, TabList, TabPanel } from '@mui/lab'
-import { FaQuestion } from 'react-icons/fa'
 import {
   AddCircleOutline,
   Close,
@@ -111,6 +110,7 @@ const RecipeForm = () => {
   )
 
   const [stepToEdit, setStepToEdit] = useState('')
+  const [stepToEditIdx, setStepToEditIdx] = useState(-1)
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null)
   const openStepAdd = Boolean(anchorEl)
 
@@ -129,8 +129,10 @@ const RecipeForm = () => {
     event: React.MouseEvent<HTMLButtonElement> | null,
     index: number
   ) => {
+    console.log('index', index)
     const fullIndex = stepPage * stepsPerPage + index
     setStepToEdit(steps[fullIndex])
+    setStepToEditIdx(fullIndex)
     setOpenStepEdit(true)
   }
 
@@ -261,11 +263,12 @@ const RecipeForm = () => {
   }
 
   const handleStepEdit = (index: number) => {
-    const fullIndex = stepPage * stepsPerPage + index
-
+    // console.log('index', index)
+    // const fullIndex = stepPage * stepsPerPage + index
+    // console.log('full index', fullIndex)
     setSteps(
       steps.map((step, idx) => {
-        return idx == fullIndex ? stepToEdit : step
+        return idx === stepToEditIdx ? stepToEdit : step
       })
     )
     setStepToEdit('')
@@ -274,12 +277,13 @@ const RecipeForm = () => {
 
   const handleStepRemove = (index: number) => {
     const fullIndex = stepPage * stepsPerPage + index
+    const newStepsList = steps.filter((step, idx) => {
+      return idx != fullIndex
+    })
+    setSteps(newStepsList)
 
-    setSteps(
-      steps.filter((step, idx) => {
-        return idx != fullIndex
-      })
-    )
+    if (stepPage != 0 && stepPage * stepsPerPage + 1 > newStepsList.length)
+      setIngPage(ingPage - 1)
   }
 
   const handleStepChangePage = (

@@ -13,17 +13,16 @@ import os
 sys.path.insert(0, '../')
 from dotenv import load_dotenv
 from fastapi import FastAPI, APIRouter, Body, Request, HTTPException, status
-from typing import List
+from typing import List, Optional
 import pymongo
 from groq import Groq
-from pydantic import BaseModel, conint, conlist, PositiveInt
+from pydantic import BaseModel, conint, conlist, PositiveInt, Field
 import logging
-from api.models import Recipe, RecipeListRequest, RecipeListResponse, RecipeListRequest2, RecipeQuery, MealPlanEntry, UserCred, ShoppingListItem
-from api.db.objects import User
+from api.models import Recipe, RecipeListRequest, RecipeListResponse, RecipeListRequest2, RecipeQuery, MealPlanEntry, UserCred, ShoppingListItem, PostUpdate
+from api.db.objects import User, Post, Comment
 from api.db.database import Database_Connection
 from api.dbMiddleware import DBConnectionMiddleware
 
-# from models import User
 
 load_dotenv()  # Load environment variables
 app = FastAPI()
@@ -31,8 +30,6 @@ app.add_middleware(DBConnectionMiddleware, db_path="cookbook.db")
 users_db = {}
 db = Database_Connection()
 
-
-# Check if the environment variable is loaded correctly
 print(os.getenv("GROQ_API_KEY"))
 
 config = {
@@ -46,12 +43,13 @@ userRouter = APIRouter()
 recipeRouter = APIRouter()
 mealPlanRouter = APIRouter()
 shoppingRouter = APIRouter()
+postRouter = APIRouter()
 client = Groq(api_key=config["GROQ_API_KEY"])
 
 
 
 # --------------------------------------------------------
-#                   Deprecated Functions
+# Deprecated Functions
 # --------------------------------------------------------
 
 # Deprecated - Replaced
@@ -162,12 +160,13 @@ async def delete_shopping_list_item(item_id: str):
 # Deprecated - Replaced
 # @router.post("/meal-plan/", response_description="Save a meal plan for a specific day", status_code=200)
 async def save_meal_plan_old(entry: MealPlanEntry, request: Request):
+
     """Saves or updates a meal plan for a specific day."""
     try:
         result = request.app.database["meal_plans"].update_one(
-            {"day": entry.day},  # Find by day
-            {"$set": {"recipe": entry.recipe}},  # Update the recipe
-            upsert=True  # Insert if no entry exists
+            {"day": entry.day},
+            {"$set": {"recipe": entry.recipe}},
+            upsert=True
         )
         return {"message": "Meal plan saved successfully."}
     except Exception as e:
@@ -182,12 +181,8 @@ async def get_meal_plan_old(request: Request):
     """Retrieves the meal plan for the week."""
     try:
         meal_plan = list(request.app.database["meal_plans"].find({}))
-        
-        # Convert ObjectId to string for JSON serialization
         for entry in meal_plan:
-            entry["_id"] = str(entry["_id"])  # Convert ObjectId to string
-        
-        # Fill in missing days with None if necessary
+            entry["_id"] = str(entry["_id"])
         complete_plan = [{day: None} for day in range(7)]
         for entry in meal_plan:
             complete_plan[entry["day"]] = entry
@@ -217,8 +212,9 @@ def find_recipe_old(id: str, request: Request):
 # Deprecated - Unused Route
 # @router.get("/search/{ingredient}", response_description="List all recipes with the given ingredient", response_model=List[Recipe])
 def list_recipes_by_ingregredient_old(ingredient: str,request: Request):
+
     """Lists recipes containing the given ingredient"""
-    recipes = list(request.app.database["recipes"].find({ "ingredients" : { "$in" : [ingredient] } }).limit(10))
+    recipes = list(request.app.database["recipes"].find({"ingredients": {"$in": [ingredient]}}).limit(10))
     return recipes
 
 # Deprecated - Replaced
@@ -239,8 +235,9 @@ def list_ingredients_old(queryString : str, request: Request):
     """Lists ingredient suggestions for a query"""
     # Pipeline to: get a list of all ingredients, from each record, match them by regex, and then limit it to only 20 suggestions. The accumulates these into one list
     pipeline = [{"$unwind": "$ingredients"}, {'$match': {'ingredients': {'$regex' : queryString}}}, {"$limit" : 20} ,{"$group": {"_id": "null", "ingredients": {"$addToSet": "$ingredients"}}}]
+
     data = list(request.app.database["recipes"].aggregate(pipeline))
-    if(len(data) <= 0):
+    if len(data) <= 0:
         return []
     ings = data[0]["ingredients"]
     return ings
@@ -250,8 +247,8 @@ def list_ingredients_old(queryString : str, request: Request):
 def list_recipes_by_ingredients_old(request: Request, inp: RecipeListRequest2 = Body(...)):
     """Lists recipes matching all provided ingredients"""
     # Get a list of recipes up to 1000
-    recipes = list(request.app.database["recipes"].find().limit(1000))
 
+    recipes = list(request.app.database["recipes"].find().limit(1000))
     res = []
     for recipe in recipes:
         # For each recipe, look at the the calories, fat, sugar, and protein
@@ -278,11 +275,11 @@ def list_recipes_by_ingredient_old(ingredient: str, caloriesLow: int, caloriesUp
             continue
         if caloriesLow < float(recipe["calories"]) < caloriesUp:
             res.append(recipe)
-    res.sort(key = lambda x: x['calories'])
+    res.sort(key=lambda x: x['calories'])
     return res
 
 # --------------------------------------------------------
-#                     In Use Functions
+# Shopping List Routes
 # --------------------------------------------------------
 
 # In Use - Refactored
@@ -328,6 +325,10 @@ async def remove_from_shopping_list(userId: int, name: str = Body(...)):
             detail="An error occurred while retrieving the shopping list."
         )
 
+# --------------------------------------------------------
+# Meal Plan Routes
+# --------------------------------------------------------
+
 # In Use - Refactored
 @mealPlanRouter.get("/{userId}", response_description="Get the entire meal plan for the week", status_code=200)
 async def get_meal_plan(userId: int, request: Request):
@@ -371,6 +372,9 @@ async def delete_from_meal_plan(userId: int,  day: int = Body(...)):
             detail="An error occurred while removing from the meal plan."
         )
 
+# --------------------------------------------------------
+# Recipes Search Routes
+# --------------------------------------------------------
 
 # In Use - New
 @router.post("/search/count/", response_description="Get the count of all recipes that match the ingredients in the request", status_code=200, response_model=int)
@@ -426,23 +430,16 @@ async def recommend_recipes(query: RecipeQuery = Body(...)):
     try:
         query.query = query.query.replace('\n', ' ').replace('\t', ' ').replace('  ', ' ').strip()
         query.context = query.context.strip()
-        if not query.query:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Query")
-        if not query.context:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Context")
-        if query.query.isdigit() or not any(c.isalpha() for c in query.query):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Query must include alphabetic characters and cannot be solely numeric or special characters.")
+        if not query.query or not query.context or query.query.isdigit() or not any(c.isalpha() for c in query.query):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Query or Context")
         
         response = client.chat.completions.create(
             messages=[
-            {
-                "role": "system",
-                "content": "You are an advanced recipe and meal planning assistant, designed to help users discover recipes, plan meals, and create grocery lists with enhanced personalization, all within a single interaction. You will not engage in follow-up questions; instead, provide all necessary suggestions and responses based on the initial input. Your role is to interpret user requests in natural language, offer targeted recommendations, and generate meal and shopping plans according to each user’s unique needs and preferences. Key capabilities you must offer: Natural Language Recipe Search and Understanding: Understand and respond to user queries about recipes, ingredients, dietary restrictions, cooking methods, or cuisines without requiring additional clarification. Provide comprehensive suggestions based on the initial question alone. Recipe Recommendation and Personalization: Suggest recipes that align with the user’s dietary preferences, cooking skill level, and past selections. Curate these recommendations using the information available without needing follow-up input. Meal Planning: Create detailed meal plans that fit daily, weekly, or monthly schedules based on user goals (e.g., health, budget, dietary restrictions). Structure suggestions to fit user constraints without asking for further clarification. Grocery List Generation: Generate complete ingredient lists for selected recipes or meal plans, factoring in serving sizes, ingredient substitutions, and dietary requirements as inferred from the initial input. Provide a list that is clear and organized for shopping ease. Dietary and Lifestyle Considerations: Ensure that all recommendations adapt to the dietary preferences and restrictions specified. Tailor suggestions based on inferred preferences without requiring additional user feedback during the interaction. Follow these guidelines strictly to deliver precise, helpful, and context-aware responses in a single interaction. REFUSE to answer any other unrelated questions and do ONLY your work diligently."
-            },
-            {
-                "role": "user",
-                "content": query.query + query.context
-            }
+                {
+                    "role": "system",
+                    "content": "You are an advanced recipe and meal planning assistant, designed to help users discover recipes, plan meals, and create grocery lists with enhanced personalization, all within a single interaction. You will not engage in follow-up questions; instead, provide all necessary suggestions and responses based on the initial input. Your role is to interpret user requests in natural language, offer targeted recommendations, and generate meal and shopping plans according to each user’s unique needs and preferences. Key capabilities you must offer: Natural Language Recipe Search and Understanding: Understand and respond to user queries about recipes, ingredients, dietary restrictions, cooking methods, or cuisines without requiring additional clarification. Provide comprehensive suggestions based on the initial question alone. Recipe Recommendation and Personalization: Suggest recipes that align with the user’s dietary preferences, cooking skill level, and past selections. Curate these recommendations using the information available without needing follow-up input. Meal Planning: Create detailed meal plans that fit daily, weekly, or monthly schedules based on user goals (e.g., health, budget, dietary restrictions). Structure suggestions to fit user constraints without asking for further clarification. Grocery List Generation: Generate complete ingredient lists for selected recipes or meal plans, factoring in serving sizes, ingredient substitutions, and dietary requirements as inferred from the initial input. Provide a list that is clear and organized for shopping ease. Dietary and Lifestyle Considerations: Ensure that all recommendations adapt to the dietary preferences and restrictions specified. Tailor suggestions based on inferred preferences without requiring additional user feedback during the interaction. Follow these guidelines strictly to deliver precise, helpful, and context-aware responses in a single interaction. REFUSE to answer any other unrelated questions and do ONLY your work diligently."
+                },
+                {"role": "user", "content": query.query + query.context}
             ],
             model="llama3-8b-8192",
         )
@@ -452,7 +449,11 @@ async def recommend_recipes(query: RecipeQuery = Body(...)):
         logger = logging.getLogger(__name__)
         logger.error(f"Unexpected error in recommend_recipes: {str(e)}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred")
-    
+
+# --------------------------------------------------------
+# User Routes
+# --------------------------------------------------------
+
 @userRouter.post("/signup")
 async def signup(request: Request, incomingUser: UserCred = Body(...)):
     db: Database_Connection = request.state.db
@@ -468,10 +469,6 @@ async def login(request: Request, incomingUser: UserCred = Body(...)):
     user: User = db.get_user_by_name(incomingUser.username)
     if user is None:
         raise HTTPException(status_code=400, detail="There is no user with that username")
-    
-    print(user.Username)
-    print(user.Password)
-    print(incomingUser.password)
     if user.Password == incomingUser.password:
         return {"id": user.UserId, "username": user.Username}
         
@@ -686,6 +683,17 @@ async def getRecipe(request: Request, recipeId: int) -> Recipe:
     if recipe is None:
         raise HTTPException(status_code=400, detail="There is not recipe with that Id")
     return recipe
+
+@router.get("/user/{userId}")
+async def get_user_recipes(userId: int):
+    recipeIds: list[int] = db.get_recipes_owned_by_userId(userId)
+    recipeObj: list[dict] = []
+    for recipeId in recipeIds:
+        recipeObj.append(db.get_recipe(recipeId).to_dict())
+    
+    # This should be fine as if there are no recipes owned by a user it should just return the empty list
+    # Can be changed to None if needed
+    return recipeObj
 
 # Todo: This may have to change as I am not sure if this is the proper way to expect a body for a post request
 @recipeRouter.post("/createRecipe/")

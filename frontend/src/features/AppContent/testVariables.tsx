@@ -1,7 +1,7 @@
-import { Recipe } from '../api/types'
+import { Post, PostRecipe, Recipe } from '../api/types'
 
 export const mockRecipe: Recipe = {
-  id: '20919',
+  id: 20919,
   name: 'California Scampi',
   cookTime: '5M',
   prepTime: '10M',
@@ -47,7 +47,7 @@ export const mockRecipe: Recipe = {
 }
 
 export const mockRecipeTwo: Recipe = {
-  id: '58',
+  id: 58,
   name: 'Low-Fat Burgundy Beef & Vegetable Stew',
   cookTime: '2H14M',
   prepTime: '30M',
@@ -121,3 +121,167 @@ export const mockRecipeTwo: Recipe = {
     'Reduce heat to medium and cook 3 to 4 minutes or until peas are heated through.',
   ],
 }
+
+export const testPosts: Post[] = [
+  {
+    recipe: { id: 58, name: 'Test 1' },
+    img: '',
+    content: 'This is a test post',
+  },
+  {
+    recipe: { id: 58, name: 'Test 2' },
+    img: '',
+    content: 'This is test post 2',
+  },
+  {
+    recipe: { id: 58, name: 'Test 3' },
+    img: '',
+    content: 'This is test post 3',
+  },
+  {
+    recipe: { id: 58, name: 'Test 4' },
+    img: '',
+    content: 'This is test post 4',
+  },
+  {
+    recipe: { id: 58, name: 'Test 5' },
+    img: '',
+    content: 'This is test post 5',
+  },
+  {
+    recipe: { id: 58, name: 'Test 6' },
+    img: '',
+    content: 'This is test post 6',
+  },
+  {
+    recipe: { id: 58, name: 'Test 7' },
+    img: '',
+    content: 'This is test post 7',
+  },
+  {
+    recipe: { id: 58, name: 'Test 8' },
+    img: '',
+    content: 'This is test post 8',
+  },
+  {
+    recipe: { id: 58, name: 'Test 9' },
+    img: '',
+    content: 'This is test post 9',
+  },
+  {
+    recipe: { id: 58, name: 'Test 10' },
+    img: '',
+    content: 'This is test post 10',
+  },
+  {
+    recipe: { id: 58, name: 'Test 11' },
+    img: '',
+    content: 'This is test post 11',
+  },
+  {
+    recipe: { id: 58, name: 'Test 12' },
+    img: '',
+    content: 'This is test post 12',
+  },
+  {
+    recipe: { id: 58, name: 'Test 13' },
+    img: '',
+    content: 'This is test post 13',
+  },
+  {
+    recipe: { id: 58, name: 'Test 14' },
+    img: '',
+    content: 'This is test post 14',
+  },
+  {
+    recipe: { id: 58, name: 'Test 15' },
+    img: '',
+    content: 'This is test post 15',
+  },
+  {
+    recipe: { id: 58, name: 'Test 16' },
+    img: '',
+    content: 'This is test post 16',
+  },
+  {
+    recipe: { id: 58, name: 'Test 17' },
+    img: '',
+    content: 'This is test post 17',
+  },
+  {
+    recipe: { id: 58, name: 'Test 18' },
+    img: '',
+    content: 'This is test post 18',
+  },
+  {
+    recipe: { id: 58, name: 'Test 19' },
+    img: '',
+    content: 'This is test post 19',
+  },
+  {
+    recipe: { id: 58, name: 'Test 20' },
+    img: '',
+    content: 'This is test post 20',
+  },
+  {
+    recipe: { id: 58, name: 'Test 21' },
+    img: '',
+    content: 'This is test post 21',
+  },
+  {
+    recipe: { id: 58, name: 'Test 22' },
+    img: '',
+    content: 'This is test post 22',
+  },
+  {
+    recipe: { id: 58, name: 'Test 23' },
+    img: '',
+    content: 'This is test post 23',
+  },
+]
+
+export const testRecipes: PostRecipe[] = [
+  {
+    id: 58,
+    name: 'test 1',
+  },
+  {
+    id: 58,
+    name: 'test 2',
+  },
+  {
+    id: 58,
+    name: 'test 3',
+  },
+  {
+    id: 58,
+    name: 'test 4',
+  },
+  {
+    id: 58,
+    name: 'test 5',
+  },
+]
+
+export const testRecipesTwo: PostRecipe[] = [
+  {
+    id: 58,
+    name: 'test 6',
+  },
+  {
+    id: 58,
+    name: 'test 7',
+  },
+  {
+    id: 58,
+    name: 'test 8',
+  },
+  {
+    id: 58,
+    name: 'test 9',
+  },
+  {
+    id: 58,
+    name: 'test 10',
+  },
+]
