@@ -1,4 +1,5 @@
 import {
+  ConstructionOutlined,
   Send,
   ThumbDown,
   ThumbDownAlt,
@@ -9,11 +10,16 @@ import {
   Autocomplete,
   Box,
   Button,
+  Card,
   Container,
+  Dialog,
+  DialogContent,
+  DialogContentText,
   Divider,
   Grid2,
   IconButton,
   InputAdornment,
+  InputLabel,
   OutlinedInput,
   Paper,
   Popover,
@@ -30,7 +36,14 @@ import { useAuth } from '../Authentication/AuthProvider'
 import { useFixScroll } from './FixScroll'
 import PostItem from './PostItem'
 import { testPosts, testRecipes } from '../testVariables'
-import { Post, PostRecipe } from '../../api/types'
+import { Post, PostComment, PostRecipe, PostRequest } from '../../api/types'
+import CommentItem from './CommentItem'
+import PostModal from './PostModal'
+import {
+  useCreatePostMutation,
+  useDeletePostMutation,
+  useGetPostsQuery,
+} from './SocialSlice'
 
 const SocialMedia = () => {
   const auth = useAuth()
@@ -38,58 +51,90 @@ const SocialMedia = () => {
 
   const { handleSubmit, getValues } = formMethods
 
-  const [posts, setPosts] = useState<Post[]>([...testPosts])
+  // const [posts, setPosts] = useState<Post[]>([...testPosts])
+
+  const { data: posts, isLoading, isSuccess } = useGetPostsQuery()
 
   const userRecipes: PostRecipe[] = [...testRecipes]
 
+  // Post creation
   const [imgAnchorEl, setImgAnchorEl] = useState<HTMLButtonElement | null>(null)
   const [postImg, setPostImg] = useState('')
-
   const [chosenRecipe, setChosenRecipe] = useState<PostRecipe | null>(null)
   const [newPostText, setNewPostText] = useState('')
+  const [createPost, { isLoading: postCreationLoading }] =
+    useCreatePostMutation()
 
+  // Post View Modal
+  const [postBeingViewed, setPostBeingViewed] = useState<Post | null>(null)
+  const [postModalEditMode, setPostModalEditMode] = useState<boolean>(false)
+  const postModalOpen = postBeingViewed ? true : false
+
+  const handleOpenPostView = (post: Post) => {
+    setPostBeingViewed(post)
+    setPostModalEditMode(false)
+  }
+
+  const handleOpenPostEdit = (post: Post) => {
+    setPostBeingViewed(post)
+    setPostModalEditMode(true)
+  }
+
+  const handleClosePostView = () => {
+    setPostBeingViewed(null)
+  }
+
+  // Post endless scroll
   const postsPerPage = 10
 
-  const [currentPosts, setCurrentPosts] = useState<Post[]>(
-    [...posts].splice(
-      0,
-      posts.length < postsPerPage ? posts.length : postsPerPage
-    )
-  )
+  const [currentPosts, setCurrentPosts] = useState<Post[]>([])
+
+  useEffect(() => {
+    if (posts) {
+      setCurrentPosts([...posts].splice(0, postsPerPage))
+    }
+  }, [posts])
+
   const [hasMore, setHasMore] = useState(true)
 
   const fetchData = () => {
-    if (posts.length == currentPosts.length) {
-      setHasMore(false)
+    if (posts) {
+      if (posts.length == currentPosts.length) {
+        setHasMore(false)
+      }
+
+      var postCopy = [...posts]
+      var postsToDisplay = postCopy.splice(
+        currentPosts.length,
+        posts.length < postsPerPage ? posts.length : postsPerPage
+      )
+
+      // a fake async api call like which sends
+      // 20 more records in .5 secs
+      setTimeout(() => {
+        setCurrentPosts(currentPosts.concat(postsToDisplay))
+      }, 1500)
     }
-
-    var postCopy = [...posts]
-    var postsToDisplay = postCopy.splice(
-      currentPosts.length,
-      posts.length < postsPerPage ? posts.length : postsPerPage
-    )
-
-    // a fake async api call like which sends
-    // 20 more records in .5 secs
-    setTimeout(() => {
-      setCurrentPosts(currentPosts.concat(postsToDisplay))
-    }, 1500)
   }
 
   useFixScroll(hasMore, fetchData)
 
   const handleCreatePost = () => {
-    if (chosenRecipe && newPostText) {
-      let post: Post = {
+    if (chosenRecipe && newPostText && auth?.userSignedIn) {
+      let post: PostRequest = {
+        postId: -1,
+        userId: auth?.user.id,
         recipe: chosenRecipe,
-        img: postImg,
-        content: newPostText,
+        image: postImg,
+        message: newPostText,
       }
 
-      console.log(post)
-
-      setPosts([...posts, post])
-      setCurrentPosts([post, ...posts])
+      createPost(post)
+        .unwrap()
+        .then((response: string) => {
+          console.log(response)
+        })
+        .catch((err) => console.log(err))
 
       setChosenRecipe(null)
       setNewPostText('')
@@ -176,6 +221,9 @@ const SocialMedia = () => {
               />
             </Stack>
 
+            <InputLabel htmlFor="whats-cookin" sx={{ visibility: 'hidden' }}>
+              What's Cookin'?
+            </InputLabel>
             <OutlinedInput
               value={newPostText}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -186,7 +234,11 @@ const SocialMedia = () => {
               minRows={1}
               maxRows={4}
               fullWidth
+              disabled={!auth?.userSignedIn}
+              id="whats-cookin"
               placeholder="What's Cookin'?"
+              label="What's Cookin'?"
+              aria-label="What's Cookin'?"
               sx={{
                 '& fieldset': {
                   borderRadius: 8,
@@ -197,6 +249,7 @@ const SocialMedia = () => {
                   <IconButton
                     onClick={handleCreatePost}
                     disabled={!(chosenRecipe && newPostText)}
+                    aria-label="Submit Recipe"
                   >
                     <Send />
                   </IconButton>
@@ -208,7 +261,7 @@ const SocialMedia = () => {
         <Box sx={{ overflow: 'hidden' }}>
           <Box
             id="scrollableDiv"
-            sx={{ height: 490, width: '102%', overflow: 'auto', pr: '20px' }}
+            sx={{ height: 380, width: '102%', overflow: 'auto', pr: '20px' }}
           >
             <InfiniteScroll
               dataLength={currentPosts.length}
@@ -221,12 +274,29 @@ const SocialMedia = () => {
                 </p>
               }
               scrollableTarget="scrollableDiv"
+              style={{ overflow: 'visible' }}
             >
               {currentPosts.map((post, index) => (
-                <PostItem post={post} index={index} />
+                <PostItem
+                  post={post}
+                  index={index}
+                  openModalView={handleOpenPostView}
+                  openModalEdit={handleOpenPostEdit}
+                  key={index}
+                />
               ))}
             </InfiniteScroll>
           </Box>
+          {postBeingViewed ? (
+            <PostModal
+              post={postBeingViewed}
+              isOpen={postModalOpen}
+              handleClose={handleClosePostView}
+              isEditMode={postModalEditMode}
+            />
+          ) : (
+            <></>
+          )}
         </Box>
       </Stack>
     </Container>

@@ -69,10 +69,10 @@ export default function CustomizedAccordions() {
 
   const onSearch = () => {
     let nutritionMax: NutritionMax = {
-      caloriesUp: cal,
-      fatUp: fat,
-      sugUp: sug,
-      proUp: pro,
+      caloriesMax: cal,
+      fatMax: fat,
+      sugMax: sug,
+      proMax: pro,
     }
 
     navigateTo('/recipe-list', {
@@ -167,7 +167,8 @@ export default function CustomizedAccordions() {
             id="non-linear-slider"
             gutterBottom
           >
-            Calorie: {cal} - Fat: {fat} - Sugar: {sug} - Protein: {pro}
+            Max Calorie: {cal} - Max Fat: {fat} - Max Sugar: {sug} - Max
+            Protein: {pro}
           </Typography>
           <Stack
             spacing={2}

@@ -127,10 +127,10 @@ def test_list_recipes_by_multiple_criteria():
     """Test searching recipes with various nutritional limits."""
     data = {
         "page": 1,
-        "caloriesUp": 500.0,
-        "fatUp": 30.0,
-        "sugUp": 20.0,
-        "proUp": 25.0
+        "caloriesMax": 500.0,
+        "fatMax": 30.0,
+        "sugMax": 20.0,
+        "proMax": 25.0
     }
     response = requests.post(f"{BASE_URL}/search2/", json=data)
     assert response.status_code == 200
@@ -142,10 +142,10 @@ def test_list_recipes_by_invalid_page():
     """Test for invalid page number (less than 1)."""
     data = {
         "page": 0,
-        "caloriesUp": 500.0,
-        "fatUp": 30.0,
-        "sugUp": 20.0,
-        "proUp": 25.0
+        "caloriesMax": 500.0,
+        "fatMax": 30.0,
+        "sugMax": 20.0,
+        "proMax": 25.0
     }
     response = requests.post(f"{BASE_URL}/search2/", json=data)
     assert response.status_code == 422
@@ -154,10 +154,10 @@ def test_list_recipes_by_high_calories():
     """Test for calories upper limit exceeding allowed range."""
     data = {
         "page": 1,
-        "caloriesUp": 1500.0,
-        "fatUp": 30.0,
-        "sugUp": 20.0,
-        "proUp": 25.0
+        "caloriesMax": 1500.0,
+        "fatMax": 30.0,
+        "sugMax": 20.0,
+        "proMax": 25.0
     }
     response = requests.post(f"{BASE_URL}/search2/", json=data)
     assert response.status_code == 422
@@ -166,10 +166,10 @@ def test_list_recipes_by_high_fat():
     """Test for fat upper limit exceeding allowed range."""
     data = {
         "page": 1,
-        "caloriesUp": 500.0,
-        "fatUp": 200.0,
-        "sugUp": 20.0,
-        "proUp": 25.0
+        "caloriesMax": 500.0,
+        "fatMax": 200.0,
+        "sugMax": 20.0,
+        "proMax": 25.0
     }
     response = requests.post(f"{BASE_URL}/search2/", json=data)
     assert response.status_code == 422
@@ -178,10 +178,10 @@ def test_list_recipes_by_zero_limits():
     """Test for edge case where all limits are at the minimum."""
     data = {
         "page": 1,
-        "caloriesUp": 0.0,
-        "fatUp": 0.0,
-        "sugUp": 0.0,
-        "proUp": 0.0
+        "caloriesMax": 0.0,
+        "fatMax": 0.0,
+        "sugMax": 0.0,
+        "proMax": 0.0
     }
     response = requests.post(f"{BASE_URL}/search2/", json=data)
     assert response.status_code == 200
@@ -193,10 +193,10 @@ def test_list_recipes_by_nonexistent_page():
     """Test for a page that does not exist (assuming less than 100 pages)."""
     data = {
         "page": 100,
-        "caloriesUp": 500.0,
-        "fatUp": 30.0,
-        "sugUp": 20.0,
-        "proUp": 25.0
+        "caloriesMax": 500.0,
+        "fatMax": 30.0,
+        "sugMax": 20.0,
+        "proMax": 25.0
     }
     response = requests.post(f"{BASE_URL}/search2/", json=data)
     assert response.status_code == 200

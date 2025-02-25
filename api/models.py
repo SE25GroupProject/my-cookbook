@@ -16,10 +16,13 @@ from pydantic import BaseModel, Field
 from pydantic import BaseModel, EmailStr
 
 
+class Instruction(BaseModel):
+    step: int
+    instruction: str
+
 class Recipe(BaseModel):
     """A data model representing a recipe"""
-    id: str = Field(default_factory=uuid.uuid4,
-                    alias="_id")  # Unique identifier for the recip
+    recipeId: Optional[int]  # Unique identifier for the recipe
     name: str  # Name of the recipe
     cookTime: Optional[str] = None
     prepTime: Optional[str] = None
@@ -28,7 +31,7 @@ class Recipe(BaseModel):
     images: Optional[list] = None  # URLs of images related to the recipe
     category: str
     tags: List[str]
-    ingredientQuantities: list
+    ingredientQuantities: Optional[list[int]]
     ingredients: List[str]  # List of ingredients required
     rating: Optional[str] = None
     calories: Optional[str] = None
@@ -41,13 +44,13 @@ class Recipe(BaseModel):
     sugar: Optional[str] = None
     protein: Optional[str] = None
     servings: Optional[str] = None
-    instructions: List[str]
+    instructions: List[Instruction]
 
     class Config:
         schema_extra = {
 
             "example": {
-                "id": "abcd-efgh-jklm-nopq-rstuv",
+                "id": 1,
                 "name": "Low-Fat Berry Blue Frozen Dessert",
                 "cookTime": "24H",
                 "prepTime": "45M",
@@ -110,6 +113,26 @@ class Recipe(BaseModel):
             }
         }
 
+class RecipeListEntry(BaseModel):
+    """A data model representing a recipe"""
+    recipeId: int
+    name: str  # Name of the recipe
+    cookTime: Optional[str] = None
+    prepTime: Optional[str] = None
+    totalTime: Optional[str] = None
+    description: Optional[str] = None
+    category: str
+    rating: Optional[str] = None
+    calories: Optional[str] = None
+    fat: Optional[str] = None
+    saturatedFat: Optional[str] = None
+    cholesterol: Optional[str] = None
+    sodium: Optional[str] = None
+    carbs: Optional[str] = None
+    fiber: Optional[str] = None
+    sugar: Optional[str] = None
+    protein: Optional[str] = None
+    servings: Optional[str] = None
 
 class RecipeListRequest(BaseModel):
     ingredients: List[str] = Field(...,
@@ -118,22 +141,20 @@ class RecipeListRequest(BaseModel):
 
 
 class RecipeListResponse(BaseModel):
-    recipes: List[Recipe] = Field(...,
+    recipes: List[RecipeListEntry] = Field(...,
                                   description="List of recipes matching the filter criteria")
-    page: int = Field(..., description="Current page number")
-    count: int = Field(...,
-                       description="Total count of recipes matching the filter criteria")
+    page: int = Field(..., ge=1, description="Current page number, must be at least 1")
 
 
 class RecipeListRequest2(BaseModel):
-    page: int = Field(..., ge=1, description="Page number, must be at least 1")
-    caloriesUp: float = Field(..., ge=0, le=4000,
+    page: int = Field(..., ge=1, description="Current page number, must be at least 1")
+    caloriesMax: float = Field(..., ge=0, le=4000,
                               description="Calories upper limit, between 0 and 100")
-    fatUp: float = Field(..., ge=0, le=140,
+    fatMax: float = Field(..., ge=0, le=140,
                          description="Fat upper limit, between 0 and 100")
-    sugUp: float = Field(..., ge=0, le=150,
+    sugMax: float = Field(..., ge=0, le=150,
                          description="Sugar upper limit, between 0 and 100")
-    proUp: float = Field(..., ge=0, le=250,
+    proMax: float = Field(..., ge=0, le=250,
                          description="Protein upper limit, between 0 and 100")
 
 
@@ -147,13 +168,44 @@ class User(BaseModel):
     password: str
 
 
-# class Token(BaseModel):
-#     access_token: str
-#     token_type: str
+class UserCred(BaseModel):
+    username: str
+    password: str
+    
+class PostRecipe(BaseModel):
+    recipeId: Optional[int]
+    name: Optional[str]
 
+class Comment(BaseModel):
+    commentId: Optional[int] = Field(default=None, description="Auto-incremented ID of the comment")
+    userId: int = Field(..., description="ID of the user who created the comment")
+    postId: int = Field(..., description="ID of the post the comment is related to")
+    message: str = Field(..., description="Content of the comment")
+    date: Optional[str] = Field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d %H:%M:%S"), description="Timestamp of the comment")
+
+class Post(BaseModel):
+    postId: Optional[int] = Field(default=None, description="Auto-incremented ID from the database")
+    userId: int = Field(..., description="ID of the user who created the post")
+    message: str = Field(..., description="Content of the post")
+    image: Optional[str] = Field(default=None, description="Base64-encoded image data")
+    recipe: Optional[PostRecipe] = Field(default=None, description="id and name of recipe associated with the post")
+    date: Optional[str] = Field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d %H:%M:%S"), description="Timestamp of the post")
+    likes: List[int] = Field(default_factory=list, description="List of UserIds who liked the post")
+    dislikes: List[int] = Field(default_factory=list, description="List of UserIds who disliked the post")
+    comments: List[Comment] = Field(default_factory=list, description="List of comments on the post")
+
+class PostUpdate(BaseModel):
+    userId: Optional[int] = Field(None, description="Id of user the post was created by")
+    message: Optional[str] = Field(None, description="Updated content of the post")
+    image: Optional[str] = Field(None, description="Updated Base64-encoded image data")
+    recipe: Optional[PostRecipe] = Field(None, description="Updated Recipe ID associated with the post")
 
 class ShoppingListItem(BaseModel):
     name: str
     quantity: int
     unit: str
     checked: bool
+
+class MealPlanEntry(BaseModel):
+    day: int  # 0-6 representing Monday-Sunday
+    recipe: PostRecipe  # The recipe id and name

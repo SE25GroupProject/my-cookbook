@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import './Profile.css' // Optional, for styling
 import { useAuth } from './AuthProvider'
 import {
@@ -29,42 +29,75 @@ import PostItem from '../SocialMedia/PostItem'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import { useFixScroll } from '../SocialMedia/FixScroll'
 import RecipeListItem from '../RecipeList/RecipeLIstItem'
+import PostModal from '../SocialMedia/PostModal'
+import { useGetPostsByUserQuery } from '../SocialMedia/SocialSlice'
 
 const Profile = () => {
   const auth = useAuth()
   const formMethods = useForm()
   const { handleSubmit, getValues } = formMethods
 
-  const myPosts: Post[] = [...testPosts]
+  // Post View Modal
+  const [postBeingViewed, setPostBeingViewed] = useState<Post | null>(null)
+  const [postModalEditMode, setPostModalEditMode] = useState<boolean>(false)
+  const postModalOpen = postBeingViewed ? true : false
+
+  const handleOpenPostView = (post: Post) => {
+    setPostBeingViewed(post)
+    setPostModalEditMode(false)
+  }
+
+  const handleOpenPostEdit = (post: Post) => {
+    setPostBeingViewed(post)
+    setPostModalEditMode(true)
+  }
+
+  const handleClosePostView = () => {
+    setPostBeingViewed(null)
+  }
+
+  // const myPosts: Post[] = [...testPosts]
+  const userId = auth ? auth.user.id : -1
+  const {
+    data: myPosts,
+    isLoading,
+    isSuccess,
+  } = useGetPostsByUserQuery(userId, { skip: userId == -1 })
+
   const userRecipes: Recipe[] = [mockRecipe, mockRecipeTwo]
   const favRecipes: Recipe[] = [mockRecipeTwo, mockRecipe]
 
   const postsPerPage = 10
 
-  const [currentPosts, setCurrentPosts] = useState<Post[]>(
-    [...myPosts].splice(
-      0,
-      myPosts.length < postsPerPage ? myPosts.length : postsPerPage
-    )
-  )
+  const [currentPosts, setCurrentPosts] = useState<Post[]>([])
+
+  useEffect(() => {
+    if (myPosts) {
+      setCurrentPosts([...myPosts].splice(0, postsPerPage))
+      console.log(myPosts)
+    }
+  }, [myPosts])
+
   const [hasMore, setHasMore] = useState(true)
 
   const fetchData = () => {
-    if (myPosts.length == currentPosts.length) {
-      setHasMore(false)
+    if (myPosts) {
+      if (myPosts.length == currentPosts.length) {
+        setHasMore(false)
+      }
+
+      var postCopy = [...myPosts]
+      var postsToDisplay = postCopy.splice(
+        currentPosts.length,
+        myPosts.length < postsPerPage ? myPosts.length : postsPerPage
+      )
+
+      // a fake async api call like which sends
+      // 20 more records in .5 secs
+      setTimeout(() => {
+        setCurrentPosts(currentPosts.concat(postsToDisplay))
+      }, 1500)
     }
-
-    var postCopy = [...myPosts]
-    var postsToDisplay = postCopy.splice(
-      currentPosts.length,
-      myPosts.length < postsPerPage ? myPosts.length : postsPerPage
-    )
-
-    // a fake async api call like which sends
-    // 20 more records in .5 secs
-    setTimeout(() => {
-      setCurrentPosts(currentPosts.concat(postsToDisplay))
-    }, 1500)
   }
 
   useFixScroll(hasMore, fetchData)
@@ -170,7 +203,11 @@ const Profile = () => {
                 </Box>
               </Popover>
             </FormProvider>
-            <Typography variant="h3" textTransform={'capitalize'}>
+            <Typography
+              variant="h3"
+              textTransform={'capitalize'}
+              aria-label="Users Name"
+            >
               {auth?.user.username}'s Profile
             </Typography>
           </Stack>
@@ -211,8 +248,13 @@ const Profile = () => {
                     scrollableTarget="scrollable"
                     height={440}
                   >
-                    {myPosts.map((post, index) => (
-                      <PostItem post={post} index={index} />
+                    {currentPosts.map((post, index) => (
+                      <PostItem
+                        post={post}
+                        index={index}
+                        openModalView={handleOpenPostView}
+                        openModalEdit={handleOpenPostEdit}
+                      />
                     ))}
                   </InfiniteScroll>
                 </Box>
@@ -236,12 +278,16 @@ const Profile = () => {
         </Stack>
       </Paper>
 
-      {/* <div
-        className="profile-container"
-        style={{ padding: '20px', textAlign: 'center' }}
-      >
-        <h2>Your Profile</h2>
-      </div> */}
+      {postBeingViewed ? (
+        <PostModal
+          post={postBeingViewed}
+          isOpen={postModalOpen}
+          handleClose={handleClosePostView}
+          isEditMode={postModalEditMode}
+        />
+      ) : (
+        <></>
+      )}
     </Container>
   )
 }
