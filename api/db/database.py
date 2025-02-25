@@ -1,11 +1,11 @@
 import sqlite3
 from typing import List
-from api.models import RecipeListEntry, ShoppingListItem
+from api.models import RecipeListEntry, ShoppingListItem, Post, Comment, PostRecipe
 
 try:
-    from api.db.objects import User, Recipe, Ingredient, Instruction, Post, Comment
+    from api.db.objects import User, Recipe, Ingredient, Instruction
 except Exception:
-    from objects import User, Recipe, Ingredient, Instruction, Post, Comment
+    from objects import User, Recipe, Ingredient, Instruction
 from datetime import datetime
 
 class Database_Connection():
@@ -19,7 +19,7 @@ class Database_Connection():
     
     def __init__(self, dbPath: str = 'db/cookbook.db'):
         """Handles initializing the class"""
-        print("Db Path: " + dbPath)
+        # print("Db Path: " + dbPath)
         self.conn = sqlite3.connect(dbPath, check_same_thread=False)
         self.cursor = self.conn.cursor()
 
@@ -110,9 +110,12 @@ class Database_Connection():
     
     def get_user_by_id(self, id: int) -> User:
         """Gets a user based on their username"""
+        print( id)
         command_string: str = "SELECT * FROM Users WHERE UserId = ?"
         self.cursor.execute(command_string, (id,))
         user_data = self.cursor.fetchone()
+
+        print(user_data)
         if user_data:
             return User(userId=user_data[0], username=user_data[1], password=user_data[2])
         return None
@@ -453,7 +456,7 @@ class Database_Connection():
     def add_post(self, post: Post) -> bool:
         try:
             command_string = "INSERT INTO Posts (UserId, Message, Image, RecipeId, Date) VALUES (?, ?, ?, ?, ?)"
-            recipe_id = post.recipe  # Already an int or None
+            recipe_id = post.recipe.recipeId  # Already an int or None
             self.cursor.execute(command_string, (
                 post.userId,
                 post.message,
@@ -477,18 +480,23 @@ class Database_Connection():
             dislikes = self.get_post_reactions(post_id, 'DISLIKE')
             comments = self.get_post_comments(post_id)  # Fetch comments
             date_value = post_data[5] if post_data[5] is not None else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            recipe_value = post_data[4]
-            if recipe_value is not None:
+            recipe_id = post_data[4]
+            if recipe_id is not None:
                 try:
-                    recipe_value = int(recipe_value)
+                    recipe_id = int(recipe_id)
+                    recipe_name = self.cursor.execute("SELECT name FROM recipes WHERE recipeId = ?;", (recipe_id,)).fetchone()[0]
+
                 except (ValueError, TypeError):
-                    recipe_value = None
+                    recipe_id = None
+                    recipe_name = None
+
+            recipe_obj = PostRecipe(recipeId=recipe_id, name=recipe_name)
             return Post(
                 postId=post_data[0],
                 userId=post_data[1],
                 message=post_data[2],
                 image=post_data[3],
-                recipe=recipe_value,
+                recipe=recipe_obj,
                 date=date_value,
                 likes=likes,
                 dislikes=dislikes,
@@ -507,18 +515,24 @@ class Database_Connection():
             dislikes = self.get_post_reactions(post_data[0], 'DISLIKE')
             comments = self.get_post_comments(post_data[0])  # Fetch comments
             date_value = post_data[5] if post_data[5] is not None else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            recipe_value = post_data[4]
-            if recipe_value is not None:
+            recipe_id = post_data[4]
+            if recipe_id is not None:
                 try:
-                    recipe_value = int(recipe_value)
+                    recipe_id = int(recipe_id)
+                    recipe_name = self.cursor.execute("SELECT name FROM recipes WHERE recipeId = ?;", (recipe_id,)).fetchone()[0]
+
                 except (ValueError, TypeError):
-                    recipe_value = None
+                    recipe_id = None
+                    recipe_name = ""
+
+            recipe_obj = PostRecipe(recipeId=recipe_id, name=recipe_name)
+            
             posts.append(Post(
                 postId=post_data[0],
                 userId=post_data[1],
                 message=post_data[2],
                 image=post_data[3],
-                recipe=recipe_value,
+                recipe=recipe_obj,
                 date=date_value,
                 likes=likes,
                 dislikes=dislikes,
@@ -576,6 +590,7 @@ class Database_Connection():
             if not update_data:
                 return True
             set_clause = ", ".join(f"{key} = ?" for key in update_data.keys())
+
             command_string = f"UPDATE Posts SET {set_clause} WHERE PostId = ?"
             values = list(update_data.values()) + [post_id]
             self.cursor.execute(command_string, values)

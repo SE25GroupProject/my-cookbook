@@ -38,10 +38,17 @@ const Profile = () => {
 
   // Post View Modal
   const [postBeingViewed, setPostBeingViewed] = useState<Post | null>(null)
+  const [postModalEditMode, setPostModalEditMode] = useState<boolean>(false)
   const postModalOpen = postBeingViewed ? true : false
 
   const handleOpenPostView = (post: Post) => {
     setPostBeingViewed(post)
+    setPostModalEditMode(false)
+  }
+
+  const handleOpenPostEdit = (post: Post) => {
+    setPostBeingViewed(post)
+    setPostModalEditMode(true)
   }
 
   const handleClosePostView = () => {
@@ -232,7 +239,8 @@ const Profile = () => {
                       <PostItem
                         post={post}
                         index={index}
-                        openModal={handleOpenPostView}
+                        openModalView={handleOpenPostView}
+                        openModalEdit={handleOpenPostEdit}
                       />
                     ))}
                   </InfiniteScroll>
@@ -262,6 +270,7 @@ const Profile = () => {
           post={postBeingViewed}
           isOpen={postModalOpen}
           handleClose={handleClosePostView}
+          isEditMode={postModalEditMode}
         />
       ) : (
         <></>

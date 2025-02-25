@@ -1,5 +1,5 @@
 import { apiSlice } from '../../api/apiSlice'
-import { Post } from '../../api/types'
+import { Post, PostRequest } from '../../api/types'
 
 export const SocialSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -7,17 +7,18 @@ export const SocialSlice = apiSlice.injectEndpoints({
       query: () => `/posts/`,
       providesTags: (result, error, arg) =>
         result
-          ? [
-              ...result.map(({ postId }) => ({
-                type: 'Post' as const,
-                id: postId,
-              })),
-              'Post',
+          ? // successful query
+            [
+              ...result.map(
+                ({ postId }) => ({ type: 'Post', postId }) as const
+              ),
+              { type: 'Post', id: 'LIST' },
             ]
-          : ['Post'],
+          : // an error occurred, but we still want to refetch this query when `{ type: 'Posts', id: 'LIST' }` is invalidated
+            [{ type: 'Post', id: 'LIST' }],
     }),
 
-    createPost: builder.mutation<string, Post>({
+    createPost: builder.mutation<string, PostRequest>({
       query: (post) => ({
         url: '/posts/',
         method: 'POST',
@@ -28,9 +29,40 @@ export const SocialSlice = apiSlice.injectEndpoints({
           'Access-Control-Request-Method': 'POST',
         },
       }),
-      invalidatesTags: ['Post'],
+      invalidatesTags: [{ type: 'Post', id: 'LIST' }],
+    }),
+
+    editPost: builder.mutation<Post, Partial<Post>>({
+      query: (data) => {
+        const { postId, ...body } = data
+        return {
+          url: `/posts/${postId}`,
+          method: 'PUT',
+          body,
+        }
+      },
+      invalidatesTags: (result, error, { postId }) => [
+        { type: 'Post', postId },
+      ],
+    }),
+
+    deletePost: builder.mutation<string, Partial<Post>>({
+      query: (data) => {
+        const { postId, userId } = data
+        return {
+          url: `/posts/${postId}`,
+          method: 'DELETE',
+          body: userId,
+        }
+      },
+      invalidatesTags: (result, error, postId) => [{ type: 'Post', postId }],
     }),
   }),
 })
 
-export const { useGetPostsQuery, useCreatePostMutation } = SocialSlice
+export const {
+  useGetPostsQuery,
+  useCreatePostMutation,
+  useEditPostMutation,
+  useDeletePostMutation,
+} = SocialSlice

@@ -167,11 +167,34 @@ class User(BaseModel):
 class UserCred(BaseModel):
     username: str
     password: str
+    
+class PostRecipe(BaseModel):
+    recipeId: Optional[int]
+    name: Optional[str]
+
+class Comment(BaseModel):
+    commentId: Optional[int] = Field(default=None, description="Auto-incremented ID of the comment")
+    userId: int = Field(..., description="ID of the user who created the comment")
+    postId: int = Field(..., description="ID of the post the comment is related to")
+    message: str = Field(..., description="Content of the comment")
+    date: Optional[str] = Field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d %H:%M:%S"), description="Timestamp of the comment")
+
+class Post(BaseModel):
+    postId: Optional[int] = Field(default=None, description="Auto-incremented ID from the database")
+    userId: int = Field(..., description="ID of the user who created the post")
+    message: str = Field(..., description="Content of the post")
+    image: Optional[str] = Field(default=None, description="Base64-encoded image data")
+    recipe: Optional[PostRecipe] = Field(default=None, description="id and name of recipe associated with the post")
+    date: Optional[str] = Field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d %H:%M:%S"), description="Timestamp of the post")
+    likes: List[int] = Field(default_factory=list, description="List of UserIds who liked the post")
+    dislikes: List[int] = Field(default_factory=list, description="List of UserIds who disliked the post")
+    comments: List[Comment] = Field(default_factory=list, description="List of comments on the post")
 
 class PostUpdate(BaseModel):
+    userId: Optional[int] = Field(None, description="Id of user the post was created by")
     message: Optional[str] = Field(None, description="Updated content of the post")
     image: Optional[str] = Field(None, description="Updated Base64-encoded image data")
-    recipe_id: Optional[int] = Field(None, description="Updated Recipe ID associated with the post")
+    recipe: Optional[PostRecipe] = Field(None, description="Updated Recipe ID associated with the post")
 
 class ShoppingListItem(BaseModel):
     name: str

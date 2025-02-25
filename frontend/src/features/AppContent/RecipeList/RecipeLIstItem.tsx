@@ -43,7 +43,7 @@ const RecipeListItem = (props: RecipeListItemProp) => {
       }}
       key={index}
     >
-      <CardActionArea onClick={() => gotoRecipe(recipe.id)}>
+      <CardActionArea onClick={() => gotoRecipe(recipe.recipeId)}>
         <CardContent>
           <div className="d-flex flex-row">
             <Typography

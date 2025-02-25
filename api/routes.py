@@ -18,19 +18,19 @@ import pymongo
 from groq import Groq
 from pydantic import BaseModel, conint, conlist, PositiveInt, Field
 import logging
-from api.models import Recipe, RecipeListRequest, RecipeListResponse, RecipeListRequest2, RecipeQuery, MealPlanEntry, UserCred, ShoppingListItem, PostUpdate
-from api.db.objects import User, Post, Comment
+from api.models import Recipe, RecipeListRequest, RecipeListResponse, RecipeListRequest2, RecipeQuery, MealPlanEntry, UserCred, ShoppingListItem, PostUpdate, Post, Comment
+from api.db.objects import User
 from api.db.database import Database_Connection
 from api.dbMiddleware import DBConnectionMiddleware
 
 
 load_dotenv()  # Load environment variables
 app = FastAPI()
-app.add_middleware(DBConnectionMiddleware, db_path="cookbook.db")
+app.add_middleware(DBConnectionMiddleware, db_path="db/cookbook.db")
 users_db = {}
 db = Database_Connection()
 
-print(os.getenv("GROQ_API_KEY"))
+# print(os.getenv("GROQ_API_KEY"))
 
 config = {
     "ATLAS_URI": os.getenv("ATLAS_URI"),
@@ -419,7 +419,6 @@ async def list_ingredients(queryString : str, request: Request):
     if(len(data) <= 0):
         return []
     
-    print(data)
     ings = [ing.replace("\"", "") for ingRecord in data for ing in ingRecord]
     return ings
 
@@ -549,7 +548,6 @@ async def unfavorite_recipe(recipeId: int, userId: int):
 async def create_post(post: Post):
     """Creates a new post in the database."""
     try:
-        print(post)
         if db.add_post(post):
             return {"message": "Post created successfully."}
         else:
@@ -694,9 +692,17 @@ async def dislike_post(post_id: int, user_id: int = Body(..., embed=True)):
         )
 
 @postRouter.delete("/{post_id}", response_description="Delete a post", status_code=200)
-async def delete_post(post_id: int):
+async def delete_post(post_id: int, user_id: int = Body(...)):
     """Deletes a post by its ID, including all related reactions."""
     try:
+        post = db.get_post(post_id)
+
+        if post.userId != user_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Post with ID {post_id} does not belong to user {user_id}"
+            )
+
         if db.delete_post(post_id):
             return {"message": "Post deleted successfully."}
         else:
@@ -712,7 +718,7 @@ async def delete_post(post_id: int):
   
 
 @postRouter.put("/{post_id}", response_description="Update a post", response_model=Post)
-async def update_post(post_id: int, update: PostUpdate = Body(...), user_id: int = Body(..., embed=True)):
+async def update_post(post_id: int, update: PostUpdate = Body(...)):
     """Allows a user to edit their own post's message, image, or recipe."""
     try:
         # Fetch the existing post
@@ -724,18 +730,19 @@ async def update_post(post_id: int, update: PostUpdate = Body(...), user_id: int
             )
         
         # Check if the user owns the post
-        if post.userId != user_id:
+        if post.userId != update.userId:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You can only edit your own posts."
             )
         
         # Check if the user exists
-        if db.get_user_by_id(user_id) is None:
+        if db.get_user_by_id(update.userId) is None:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"User with ID {user_id} not found."
+                detail=f"User with ID {update.userId} not found."
             )       
+        
         
         # Prepare update data (only include fields that were provided)
         update_data = {}
@@ -743,8 +750,8 @@ async def update_post(post_id: int, update: PostUpdate = Body(...), user_id: int
             update_data["Message"] = update.message
         if update.image is not None:
             update_data["Image"] = update.image
-        if update.recipe_id is not None:
-            update_data["RecipeId"] = update.recipe_id
+        if update.recipe.recipeId is not None:
+            update_data["RecipeId"] = update.recipe.recipeId
         
         # If no fields provided, return the current post without changes
         if not update_data:
@@ -762,10 +769,13 @@ async def update_post(post_id: int, update: PostUpdate = Body(...), user_id: int
         return updated_post
     
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"An error occurred while updating the post: {str(e)}"
-        )
+        if Exception is HTTPException: 
+            raise e
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"An error occurred while updating the post: {str(e)}"
+            )
 
 @postRouter.post("/{post_id}/comments", response_description="Add a comment to a post", status_code=201)
 async def add_comment(post_id: int, comment: Comment):

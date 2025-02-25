@@ -8,7 +8,7 @@ export type UserCred = Pick<User, 'username' | 'password'>
 export type UserInfo = Pick<User, 'id' | 'username'>
 
 export interface Recipe {
-  id: number
+  recipeId: number
   name: string
   cookTime: string
   prepTime: string
@@ -34,7 +34,7 @@ export interface Recipe {
 }
 
 export class RecipeObject implements Recipe {
-  id!: number
+  recipeId!: number
   name!: string
   cookTime!: string
   prepTime!: string
@@ -91,12 +91,10 @@ export interface RecipeListResponse {
  * @typedef PostRecipe
  * @property {number} [text="id"] The id associated with the recipe.
  */
-export type PostRecipe = Pick<Recipe, 'id' | 'name'>
+export type PostRecipe = Pick<Recipe, 'recipeId' | 'name'>
 
 export interface PostComment {
-  content: string
-  liked: boolean
-  disliked: boolean
+  message: string
 }
 
 /**
@@ -108,17 +106,26 @@ export interface PostComment {
  */
 export interface Post {
   postId: number
+  userId: number
   recipe: PostRecipe
-  img: string
-  content: string
-  liked: boolean
-  disliked: boolean
+  image: string
+  message: string
+  likes: number[]
+  dislikes: number[]
   comments: PostComment[]
 }
 
+export type PostRequest = Pick<
+  Post,
+  'postId' | 'userId' | 'image' | 'message' | 'recipe'
+>
+// & {
+//   recipe: number
+// }
+
 export type RecipeListData = Pick<
   Recipe,
-  | 'id'
+  | 'recipeId'
   | 'name'
   | 'description'
   | 'cookTime'

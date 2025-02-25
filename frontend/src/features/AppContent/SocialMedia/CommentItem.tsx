@@ -27,16 +27,16 @@ const CommentItem = (props: CommentItemProp) => {
       key={props.index}
     >
       <Grid2 container height="100%">
-        <Grid2 container alignItems="center" size={8} paddingY="30px">
-          <Typography
-            variant="body1"
-            textAlign="left"
-            aria-label={'Comment Content'}
-          >
-            {props.comment.content}
-          </Typography>
-        </Grid2>
-        <Grid2 size={1} container justifyContent="flex-end">
+        {/* <Grid2 container alignItems="center" size={8} paddingY="30px"> */}
+        <Typography
+          variant="body1"
+          textAlign="left"
+          aria-label={'Comment Content'}
+        >
+          {props.comment.message}
+        </Typography>
+        {/* </Grid2> */}
+        {/* <Grid2 size={1} container justifyContent="flex-end">
           <Divider orientation="vertical" />
         </Grid2>
         <Grid2
@@ -56,7 +56,7 @@ const CommentItem = (props: CommentItemProp) => {
               {props.comment.disliked ? <ThumbDown /> : <ThumbDownOutlined />}
             </IconButton>
           </Grid2>
-        </Grid2>
+        </Grid2> */}
       </Grid2>
     </Paper>
   )

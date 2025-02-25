@@ -1,4 +1,5 @@
 import {
+  ConstructionOutlined,
   Send,
   ThumbDown,
   ThumbDownAlt,
@@ -35,10 +36,14 @@ import { useAuth } from '../Authentication/AuthProvider'
 import { useFixScroll } from './FixScroll'
 import PostItem from './PostItem'
 import { testPosts, testRecipes } from '../testVariables'
-import { Post, PostComment, PostRecipe } from '../../api/types'
+import { Post, PostComment, PostRecipe, PostRequest } from '../../api/types'
 import CommentItem from './CommentItem'
 import PostModal from './PostModal'
-import { useCreatePostMutation, useGetPostsQuery } from './SocialSlice'
+import {
+  useCreatePostMutation,
+  useDeletePostMutation,
+  useGetPostsQuery,
+} from './SocialSlice'
 
 const SocialMedia = () => {
   const auth = useAuth()
@@ -47,7 +52,9 @@ const SocialMedia = () => {
   const { handleSubmit, getValues } = formMethods
 
   // const [posts, setPosts] = useState<Post[]>([...testPosts])
+
   const { data: posts, isLoading, isSuccess } = useGetPostsQuery()
+
   const userRecipes: PostRecipe[] = [...testRecipes]
 
   // Post creation
@@ -60,10 +67,17 @@ const SocialMedia = () => {
 
   // Post View Modal
   const [postBeingViewed, setPostBeingViewed] = useState<Post | null>(null)
+  const [postModalEditMode, setPostModalEditMode] = useState<boolean>(false)
   const postModalOpen = postBeingViewed ? true : false
 
   const handleOpenPostView = (post: Post) => {
     setPostBeingViewed(post)
+    setPostModalEditMode(false)
+  }
+
+  const handleOpenPostEdit = (post: Post) => {
+    setPostBeingViewed(post)
+    setPostModalEditMode(true)
   }
 
   const handleClosePostView = () => {
@@ -73,14 +87,15 @@ const SocialMedia = () => {
   // Post endless scroll
   const postsPerPage = 10
 
-  const [currentPosts, setCurrentPosts] = useState<Post[]>(
-    posts
-      ? [...posts].splice(
-          0,
-          posts.length < postsPerPage ? posts.length : postsPerPage
-        )
-      : []
-  )
+  const [currentPosts, setCurrentPosts] = useState<Post[]>([])
+
+  useEffect(() => {
+    if (posts) {
+      setCurrentPosts([...posts].splice(0, postsPerPage))
+      console.log(posts)
+    }
+  }, [posts])
+
   const [hasMore, setHasMore] = useState(true)
 
   const fetchData = () => {
@@ -106,21 +121,14 @@ const SocialMedia = () => {
   useFixScroll(hasMore, fetchData)
 
   const handleCreatePost = () => {
-    if (chosenRecipe && newPostText) {
-      let post: Post = {
+    if (chosenRecipe && newPostText && auth?.userSignedIn) {
+      let post: PostRequest = {
         postId: -1,
+        userId: auth?.user.id,
         recipe: chosenRecipe,
-        img: postImg,
-        content: newPostText,
-        liked: false,
-        disliked: false,
-        comments: [],
+        image: postImg,
+        message: newPostText,
       }
-
-      console.log(post)
-
-      // setPosts([...posts, post])
-      // setCurrentPosts([post, ...posts])
 
       createPost(post)
         .unwrap()
@@ -227,6 +235,7 @@ const SocialMedia = () => {
               minRows={1}
               maxRows={4}
               fullWidth
+              disabled={!auth?.userSignedIn}
               id="whats-cookin"
               placeholder="What's Cookin'?"
               label="What's Cookin'?"
@@ -253,7 +262,7 @@ const SocialMedia = () => {
         <Box sx={{ overflow: 'hidden' }}>
           <Box
             id="scrollableDiv"
-            sx={{ height: 490, width: '102%', overflow: 'auto', pr: '20px' }}
+            sx={{ height: 380, width: '102%', overflow: 'auto', pr: '20px' }}
           >
             <InfiniteScroll
               dataLength={currentPosts.length}
@@ -266,12 +275,15 @@ const SocialMedia = () => {
                 </p>
               }
               scrollableTarget="scrollableDiv"
+              style={{ overflow: 'visible' }}
             >
               {currentPosts.map((post, index) => (
                 <PostItem
                   post={post}
                   index={index}
-                  openModal={handleOpenPostView}
+                  openModalView={handleOpenPostView}
+                  openModalEdit={handleOpenPostEdit}
+                  key={index}
                 />
               ))}
             </InfiniteScroll>
@@ -281,6 +293,7 @@ const SocialMedia = () => {
               post={postBeingViewed}
               isOpen={postModalOpen}
               handleClose={handleClosePostView}
+              isEditMode={postModalEditMode}
             />
           ) : (
             <></>
