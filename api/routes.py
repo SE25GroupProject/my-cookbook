@@ -287,7 +287,6 @@ def list_recipes_by_ingredient_old(ingredient: str, caloriesLow: int, caloriesUp
 async def get_shopping_list(request: Request, userId: int):
     """Retrieves the current user's shopping list."""
     try:
-        db: Database_Connection = request.state.db
         return db.get_user_shopping_list(userId)
     except Exception as e:
         raise HTTPException(

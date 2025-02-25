@@ -20,23 +20,32 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import { jsPDF } from 'jspdf'
 import shoppingListImage from './image/shopping-list.jpg'
 import { useTheme } from '../../Themes/themeContext'
-
-interface ShoppingItem {
-  _id: string
-  name: string
-  quantity: number
-  unit: string
-  checked: boolean
-}
+import { ShoppingItem, ShoppingItemRequest } from '../../api/types'
+import {
+  useGetShoppingListQuery,
+  useRemoveFromShoppingListMutation,
+  useUpdateShoppingListMutation,
+} from './ShoppingListSlice'
+import { useAuth } from '../Authentication/AuthProvider'
 
 const SmartShoppingList: React.FC = () => {
   const { theme } = useTheme()
-  const [listItems, setListItems] = useState<ShoppingItem[]>([])
+  const auth = useAuth()
+
+  // const [listItems, setListItems] = useState<ShoppingItem[]>([])
   const [newItem, setNewItem] = useState<string>('')
   const [quantity, setQuantity] = useState<number>(1)
   const [unit, setUnit] = useState<string>('')
   const [isProcessing, setIsProcessing] = useState<boolean>(false)
-  const [loading, setLoading] = useState<boolean>(false)
+  // const [loading, setLoading] = useState<boolean>(false)
+
+  const userId = auth?.user.id ?? -1
+  const { data: listItems, isLoading } = useGetShoppingListQuery(userId, {
+    skip: userId == -1,
+  })
+
+  const [updateShoppingList] = useUpdateShoppingListMutation()
+  const [removeFromShoppingList] = useRemoveFromShoppingListMutation()
 
   const units = [
     'kg',
@@ -62,88 +71,66 @@ const SmartShoppingList: React.FC = () => {
     'packet',
   ]
 
-  useEffect(() => {
-    const fetchListItems = async () => {
-      setLoading(true)
-      try {
-        const response = await axios.get('http://localhost:8000/shopping-list')
-        setListItems(response.data.shopping_list)
-      } catch (error) {
-        console.error('Error fetching shopping list:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchListItems()
-  }, [])
-
   const addItemToList = async () => {
     if (!newItem.trim() || !unit.trim()) {
       window.alert('Please fill in all fields.')
       return
     }
     setIsProcessing(true)
+    if (auth) {
+      try {
+        const newItemData: ShoppingItemRequest = {
+          userId: auth?.user.id,
+          name: newItem,
+          quantity,
+          unit,
+          checked: false,
+        }
 
-    try {
-      const newItemData = {
-        name: newItem,
-        quantity,
-        unit,
-        checked: false,
+        updateShoppingList(newItemData)
+
+        setNewItem('')
+        setQuantity(1)
+        setUnit('')
+      } catch (error) {
+        console.error('Error adding item:', error)
+      } finally {
+        setIsProcessing(false)
       }
-
-      const response = await axios.post(
-        'http://localhost:8000/shopping-list/update',
-        [newItemData]
-      )
-
-      setListItems(response.data.shopping_list)
-      setNewItem('')
-      setQuantity(1)
-      setUnit('')
-    } catch (error) {
-      console.error('Error adding item:', error)
-    } finally {
-      setIsProcessing(false)
     }
   }
 
-  const toggleItemCheck = async (itemId: string) => {
-    const itemIndex = listItems.findIndex((item) => item._id === itemId)
-    if (itemIndex === -1) return
+  const toggleItemCheck = async (item: ShoppingItem) => {
+    if (!listItems || !auth) return
 
-    const updatedItem = {
-      ...listItems[itemIndex],
-      checked: !listItems[itemIndex].checked,
+    let req: ShoppingItemRequest = {
+      name: item.name,
+      quantity: item.quantity,
+      unit: item.unit,
+      checked: !item.checked,
+      userId: auth?.user.id,
     }
 
-    try {
-      await axios.put(
-        `http://localhost:8000/shopping-list/${itemId}`,
-        updatedItem
-      )
-
-      const updatedItems = [...listItems]
-      updatedItems[itemIndex] = updatedItem
-      setListItems(updatedItems)
-    } catch (error) {
-      console.error('Error updating item check status:', error)
-    }
+    updateShoppingList(req)
   }
 
-  const deleteItem = async (itemId: string) => {
-    try {
-      await axios.delete(`http://localhost:8000/shopping-list/${itemId}`)
-      setListItems((prevItems) =>
-        prevItems.filter((item) => item._id !== itemId)
-      )
-    } catch (error) {
-      console.error('Error deleting item:', error)
+  const deleteItem = async (itemName: string) => {
+    if (!auth) return
+
+    let req: ShoppingItemRequest = {
+      name: itemName,
+      quantity: 0,
+      unit: '',
+      checked: false,
+      userId: auth?.user.id,
     }
+
+    removeFromShoppingList(req)
   }
 
   const exportListToPDF = () => {
+    if (!listItems) return
+
     const doc = new jsPDF()
 
     doc.setFontSize(18)
@@ -308,15 +295,17 @@ const SmartShoppingList: React.FC = () => {
       >
         {isProcessing ? 'Adding...' : 'Add Item'}
       </Button>
-      {loading ? (
+      {isLoading ? (
         <CircularProgress />
+      ) : !listItems ? (
+        <Typography>Oops! No Items.</Typography>
       ) : (
         <List>
           {listItems.map((item) => (
-            <ListItem key={item._id} style={{ marginBottom: '10px' }}>
+            <ListItem key={item.name} style={{ marginBottom: '10px' }}>
               <Checkbox
                 checked={item.checked}
-                onChange={() => toggleItemCheck(item._id)}
+                onChange={() => toggleItemCheck(item)}
                 sx={{
                   '& .MuiSvgIcon-root': {
                     color: 'black',
@@ -333,7 +322,7 @@ const SmartShoppingList: React.FC = () => {
                 primary={`${item.name} (Unit: ${item.unit})`}
                 secondary={`Quantity: ${item.quantity}`}
               />
-              <IconButton onClick={() => deleteItem(item._id)} color="error">
+              <IconButton onClick={() => deleteItem(item.name)} color="error">
                 <DeleteIcon />
               </IconButton>
             </ListItem>

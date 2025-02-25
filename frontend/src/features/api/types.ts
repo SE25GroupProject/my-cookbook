@@ -85,6 +85,17 @@ export interface RecipeListResponse {
   page: number
 }
 
+export type RecipeListData = Pick<
+  Recipe,
+  | 'recipeId'
+  | 'name'
+  | 'description'
+  | 'cookTime'
+  | 'prepTime'
+  | 'category'
+  | 'rating'
+>
+
 /**
  * A slice of a recipe that only includes the recipes id and name
  *
@@ -133,13 +144,13 @@ export type PostUpdate = Pick<Post, 'postId' | 'userId'>
 //   recipe: number
 // }
 
-export type RecipeListData = Pick<
-  Recipe,
-  | 'recipeId'
-  | 'name'
-  | 'description'
-  | 'cookTime'
-  | 'prepTime'
-  | 'category'
-  | 'rating'
->
+export interface ShoppingItem {
+  name: string
+  quantity: number
+  unit: string
+  checked: boolean
+}
+
+export type ShoppingItemRequest = ShoppingItem & {
+  userId: number
+}
