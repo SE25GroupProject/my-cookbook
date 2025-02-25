@@ -28,6 +28,7 @@ import {
   useLikePostMutation,
 } from './SocialSlice'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 interface PostItemProp {
   post: Post
@@ -38,6 +39,7 @@ interface PostItemProp {
 
 const PostItem = (props: PostItemProp) => {
   const auth = useAuth()
+  const navigateTo = useNavigate()
 
   // Like and Dislike
   const userLiked = auth?.user
@@ -72,7 +74,7 @@ const PostItem = (props: PostItemProp) => {
 
   // Recipe Click
   const handleClickRecipe = (recipeId: number) => {
-    console.log('Recipe Id: ', recipeId)
+    navigateTo('/recipe-details/' + recipeId)
   }
 
   // Delete and Delete Modal

@@ -345,7 +345,7 @@ async def get_meal_plan(userId: int, request: Request):
 async def update_meal_plan(userId: int, request: Request, entry: MealPlanEntry = Body(...)):
     """Adds an item to the user's meal plan, or updates the current item at that day"""
     try:
-        res = db.update_user_meal_plan(userId, entry.day, entry.recipeId)
+        res = db.update_user_meal_plan(userId, entry.day, entry.recipe.recipeId)
         if(isinstance(res, str)):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=res)
         return {"message": "Meal plan updated successfully."}
@@ -486,6 +486,16 @@ async def get_recipe(recipeId: int) -> Recipe:
     if recipe is None:
         raise HTTPException(status_code=400, detail="There is not recipe with that Id")
     return recipe
+
+@router.get("/batch")
+async def get_recipes(recipeIds: List[int]) -> Recipe:
+    recipes = {}
+    for recipeId in recipeIds:
+        recipe: Recipe = db.get_recipe(recipeId)
+        recipes[recipeId] = recipe
+    if recipes is None:
+        raise HTTPException(status_code=400, detail="There is no recipes with those Ids")
+    return recipes
 
 @router.get("/user/{userId}")
 async def get_user_recipes(userId: int):

@@ -19,7 +19,7 @@ export const apiSlice = createApi({
       return headers
     },
   }),
-  tagTypes: ['Recipe', 'Post', 'ShoppingList'],
+  tagTypes: ['Recipe', 'Post', 'ShoppingList', 'MealPlan'],
   endpoints: (builder) => ({
     getRecipes: builder.query<Recipe[], void>({
       query: () => '/recipes',

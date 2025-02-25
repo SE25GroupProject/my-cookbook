@@ -36,6 +36,7 @@ import {
   useEditPostMutation,
   useGetPostByIdQuery,
 } from './SocialSlice'
+import { useNavigate } from 'react-router-dom'
 
 interface PostModalProps {
   post: Post
@@ -47,6 +48,7 @@ interface PostModalProps {
 const PostModal = (props: PostModalProps) => {
   // Auth
   const auth = useAuth()
+  const navigateTo = useNavigate()
 
   const { data: postRef } = useGetPostByIdQuery(props.post.postId)
 
@@ -84,6 +86,11 @@ const PostModal = (props: PostModalProps) => {
 
       setNewCommentText('')
     }
+  }
+
+  // Recipe Click
+  const handleClickRecipe = () => {
+    navigateTo('/recipe-details/' + props.post.recipe.recipeId)
   }
 
   const handleModalClose = () => {
@@ -235,9 +242,11 @@ const PostModal = (props: PostModalProps) => {
             <Grid2 size={6}>
               <Stack spacing={2}>
                 <Card sx={{ p: 1 }}>
-                  <Typography variant="h4" aria-label={'Modal Recipe Title'}>
-                    Recipe {props.post.recipe.name}
-                  </Typography>
+                  <Button variant="text" onClick={handleClickRecipe}>
+                    <Typography variant="h4" aria-label={'Modal Recipe Title'}>
+                      Recipe {props.post.recipe.name}
+                    </Typography>
+                  </Button>
                 </Card>
 
                 {props.post.image ? (

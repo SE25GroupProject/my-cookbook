@@ -154,3 +154,17 @@ export interface ShoppingItem {
 export type ShoppingItemRequest = ShoppingItem & {
   userId: number
 }
+
+export interface MealPlanEntry {
+  day: number
+  recipe: PostRecipe
+}
+
+export type MealPlanUpdate = MealPlanEntry & {
+  userId: number
+}
+
+export interface MealPlanDelete {
+  day: number
+  userId: number
+}

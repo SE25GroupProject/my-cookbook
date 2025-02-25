@@ -1,11 +1,11 @@
 import sqlite3
 from typing import List
-from api.models import RecipeListEntry, ShoppingListItem, Post, Comment, PostRecipe
+from api.models import MealPlanEntry, RecipeListEntry, ShoppingListItem, Post, Comment, PostRecipe, Recipe
 
 try:
-    from api.db.objects import User, Recipe, Ingredient, Instruction
+    from api.db.objects import User, Ingredient, Instruction
 except Exception:
-    from objects import User, Recipe, Ingredient, Instruction
+    from objects import User, Ingredient, Instruction
 from datetime import datetime
 
 class Database_Connection():
@@ -131,9 +131,9 @@ class Database_Connection():
             commandString: str = """INSERT INTO Recipes (name, cookTime, prepTime, totalTime, description, category, rating, calories, fat, saturatedFat, cholesterol, sodium, carbs, fiber, sugar, protein, servings)   
                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
             
-            self.cursor.execute(commandString, (recipe.Name, recipe.CookTime, recipe.PrepTime, recipe.TotalTime, recipe.Description, 
-                                                recipe.Category, recipe.Rating, recipe.Calories, recipe.Fat, recipe.SaturatedFat, 
-                                                recipe.Cholesterol, recipe.Sodium, recipe.Carbs, recipe.Fiber, recipe.Sugar, recipe.Protein, recipe.Servings,))
+            self.cursor.execute(commandString, (recipe.name, recipe.cookTime, recipe.prepTime, recipe.totalTime, recipe.description, 
+                                                recipe.category, recipe.rating, recipe.calories, recipe.fat, recipe.saturatedFat, 
+                                                recipe.cholesterol, recipe.sodium, recipe.carbs, recipe.fiber, recipe.sugar, recipe.protein, recipe.servings,))
             
             
             recipeId: int = self.cursor.lastrowid
@@ -382,7 +382,11 @@ class Database_Connection():
         try:
             commandString: str = "SELECT * FROM MealPlan WHERE userId = ?;"
             mealplan = self.cursor.execute(commandString, (UserId,)).fetchall()
-            formattedPlan = {mealitem[2]: mealitem[1] for mealitem in mealplan}
+            formattedPlan = [ MealPlanEntry(day=mealitem[2], recipe={"recipeId": mealitem[1]}) for mealitem in mealplan]
+
+            for entry in formattedPlan:
+                entry.recipe.name = self.cursor.execute("SELECT name FROM recipes WHERE recipeId = ? ;", (entry.recipe.recipeId,)).fetchone()[0]
+
             return formattedPlan
         except Exception as e:
             print(e)
@@ -400,7 +404,7 @@ class Database_Connection():
     
     def remove_from_user_meal_plan(self, UserId: int, day: int):
         try: 
-            exists = self.cursor.execute("SELECT FROM MealPlan WHERE userId = ? AND dayOfWeek = ?;", (UserId, day)).fetchone
+            exists = self.cursor.execute("SELECT * FROM MealPlan WHERE userId = ? AND dayOfWeek = ?;", (UserId, day)).fetchone
             if (exists is None):
                 return f"An isntance with userId of {UserId} and day of {day} does not exist in the database."
             
