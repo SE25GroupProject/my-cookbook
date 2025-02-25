@@ -2,11 +2,12 @@ from fastapi import FastAPI, Request
 from starlette.middleware.base import BaseHTTPMiddleware
 import pathlib
 try:
-    from db.database import Database_Connection
-except Exception:
     from api.db.database import Database_Connection
+except Exception:
+    from db.database import Database_Connection
+
 class DBConnectionMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app: FastAPI, db_path: str = "cookbook.db"):
+    def __init__(self, app: FastAPI, db_path: str = "db/cookbook.db"):
         super().__init__(app)
         self.db_path = pathlib.Path(db_path).absolute()
 

@@ -8,6 +8,7 @@ this file. If not, please write to: help.cookbook@gmail.com
 
 """
  
+from dbMiddleware import DBConnectionMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from routes import router, userRouter, mealPlanRouter, shoppingRouter, postRouter
 
@@ -36,6 +37,8 @@ config = {
 app = FastAPI()
 
 origins = ['http://localhost:3000', "*"]
+
+app.add_middleware(DBConnectionMiddleware, db_path="db/cookbook.db")
 
 app.add_middleware(
     CORSMiddleware,

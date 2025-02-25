@@ -27,6 +27,7 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
+  CircularProgress,
 } from '@mui/material'
 import StarIcon from '@mui/icons-material/Star'
 import React, { useEffect, useState } from 'react'
@@ -40,7 +41,7 @@ import axios from 'axios'
 import { useTheme } from '../../Themes/themeContext'
 import { useNavigate } from 'react-router-dom'
 import { useGetRecipeQuery } from './RecipeInfoSlice'
-import { Recipe, RecipeObject } from '../../api/types'
+import { Instruction, Recipe, RecipeObject } from '../../api/types'
 
 import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon'
 import { WhatsApp } from '@mui/icons-material'
@@ -50,6 +51,8 @@ import {
   faSlack,
   faWhatsapp,
 } from '@fortawesome/free-brands-svg-icons'
+import { useUpdateMealPlanMutation } from '../MealPlan/MealPlanSlice'
+import { useAuth } from '../Authentication/AuthProvider'
 
 const store = applicationStore()
 
@@ -134,8 +137,8 @@ const CopyUrlModal = ({ open, onClose, url, platform }: any) => {
 
 const RecipeInformationWrapped = () => {
   const { theme } = useTheme()
+  const auth = useAuth()
   const navigate = useNavigate() // For redirecting to Meal Plan page
-  const [mealPlan, setMealPlan] = useState<any[]>([]) // Local state for meal plan
   let { id } = useParams()
   const dispatch = useDispatch()
   const [input, setInput] = useState('')
@@ -144,8 +147,10 @@ const RecipeInformationWrapped = () => {
   const [openModal, setOpenModal] = useState<boolean>(false)
   const [selectedPlatform, setSelectedPlatform] = useState('slack')
   const [selectedDayIndex, setSelectedDayIndex] = useState(0)
+  const [addToMealPlan] = useUpdateMealPlanMutation()
 
   const { data: recipe, isLoading, isSuccess } = useGetRecipeQuery(id as string)
+  console.log(recipe)
   let images = recipe?.images ? [...recipe?.images] : []
 
   let triviaPaperStyles = {
@@ -219,9 +224,16 @@ const RecipeInformationWrapped = () => {
   // }, [])
 
   if (isLoading) {
-    return <div data-testid="RecipeInfoLoading"> Loading ... </div>
+    return (
+      <div data-testid="RecipeInfoLoading">
+        <CircularProgress />
+        Loading...
+      </div>
+    )
   } else if (isSuccess) {
     // const recipe = recipeInfo.getRecipeInfoData // The recipe object containing all necessary information
+    const instructionArr = recipe.instructions.map((inst) => inst.instruction)
+
     const recipeDetailsforLLM = `
       Name: ${recipe.name}
       Ingredients: ${recipe.ingredients ? recipe.ingredients.join(', ') : []}
@@ -235,7 +247,7 @@ const RecipeInformationWrapped = () => {
       Cook Time: ${recipe.cookTime}
       Cholesterol: ${recipe.cholesterol}mg/dl
       Fat: ${recipe.fat}g
-      Instructions: ${recipe.instructions ? recipe.instructions.join(' ') : []}
+      Instructions: ${instructionArr ? instructionArr.join(' ') : []}
     `
     const handleSubmit = async () => {
       try {
@@ -277,33 +289,39 @@ const RecipeInformationWrapped = () => {
       })
     }
 
-    const handleAddToMealPlan = async (recipee: any, dayIndex: number) => {
-      try {
-        const responsee = await axios.post(
-          'http://localhost:8000/recipe/meal-plan/',
-          {
-            day: dayIndex,
-            recipe: recipee,
-          }
-        )
-        console.log(responsee.data.message) // Success message
-        alert(
-          `${recipee.name} added to the meal plan for ${
-            [
-              'Monday',
-              'Tuesday',
-              'Wednesday',
-              'Thursday',
-              'Friday',
-              'Saturday',
-              'Sunday',
-            ][dayIndex]
-          }!`
-        )
-      } catch (error) {
-        console.error('Error saving meal plan:', error)
-        alert('Failed to save the meal plan. Please try again.')
-      }
+    const handleAddToMealPlan = async (
+      recipeToAdd: Recipe,
+      dayIndex: number
+    ) => {
+      if (!auth) return
+
+      addToMealPlan({
+        day: dayIndex,
+        userId: auth?.user.id,
+        recipe: recipeToAdd,
+      })
+        .unwrap()
+        .then((mealPlanResponse) => {
+          console.log(mealPlanResponse)
+          alert(
+            `${recipeToAdd.name} added to the meal plan for ${
+              [
+                'Monday',
+                'Tuesday',
+                'Wednesday',
+                'Thursday',
+                'Friday',
+                'Saturday',
+                'Sunday',
+              ][dayIndex]
+            }!`
+          )
+        })
+        .catch((err) => {
+          console.error('Error saving meal plan:', err)
+
+          alert('Failed to save the meal plan. Please try again.')
+        })
     }
 
     return (
@@ -665,7 +683,7 @@ const RecipeInformationWrapped = () => {
                     ))}
                   </select>
                 </div>
-                {recipe?.instructions?.map((inst: string, idx: number) => (
+                {recipe?.instructions?.map((inst: Instruction, idx: number) => (
                   <div
                     style={{
                       backgroundColor: theme.background, // Card background from theme
@@ -676,12 +694,12 @@ const RecipeInformationWrapped = () => {
                     }}
                     key={idx}
                     className="step"
-                    onClick={() => speakInstructions(inst)}
+                    onClick={() => speakInstructions(inst.instruction)}
                   >
                     <Typography variant="h6">
-                      Step {idx + 1}:
+                      Step {inst.step}:
                       <Typography variant="body1" gutterBottom>
-                        {inst}
+                        {inst.instruction}
                       </Typography>
                     </Typography>
                   </div>

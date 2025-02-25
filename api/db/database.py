@@ -1,17 +1,17 @@
 import sqlite3
 from typing import List
-from api.models import RecipeListEntry, ShoppingListItem
+from models import MealPlanEntry, RecipeListEntry, ShoppingListItem, Post, Comment, PostRecipe, Recipe, Instruction
 
 try:
-    from api.db.objects import User, Recipe, Ingredient, Instruction, Post, Comment
+    from api.db.objects import User, Ingredient
 except Exception:
-    from objects import User, Recipe, Ingredient, Instruction, Post, Comment
+    from db.objects import User, Ingredient
 from datetime import datetime
 
 class Database_Connection():
     """Used as a singleton to access the database"""
     
-    def __new__(self):
+    def __new__(self, dbPath: str = 'db/cookbook.db'):
         """Handles ensuring that this class is a singleton"""
         if not hasattr(self, 'instance'):
             self.instance = super(Database_Connection, self).__new__(self)
@@ -19,7 +19,7 @@ class Database_Connection():
     
     def __init__(self, dbPath: str = 'db/cookbook.db'):
         """Handles initializing the class"""
-        print("Db Path: " + dbPath)
+        # print("Db Path: " + dbPath)
         self.conn = sqlite3.connect(dbPath, check_same_thread=False)
         self.cursor = self.conn.cursor()
 
@@ -110,9 +110,12 @@ class Database_Connection():
     
     def get_user_by_id(self, id: int) -> User:
         """Gets a user based on their username"""
+        print( id)
         command_string: str = "SELECT * FROM Users WHERE UserId = ?"
         self.cursor.execute(command_string, (id,))
         user_data = self.cursor.fetchone()
+
+        print(user_data)
         if user_data:
             return User(userId=user_data[0], username=user_data[1], password=user_data[2])
         return None
@@ -128,28 +131,28 @@ class Database_Connection():
             commandString: str = """INSERT INTO Recipes (name, cookTime, prepTime, totalTime, description, category, rating, calories, fat, saturatedFat, cholesterol, sodium, carbs, fiber, sugar, protein, servings)   
                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
             
-            self.cursor.execute(commandString, (recipe.Name, recipe.CookTime, recipe.PrepTime, recipe.TotalTime, recipe.Description, 
-                                                recipe.Category, recipe.Rating, recipe.Calories, recipe.Fat, recipe.SaturatedFat, 
-                                                recipe.Cholesterol, recipe.Sodium, recipe.Carbs, recipe.Fiber, recipe.Sugar, recipe.Protein, recipe.Servings,))
+            self.cursor.execute(commandString, (recipe.name, recipe.cookTime, recipe.prepTime, recipe.totalTime, recipe.description, 
+                                                recipe.category, recipe.rating, recipe.calories, recipe.fat, recipe.saturatedFat, 
+                                                recipe.cholesterol, recipe.sodium, recipe.carbs, recipe.fiber, recipe.sugar, recipe.protein, recipe.servings,))
             
             
             recipeId: int = self.cursor.lastrowid
 
-            for image in recipe.Images:
+            for image in recipe.images:
                 commandString: str = """INSERT INTO Images (recipeId, imageUrl) VALUES (?, ?)"""
                 self.cursor.execute(commandString, (recipeId, image,))
 
-            for tag in recipe.Tags:
+            for tag in recipe.tags:
                 commandString: str = """INSERT INTO Tags (recipeId, tag) VALUES (?, ?)"""
                 self.cursor.execute(commandString, (recipeId, tag,))
 
-            for ingredient in recipe.Ingredients:
+            for ingredient in recipe.ingredients:
                 commandString: str = """INSERT INTO Ingredients (recipeId, name, amount) VALUES (?, ?, ?)"""
-                self.cursor.execute(commandString, (recipeId, ingredient.Name, ingredient.Amount,))
+                self.cursor.execute(commandString, (recipeId, ingredient, 0,))
 
-            for instructions in recipe.Instructions:
+            for instructions in recipe.instructions:
                 commandString: str = """INSERT INTO Instructions (recipeId, step, instruction) VALUES (?, ?, ?)"""
-                self.cursor.execute(commandString, (recipeId, instructions.Step, instructions.Instruction,))
+                self.cursor.execute(commandString, (recipeId, instructions.step, instructions.instruction,))
 
             commandString: str = """INSERT INTO UserRecipes (recipeId, userId) VALUES (?, ?)"""
             self.cursor.execute(commandString, (recipeId, userId,))
@@ -170,6 +173,8 @@ class Database_Connection():
             if not recipeRes:
                 print("No recipe value found.")
                 return None
+            
+            print(recipeRes)
 
             commandString: str = """SELECT * FROM Images WHERE recipeId = ?"""
             self.cursor.execute(commandString, (recipeId,))
@@ -185,23 +190,29 @@ class Database_Connection():
             for tag in tagsRes:
                 tagsList.append(tag[1])
 
+            print("got tags")
             commandString: str = """SELECT * FROM Ingredients WHERE recipeId = ?"""
             self.cursor.execute(commandString, (recipeId,))
             ingredientsRes = self.cursor.fetchall()
-            ingredientsList: list[Ingredient] = []
+            ingredientsList: list[str] = []
             for _, ingredient, amount in ingredientsRes:
-                ingredientsList.append(Ingredient(ingredient, amount))
-
+                ingredientsList.append(ingredient)
+            print("got ingredients")
             commandString: str = """SELECT * FROM Instructions WHERE recipeId = ?"""
             self.cursor.execute(commandString, (recipeId,))
             instructionsRes = self.cursor.fetchall()
             instructionsList: list[Instruction] = []
             for _, step, instruction in instructionsRes:
-                instructionsList.append(Instruction(step, instruction))
+                instructionsList.append(Instruction(step = step, instruction = instruction))
 
-            recipe: Recipe = Recipe(recipeRes[1], recipeRes[2], recipeRes[3], recipeRes[4], recipeRes[5], recipeRes[6], recipeRes[7], 
-                recipeRes[8], recipeRes[9], recipeRes[10], recipeRes[11], recipeRes[12], recipeRes[13], recipeRes[14], recipeRes[15],
-                recipeRes[16], recipeRes[17], imageList, tagsList, ingredientsList, instructionsList, recipeId=recipeRes[0])
+            print(instructionsList)
+            recipe: Recipe = Recipe(recipeId = recipeRes[0], name = recipeRes[1], cookTime = recipeRes[2], 
+                                    prepTime = recipeRes[3], totalTime = recipeRes[4], description = recipeRes[5],
+                                    category = recipeRes[6], rating = recipeRes[7], calories = recipeRes[8], 
+                                    fat = recipeRes[9], saturatedFat = recipeRes[10], cholesterol = recipeRes[11], 
+                                    sodium = recipeRes[12], carbs = recipeRes[13], fiber = recipeRes[14], sugar = recipeRes[15],
+                                    protein = recipeRes[16], servings = recipeRes[17], images = imageList, tags = tagsList, 
+                                    ingredients = ingredientsList, instructions = instructionsList)
 
             return recipe
         
@@ -321,7 +332,7 @@ class Database_Connection():
                                     description=recipe[5], category=recipe[6], rating=recipe[7], calories=recipe[8], 
                                     fat=recipe[9], saturatedFat=recipe[10], cholesterol=recipe[11], sodium=recipe[12], 
                                     carbs=recipe[13], fiber=recipe[14], sugar=recipe[15], protein=recipe[16], 
-                                    servings=recipe[17], id=recipe[0]))
+                                    servings=recipe[17], recipeId=recipe[0]))
 
             return recipes
         except Exception as e: 
@@ -354,7 +365,7 @@ class Database_Connection():
                                     description=recipe[5], category=recipe[6], rating=recipe[7], calories=recipe[8], 
                                     fat=recipe[9], saturatedFat=recipe[10], cholesterol=recipe[11], sodium=recipe[12], 
                                     carbs=recipe[13], fiber=recipe[14], sugar=recipe[15], protein=recipe[16], 
-                                    servings=recipe[17], id=recipe[0]))
+                                    servings=recipe[17], recipeId=recipe[0]))
 
             return recipes
         except Exception as e: 
@@ -379,7 +390,11 @@ class Database_Connection():
         try:
             commandString: str = "SELECT * FROM MealPlan WHERE userId = ?;"
             mealplan = self.cursor.execute(commandString, (UserId,)).fetchall()
-            formattedPlan = {mealitem[2]: mealitem[1] for mealitem in mealplan}
+            formattedPlan = [ MealPlanEntry(day=mealitem[2], recipe={"recipeId": mealitem[1]}) for mealitem in mealplan]
+
+            for entry in formattedPlan:
+                entry.recipe.name = self.cursor.execute("SELECT name FROM recipes WHERE recipeId = ? ;", (entry.recipe.recipeId,)).fetchone()[0]
+
             return formattedPlan
         except Exception as e:
             print(e)
@@ -397,7 +412,7 @@ class Database_Connection():
     
     def remove_from_user_meal_plan(self, UserId: int, day: int):
         try: 
-            exists = self.cursor.execute("SELECT FROM MealPlan WHERE userId = ? AND dayOfWeek = ?;", (UserId, day)).fetchone
+            exists = self.cursor.execute("SELECT * FROM MealPlan WHERE userId = ? AND dayOfWeek = ?;", (UserId, day)).fetchone
             if (exists is None):
                 return f"An isntance with userId of {UserId} and day of {day} does not exist in the database."
             
@@ -453,7 +468,7 @@ class Database_Connection():
     def add_post(self, post: Post) -> bool:
         try:
             command_string = "INSERT INTO Posts (UserId, Message, Image, RecipeId, Date) VALUES (?, ?, ?, ?, ?)"
-            recipe_id = post.recipe  # Already an int or None
+            recipe_id = post.recipe.recipeId  # Already an int or None
             self.cursor.execute(command_string, (
                 post.userId,
                 post.message,
@@ -477,18 +492,23 @@ class Database_Connection():
             dislikes = self.get_post_reactions(post_id, 'DISLIKE')
             comments = self.get_post_comments(post_id)  # Fetch comments
             date_value = post_data[5] if post_data[5] is not None else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            recipe_value = post_data[4]
-            if recipe_value is not None:
+            recipe_id = post_data[4]
+            if recipe_id is not None:
                 try:
-                    recipe_value = int(recipe_value)
+                    recipe_id = int(recipe_id)
+                    recipe_name = self.cursor.execute("SELECT name FROM recipes WHERE recipeId = ?;", (recipe_id,)).fetchone()[0]
+
                 except (ValueError, TypeError):
-                    recipe_value = None
+                    recipe_id = None
+                    recipe_name = None
+
+            recipe_obj = PostRecipe(recipeId=recipe_id, name=recipe_name)
             return Post(
                 postId=post_data[0],
                 userId=post_data[1],
                 message=post_data[2],
                 image=post_data[3],
-                recipe=recipe_value,
+                recipe=recipe_obj,
                 date=date_value,
                 likes=likes,
                 dislikes=dislikes,
@@ -507,18 +527,24 @@ class Database_Connection():
             dislikes = self.get_post_reactions(post_data[0], 'DISLIKE')
             comments = self.get_post_comments(post_data[0])  # Fetch comments
             date_value = post_data[5] if post_data[5] is not None else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            recipe_value = post_data[4]
-            if recipe_value is not None:
+            recipe_id = post_data[4]
+            if recipe_id is not None:
                 try:
-                    recipe_value = int(recipe_value)
+                    recipe_id = int(recipe_id)
+                    recipe_name = self.cursor.execute("SELECT name FROM recipes WHERE recipeId = ?;", (recipe_id,)).fetchone()[0]
+
                 except (ValueError, TypeError):
-                    recipe_value = None
+                    recipe_id = None
+                    recipe_name = ""
+
+            recipe_obj = PostRecipe(recipeId=recipe_id, name=recipe_name)
+            
             posts.append(Post(
                 postId=post_data[0],
                 userId=post_data[1],
                 message=post_data[2],
                 image=post_data[3],
-                recipe=recipe_value,
+                recipe=recipe_obj,
                 date=date_value,
                 likes=likes,
                 dislikes=dislikes,
@@ -576,6 +602,7 @@ class Database_Connection():
             if not update_data:
                 return True
             set_clause = ", ".join(f"{key} = ?" for key in update_data.keys())
+
             command_string = f"UPDATE Posts SET {set_clause} WHERE PostId = ?"
             values = list(update_data.values()) + [post_id]
             self.cursor.execute(command_string, values)

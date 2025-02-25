@@ -25,8 +25,8 @@ const RecipeListItem = (props: RecipeListItemProp) => {
   const index = props.index
   const recipe = props.recipe
 
-  const gotoRecipe = (id: number) => {
-    navigateTo('/recipe-details/' + id)
+  const gotoRecipe = () => {
+    navigateTo('/recipe-details/' + recipe.recipeId)
   }
 
   return (
@@ -34,16 +34,17 @@ const RecipeListItem = (props: RecipeListItemProp) => {
       variant="outlined"
       sx={{
         width: 4 / 5,
-        m: 1,
+        my: 1,
         backgroundColor: theme.background, // Card background from theme
         color: theme.color, // Card text color
         borderColor: theme.headerColor,
         borderWidth: '2px', // Set the desired border thickness
         borderStyle: 'solid', // Ensure the border style is solid
+        overflow: 'visible',
       }}
       key={index}
     >
-      <CardActionArea onClick={() => gotoRecipe(recipe.id)}>
+      <CardActionArea onClick={() => gotoRecipe()}>
         <CardContent>
           <div className="d-flex flex-row">
             <Typography

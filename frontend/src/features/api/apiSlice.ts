@@ -19,14 +19,16 @@ export const apiSlice = createApi({
       return headers
     },
   }),
-  tagTypes: ['Recipe'],
+  tagTypes: ['Recipe', 'Post', 'ShoppingList', 'MealPlan'],
   endpoints: (builder) => ({
     getRecipes: builder.query<Recipe[], void>({
       query: () => '/recipes',
       providesTags: (result = [], error, arg) => [
         'Recipe',
         { type: 'Recipe', id: 'LIST' },
-        ...result.map(({ id }) => ({ type: 'Recipe', id }) as const),
+        ...result.map(
+          ({ recipeId }) => ({ type: 'Recipe', recipeId }) as const
+        ),
       ],
     }),
     // Get Recipe will return a Recipe, but takes a string
@@ -44,11 +46,13 @@ export const apiSlice = createApi({
     }),
     editRecipe: builder.mutation<Recipe, Recipe>({
       query: (recipe) => ({
-        url: `/recipe/${recipe.id}`,
+        url: `/recipe/${recipe.recipeId}`,
         method: 'PATCH',
         body: recipe,
       }),
-      invalidatesTags: (result, error, arg) => [{ type: 'Recipe', id: arg.id }],
+      invalidatesTags: (result, error, arg) => [
+        { type: 'Recipe', id: arg.recipeId },
+      ],
     }),
   }),
 })

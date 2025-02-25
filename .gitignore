@@ -8,6 +8,7 @@ frontend/shopping_list.pdf
 api/__pycache__/
 venv/
 env/
+cookbook.db
 __pycache__/
 
 ## Ignore Visual Studio temporary files, build results, and

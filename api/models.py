@@ -16,9 +16,13 @@ from pydantic import BaseModel, Field
 from pydantic import BaseModel, EmailStr
 
 
+class Instruction(BaseModel):
+    step: int
+    instruction: str
+
 class Recipe(BaseModel):
     """A data model representing a recipe"""
-    id: Optional[int]  # Unique identifier for the recipe
+    recipeId: Optional[int]  # Unique identifier for the recipe
     name: str  # Name of the recipe
     cookTime: Optional[str] = None
     prepTime: Optional[str] = None
@@ -27,7 +31,7 @@ class Recipe(BaseModel):
     images: Optional[list] = None  # URLs of images related to the recipe
     category: str
     tags: List[str]
-    ingredientQuantities: list
+    ingredientQuantities: Optional[list[int]]
     ingredients: List[str]  # List of ingredients required
     rating: Optional[str] = None
     calories: Optional[str] = None
@@ -40,7 +44,7 @@ class Recipe(BaseModel):
     sugar: Optional[str] = None
     protein: Optional[str] = None
     servings: Optional[str] = None
-    instructions: List[str]
+    instructions: List[Instruction]
 
     class Config:
         schema_extra = {
@@ -111,7 +115,7 @@ class Recipe(BaseModel):
 
 class RecipeListEntry(BaseModel):
     """A data model representing a recipe"""
-    id: int
+    recipeId: int
     name: str  # Name of the recipe
     cookTime: Optional[str] = None
     prepTime: Optional[str] = None
@@ -167,11 +171,34 @@ class User(BaseModel):
 class UserCred(BaseModel):
     username: str
     password: str
+    
+class PostRecipe(BaseModel):
+    recipeId: Optional[int]
+    name: Optional[str]
+
+class Comment(BaseModel):
+    commentId: Optional[int] = Field(default=None, description="Auto-incremented ID of the comment")
+    userId: int = Field(..., description="ID of the user who created the comment")
+    postId: int = Field(..., description="ID of the post the comment is related to")
+    message: str = Field(..., description="Content of the comment")
+    date: Optional[str] = Field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d %H:%M:%S"), description="Timestamp of the comment")
+
+class Post(BaseModel):
+    postId: Optional[int] = Field(default=None, description="Auto-incremented ID from the database")
+    userId: int = Field(..., description="ID of the user who created the post")
+    message: str = Field(..., description="Content of the post")
+    image: Optional[str] = Field(default=None, description="Base64-encoded image data")
+    recipe: Optional[PostRecipe] = Field(default=None, description="id and name of recipe associated with the post")
+    date: Optional[str] = Field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d %H:%M:%S"), description="Timestamp of the post")
+    likes: List[int] = Field(default_factory=list, description="List of UserIds who liked the post")
+    dislikes: List[int] = Field(default_factory=list, description="List of UserIds who disliked the post")
+    comments: List[Comment] = Field(default_factory=list, description="List of comments on the post")
 
 class PostUpdate(BaseModel):
+    userId: Optional[int] = Field(None, description="Id of user the post was created by")
     message: Optional[str] = Field(None, description="Updated content of the post")
     image: Optional[str] = Field(None, description="Updated Base64-encoded image data")
-    recipe_id: Optional[int] = Field(None, description="Updated Recipe ID associated with the post")
+    recipe: Optional[PostRecipe] = Field(None, description="Updated Recipe ID associated with the post")
 
 class ShoppingListItem(BaseModel):
     name: str
@@ -180,7 +207,5 @@ class ShoppingListItem(BaseModel):
     checked: bool
 
 class MealPlanEntry(BaseModel):
-    user: int # id of the user to change
     day: int  # 0-6 representing Monday-Sunday
-    recipeId: int  # The recipe id
-    recipeName: Optional[str]
+    recipe: PostRecipe  # The recipe id and name
