@@ -518,18 +518,6 @@ async def get_recipes(request: Request, recipeIds: List[int]) -> Recipe:
         raise HTTPException(status_code=400, detail="There is no recipes with those Ids")
     return recipes
 
-@router.get("/user/{userId}")
-async def get_user_recipes(request: Request, userId: int):
-    db:Database_Connection = request.state.db
-    recipeIds: list[int] = db.get_recipes_owned_by_userId(userId)
-    recipeObj: list[dict] = []
-    for recipeId in recipeIds:
-        recipeObj.append(db.get_recipe(recipeId).to_dict())
-    
-    # This should be fine as if there are no recipes owned by a user it should just return the empty list
-    # Can be changed to None if needed
-    return recipeObj
-
 # Todo: This may have to change as I am not sure if this is the proper way to expect a body for a post request
 @router.post("/")
 async def create_user_recipe(request: Request, recipeObject: Recipe, userId: int) -> bool:
