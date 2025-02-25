@@ -17,8 +17,6 @@ def setup_db():
     """Copies the db to a testing db before each test"""
     if path.exists(TEST_DB):
         remove(TEST_DB)
-    shutil.copy(MAIN_DB, TEST_DB)
-    print("Copied")
     insertData(TEST_DB, "tests/recipeTest.json")
     yield
     remove(TEST_DB)
