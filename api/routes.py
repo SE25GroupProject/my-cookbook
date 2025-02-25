@@ -479,6 +479,11 @@ async def login(request: Request, incomingUser: UserCred = Body(...)):
         raise HTTPException(status_code=400, detail="There is no user with that username")
     if user.Password == incomingUser.password:
         return {"id": user.UserId, "username": user.Username}
+        
+    return "Incorrect Username or Password"
+    # except:
+    #     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occured when logging in this user")
+    
     raise HTTPException(status_code=401, detail="Incorrect Username or Password")
 
 @userRouter.get("/getUser/{username}")
@@ -512,18 +517,6 @@ async def get_recipes(request: Request, recipeIds: List[int]) -> Recipe:
     if recipes is None:
         raise HTTPException(status_code=400, detail="There is no recipes with those Ids")
     return recipes
-
-@router.get("/user/{userId}")
-async def get_user_recipes(request: Request, userId: int):
-    db:Database_Connection = request.state.db
-    recipeIds: list[int] = db.get_recipes_owned_by_userId(userId)
-    recipeObj: list[dict] = []
-    for recipeId in recipeIds:
-        recipeObj.append(db.get_recipe(recipeId).to_dict())
-    
-    # This should be fine as if there are no recipes owned by a user it should just return the empty list
-    # Can be changed to None if needed
-    return recipeObj
 
 # Todo: This may have to change as I am not sure if this is the proper way to expect a body for a post request
 @router.post("/")
@@ -672,6 +665,7 @@ async def like_post(request: Request, post_id: int, user_id: int = Body(...)):
             detail=f"An error occurred while liking the post: {str(e)}"
         )
 
+
 @postRouter.put("/dislike/{post_id}", response_description="Dislike a post", status_code=200)
 async def dislike_post(request: Request, post_id: int, user_id: int = Body(...)):
     """Handles disliking a post with toggle and switch logic."""
@@ -727,6 +721,7 @@ async def dislike_post(request: Request, post_id: int, user_id: int = Body(...))
         )
 
 @postRouter.delete("/{post_id}", response_description="Delete a post", status_code=200)
+
 async def delete_post(request: Request, post_id: int, user_id: int = Body(...)):
     """Deletes a post by its ID, including all related reactions."""
     db:Database_Connection = request.state.db
@@ -751,7 +746,18 @@ async def delete_post(request: Request, post_id: int, user_id: int = Body(...)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred while deleting the post: {str(e)}"
         )
-  
+
+@router.get("/user/{userId}")
+async def get_user_recipes(request: Request, userId: int):
+    db: Database_Connection = request.state.db
+    recipeIds: list[int] = db.get_recipes_owned_by_userId(userId)
+    recipeObj: list[dict] = []
+    for recipeId in recipeIds:
+        recipeObj.append(db.get_recipe(recipeId).to_dict())
+    
+    # This should be fine as if there are no recipes owned by a user it should just return the empty list
+    # Can be changed to None if needed
+    return recipeObj
 
 @postRouter.put("/{post_id}", response_description="Update a post", response_model=Post)
 async def update_post(request: Request, post_id: int, update: PostUpdate = Body(...)):
