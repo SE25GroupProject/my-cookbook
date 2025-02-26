@@ -111,10 +111,6 @@ CookBook isn’t just a tool—it’s your cooking companion, saving time and br
 
 ## With CookBook, cooking becomes an adventure. What will you create today? 🥘👨‍🍳👩‍🍳
 
-## 🎥 Demo Video
-
-[![Watch the Demo](https://img.youtube.com/vi/Tk9iwPMeQhA/0.jpg)](https://youtu.be/Tk9iwPMeQhA)
-
 Click the image above to watch the demo video on YouTube! 🚀
 
 # 🚀 Better Software Design
@@ -141,7 +137,6 @@ CookBook is designed with scalability, safety, and reliability in mind. The soft
 
 Before setting up the project, ensure you have the following installed:
 
-- **[MongoDB](https://www.mongodb.com/products/platform/cloud)**: Create a cluster and generate the DB URL, username, and password.
 - **[GROQ](https://groq.com/)**: Create an API key.
 - **Create a `.env` file** in the `api` folder with the following details:
 
