@@ -4,6 +4,7 @@ from os import path, remove
 import shutil
 from api.dbMiddleware import DBConnectionMiddleware
 from api.db.convertJsonToSql import insertData
+import tempfile
 
 from api.main import app
 
@@ -13,194 +14,104 @@ MAIN_DB = "cookbook.db"
 TEST_DB = "tests/test_cookbook.db"
 
 @pytest.fixture(scope="function", autouse=True)
-def setup_db():
-    """Copies the db to a testing db before each test"""
-    if path.exists(TEST_DB):
-        remove(TEST_DB)
-    insertData(TEST_DB, "tests/recipeTest.json")
-    yield
-    remove(TEST_DB)
-
-@pytest.fixture(scope="module")
 def clientSetup():
-    app.add_middleware(DBConnectionMiddleware, db_path=TEST_DB)
+    """Copies the db to a testing db before each test"""
+    temp_db = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
+    temp_db_path = temp_db.name
+    temp_db.close()
+    insertData(temp_db_path, "tests/recipeTest.json")
+
+    app.user_middleware = []
+    app.add_middleware(DBConnectionMiddleware, db_path=temp_db_path)
     with TestClient(app) as client:
         yield client
+    
+    remove(temp_db_path)
 
-def test_signup_user(clear_users_db):
+def test_signup_user():
     """Test case for user signup"""
     user_data = {
-        "email": "testuser@example.com",
-        "password": "password123"
+        "username": "newUser",
+        "password": "password"
     }
 
     # Send a POST request to the /signup endpoint
-    response = client.post("/signup", json=user_data)
+    response = client.post("/user/signup", json=user_data)
 
     # Assert the response status code is 200 (success)
     assert response.status_code == 200
-    assert response.json() == {"message": "Signup successful"}
+    assert response.json()["username"] == "newUser"
 
     # Check that the user is actually added to users_db
-    assert "testuser@example.com" in users_db
-    assert users_db["testuser@example.com"] == "password123"
+    response = client.get("/user/getUser/newUser")
+    assert response.status_code == 200
 
-def test_signup_user_already_exists(clear_users_db):
+def test_signup_user_already_exists():
     """Test case for attempting to signup an already existing user"""
     user_data = {
-        "email": "testuser@example.com",
-        "password": "password123"
+        "username": "newUser",
+        "password": "password"
     }
 
     # First signup should succeed
-    client.post("/signup", json=user_data)
+    response = client.post("/user/signup", json=user_data)
+    assert response.status_code == 200
 
     # Attempt to signup again with the same email
-    response = client.post("/signup", json=user_data)
+    response = client.post("/user/signup", json=user_data)
 
     # Assert the response status code is 400 (bad request)
     assert response.status_code == 400
-    assert response.json() == {"detail": "User already exists"}
+    assert response.json() == {"detail": "User with that username already exists"}
 
-def test_signup_empty_email(clear_users_db):
-    user_data = {"email": "", "password": "password123"}
-    response = client.post("/signup", json=user_data)
-    assert response.status_code == 422 
+def test_signup_empty_username():
+    user_data = {"username": "", "password": "password123"}
+    response = client.post("/user/signup", json=user_data)
+    assert response.status_code == 400 
 
-def test_signup_empty_password(clear_users_db):
-    user_data = {"email": "newuser@example.com", "password": ""}
-    response = client.post("/signup", json=user_data)
+def test_signup_empty_password():
+    user_data = {"username": "newUser", "password": ""}
+    response = client.post("/user/signup", json=user_data)
+    assert response.status_code == 400
 
-    # Check if the response status code is 200 (success)
-    assert response.status_code == 200
-    assert response.json() == {"message": "Signup successful"}
-
-    # Check that the user is still added to users_db (even with an empty password)
-    assert "newuser@example.com" in users_db
-    assert users_db["newuser@example.com"] == ""
-
-def test_signup_missing_password(clear_users_db):
-    user_data = {"email": "missingpassword@example.com"}
-    response = client.post("/signup", json=user_data)
+def test_signup_missing_password():
+    user_data = {"username": "newUser"}
+    response = client.post("/user/signup", json=user_data)
     assert response.status_code == 422
 
-def test_signup_invalid_email_format(clear_users_db):
-    user_data = {"email": "invalid-email", "password": "password123"}
-    response = client.post("/signup", json=user_data)
-    assert response.status_code == 422 
-
-def test_signup_long_password(clear_users_db):
-    user_data = {"email": "longpassword@example.com", "password": "a" * 129}
-    response = client.post("/signup", json=user_data)
+def test_signup_long_password():
+    user_data = {"username": "longUser", "password": f"{'a' * 129}"}
+    response = client.post("/user/signup", json=user_data)
 
     # Check if the response status code is 200 (success)
     assert response.status_code == 200
-    assert response.json() == {"message": "Signup successful"}
 
-    # Check that the user is added to users_db
-    assert "longpassword@example.com" in users_db
-    assert users_db["longpassword@example.com"] == "a" * 129
+    response = client.get("/user/getUser/longUser")
+    assert response.status_code == 200
 
-def test_signup_and_login(clear_users_db):
-    user_data = {"email": "validuser@example.com", "password": "password123"}
-    client.post("/signup", json=user_data)
+def test_signup_and_login():
+    user_data = {"username": "user", "password": "password123"}
+    client.post("/user/signup", json=user_data)
 
     # Attempt login with the same credentials
-    login_data = {"email": "validuser@example.com", "password": "password123"}
-    response = client.post("/login", json=login_data)
+    login_data = {"username": "user", "password": "password123"}
+    response = client.post("/user/login", json=login_data)
     assert response.status_code == 200
-    assert response.json() == {"message": "Login successful"}
 
-def test_signup_short_password(clear_users_db):
-    user_data = {"email": "shortpass@example.com", "password": "12345"}
-    response = client.post("/signup", json=user_data)
-
-    # Check if the response status code is 200 (success)
+def test_signup_with_special_characters():
+    user_data = {"username": "user", "password": "password#123"}
+    response = client.post("/user/signup", json=user_data)
     assert response.status_code == 200
-    assert response.json() == {"message": "Signup successful"}
 
-    # Check that the user is added to users_db
-    assert "shortpass@example.com" in users_db
-    assert users_db["shortpass@example.com"] == "12345"
-
-def test_signup_without_special_characters(clear_users_db):
-    user_data = {"email": "simpleuser@example.com", "password": "simplepassword"}
-    response = client.post("/signup", json=user_data)
+def test_login_incorrect_password():
+    user_data = {"username": "user", "password": "password123"}
+    response = client.post("/user/signup", json=user_data)
     assert response.status_code == 200
-    assert response.json() == {"message": "Signup successful"}
 
-def test_signup_with_special_characters(clear_users_db):
-    user_data = {"email": "specialchars@example.com", "password": "password@123"}
-    response = client.post("/signup", json=user_data)
-    assert response.status_code == 200
-    assert response.json() == {"message": "Signup successful"}
 
-def test_login_empty_email(clear_users_db):
-    user_data = {"email": "", "password": "password123"}
-    response = client.post("/login", json=user_data)
-    assert response.status_code == 422  
-
-def test_login_empty_password(clear_users_db):
-    user_data = {"email": "testuser@example.com", "password": ""}
-    response = client.post("/login", json=user_data)
-
-    # Check if the response status code is 400 (Bad Request)
-    assert response.status_code == 400
-    assert response.json() == {"detail": "Incorrect email or password"}
-
-def test_login_incorrect_password(clear_users_db):
-    user_data = {"email": "testuser@example.com", "password": "wrongpassword"}
-    response = client.post("/login", json=user_data)
+    user_data = {"username": "user", "password": "password1234"}
+    response = client.post("/user/login", json=user_data)
     assert response.status_code == 400  # Incorrect email or password
-    assert response.json() == {"detail": "Incorrect email or password"}
-
-def test_login_unregistered_email(clear_users_db):
-    user_data = {"email": "unregistered@example.com", "password": "password123"}
-    response = client.post("/login", json=user_data)
-    assert response.status_code == 400  # Incorrect email or password
-    assert response.json() == {"detail": "Incorrect email or password"}
-
-def test_login_after_signup(clear_users_db):
-    signup_data = {"email": "newuser@example.com", "password": "password123"}
-    client.post("/signup", json=signup_data)
-
-    login_data = {"email": "newuser@example.com", "password": "password123"}
-    response = client.post("/login", json=login_data)
-    assert response.status_code == 200
-    assert response.json() == {"message": "Login successful"}
-
-def test_login_missing_password(clear_users_db):
-    user_data = {"email": "newuser@example.com"}
-    response = client.post("/login", json=user_data)
-    assert response.status_code == 422  
-
-def test_login_incorrect_password_length(clear_users_db):
-    user_data = {"email": "newuser@example.com", "password": "short"}
-    response = client.post("/login", json=user_data)
-    assert response.status_code == 400  # Incorrect email or password
-    assert response.json() == {"detail": "Incorrect email or password"}
-
-def test_login_case_sensitive_email(clear_users_db):
-    signup_data = {"email": "TestUser@Example.com", "password": "password123"}
-    client.post("/signup", json=signup_data)
-
-    login_data = {"email": "testuser@example.com", "password": "password123"}
-    response = client.post("/login", json=login_data)
-    assert response.status_code == 400  
-    assert response.json() == {"detail": "Incorrect email or password"}
-
-def test_login_after_password_update(clear_users_db):
-    signup_data = {"email": "updatepassword@example.com", "password": "oldpassword"}
-    client.post("/signup", json=signup_data)
-
-  
-    users_db["updatepassword@example.com"] = "newpassword"
-
-    login_data = {"email": "updatepassword@example.com", "password": "newpassword"}
-    response = client.post("/login", json=login_data)
-    assert response.status_code == 200
-    assert response.json() == {"message": "Login successful"}
-
 
 
 

@@ -11,7 +11,6 @@ from datetime import datetime
 class Database_Connection():
     def __init__(self, dbPath: str = 'db/cookbook.db'):
         """Handles initializing the class"""
-        # print("Db Path: " + dbPath)
         self.conn = sqlite3.connect(dbPath, check_same_thread=False)
         self.cursor = self.conn.cursor()
 
@@ -99,6 +98,19 @@ class Database_Connection():
             return user
         except:
             return None
+        
+    def get_user_by_name2(self, username: str) -> User:
+        """Gets a user based on their username"""
+        try: 
+            commandString: str = "SELECT * FROM Users"
+            self.cursor.execute(commandString)
+            res = self.cursor.fetchall()
+            # user: User = User(res[1], res[2], res[0])
+            # return user
+            return res
+        except:
+            return None
+
 
     
     def get_user_by_id(self, id: int) -> User:
