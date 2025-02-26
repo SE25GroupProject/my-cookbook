@@ -3,21 +3,11 @@ import { BrowserRouter } from 'react-router-dom'
 import { ThemeProvider } from '../../Themes/themeContext'
 import Profile from './Profile'
 import userEvent from '@testing-library/user-event'
+import { renderWithProviders } from '../../../utils/testingUtils'
 
 describe('Display Profile Page Items', () => {
   test('Ensure Name is visible', async () => {
-    render(
-      <BrowserRouter
-        future={{
-          v7_startTransition: true,
-          v7_relativeSplatPath: true,
-        }}
-      >
-        <ThemeProvider>
-          <Profile />
-        </ThemeProvider>
-      </BrowserRouter>
-    )
+    await renderWithProviders(<Profile />)
 
     expect(
       screen.getByRole('heading', { level: 3, name: 'Users Name' })
@@ -25,18 +15,7 @@ describe('Display Profile Page Items', () => {
   })
 
   test('Ensure Profile Image and Upload is visible', async () => {
-    render(
-      <BrowserRouter
-        future={{
-          v7_startTransition: true,
-          v7_relativeSplatPath: true,
-        }}
-      >
-        <ThemeProvider>
-          <Profile />
-        </ThemeProvider>
-      </BrowserRouter>
-    )
+    await renderWithProviders(<Profile />)
 
     const imgBtn = screen.getByLabelText(/Click to Change Image/i)
     expect(screen.getByAltText(/Profile/i)).toBeInTheDocument()
@@ -57,18 +36,7 @@ describe('Display Profile Page Items', () => {
   })
 
   test('Ensure Profile tabs are visible', async () => {
-    render(
-      <BrowserRouter
-        future={{
-          v7_startTransition: true,
-          v7_relativeSplatPath: true,
-        }}
-      >
-        <ThemeProvider>
-          <Profile />
-        </ThemeProvider>
-      </BrowserRouter>
-    )
+    await renderWithProviders(<Profile />)
 
     expect(screen.getByRole('tab', { name: 'My Posts' })).toBeInTheDocument()
     expect(

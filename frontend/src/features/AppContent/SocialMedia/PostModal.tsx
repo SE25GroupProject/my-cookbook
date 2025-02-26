@@ -37,6 +37,7 @@ import {
   useGetPostByIdQuery,
 } from './SocialSlice'
 import { useNavigate } from 'react-router-dom'
+import { useGetUserRecipesQuery } from '../UserRecipes/UserRecipeSlice'
 
 interface PostModalProps {
   post: Post
@@ -58,7 +59,12 @@ const PostModal = (props: PostModalProps) => {
   const { handleSubmit, getValues } = formMethods
 
   // Available Recipes
-  const userRecipes: PostRecipe[] = [...testRecipes]
+  const userId = auth?.user.id ?? -1
+  const { data: userRecipes } = useGetUserRecipesQuery(userId, {
+    skip: userId == -1,
+  })
+  const userPostRecipes: PostRecipe[] =
+    userRecipes?.map((recipe) => recipe) ?? []
 
   // Edit Post State
   const [editImg, setEditImg] = useState(props.post.image)
@@ -151,7 +157,7 @@ const PostModal = (props: PostModalProps) => {
                     setChosenRecipe(newValue)
                   }}
                   size="small"
-                  options={userRecipes}
+                  options={userPostRecipes}
                   getOptionLabel={(option) => option.name}
                   renderInput={(params) => (
                     <TextField {...params} label="Your Recipes" />

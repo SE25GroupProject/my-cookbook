@@ -44,6 +44,7 @@ import {
   useDeletePostMutation,
   useGetPostsQuery,
 } from './SocialSlice'
+import { useGetUserRecipesQuery } from '../UserRecipes/UserRecipeSlice'
 
 const SocialMedia = () => {
   const auth = useAuth()
@@ -54,8 +55,14 @@ const SocialMedia = () => {
   // const [posts, setPosts] = useState<Post[]>([...testPosts])
 
   const { data: posts, isLoading, isSuccess } = useGetPostsQuery()
+  // console.log(posts)
 
-  const userRecipes: PostRecipe[] = [...testRecipes]
+  const userId = auth?.user.id ?? -1
+  const { data: userRecipes } = useGetUserRecipesQuery(userId, {
+    skip: userId == -1,
+  })
+  const userPostRecipes: PostRecipe[] =
+    userRecipes?.map((recipe) => recipe) ?? []
 
   // Post creation
   const [imgAnchorEl, setImgAnchorEl] = useState<HTMLButtonElement | null>(null)
@@ -113,7 +120,7 @@ const SocialMedia = () => {
       // 20 more records in .5 secs
       setTimeout(() => {
         setCurrentPosts(currentPosts.concat(postsToDisplay))
-      }, 1500)
+      }, 100)
     }
   }
 
@@ -213,7 +220,7 @@ const SocialMedia = () => {
                   setChosenRecipe(newValue)
                 }}
                 size="small"
-                options={userRecipes}
+                options={userPostRecipes}
                 getOptionLabel={(option) => option.name}
                 renderInput={(params) => (
                   <TextField {...params} label="Your Recipes" />
@@ -244,6 +251,7 @@ const SocialMedia = () => {
                   borderRadius: 8,
                 },
               }}
+              slotProps={{ input: { 'aria-label': "What's Cookin'?" } }}
               endAdornment={
                 <InputAdornment position="end">
                   <IconButton

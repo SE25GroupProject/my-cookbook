@@ -13,3 +13,13 @@ this file. If not, please write to: help.cookbook@gmail.com
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom'
+import 'whatwg-fetch'
+import { server } from './features/api/msw'
+
+beforeAll(() => server.listen())
+
+afterAll(() => server.close())
+
+afterEach(() => {
+  server.resetHandlers()
+})

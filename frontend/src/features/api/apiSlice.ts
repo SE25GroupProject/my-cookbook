@@ -19,7 +19,7 @@ export const apiSlice = createApi({
       return headers
     },
   }),
-  tagTypes: ['Recipe', 'Post', 'ShoppingList', 'MealPlan'],
+  tagTypes: ['Recipe', 'Post', 'ShoppingList', 'MealPlan', 'Favorite'],
   endpoints: (builder) => ({
     getRecipes: builder.query<Recipe[], void>({
       query: () => '/recipes',
@@ -54,6 +54,9 @@ export const apiSlice = createApi({
         { type: 'Recipe', id: arg.recipeId },
       ],
     }),
+    getBatchRecipes: builder.query<Recipe[], number[]>({
+      query: (data) => ({ url: `/recipe/batch`, method: 'POST', body: data }),
+    }),
   }),
 })
 
@@ -62,4 +65,5 @@ export const {
   useGetRecipeQuery,
   useAddNewRecipeMutation,
   useEditRecipeMutation,
+  useLazyGetBatchRecipesQuery,
 } = apiSlice

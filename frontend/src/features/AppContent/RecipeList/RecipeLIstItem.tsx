@@ -9,10 +9,24 @@ import {
   Paper,
   Typography,
 } from '@mui/material'
-import { Post, Recipe, RecipeListData } from '../../api/types'
-import { ThumbDownOutlined, ThumbUp, Star } from '@mui/icons-material'
+import { FavoriteRequest, Post, Recipe, RecipeListData } from '../../api/types'
+import {
+  ThumbDownOutlined,
+  ThumbUp,
+  Star,
+  Edit,
+  Favorite,
+  FavoriteBorder,
+} from '@mui/icons-material'
 import { useTheme } from '../../Themes/themeContext'
 import { useNavigate } from 'react-router-dom'
+import {
+  useCheckUserFavoritesQuery,
+  useFavoriteRecipeMutation,
+  useUnfavoriteRecipeMutation,
+} from '../UserRecipes/UserRecipeSlice'
+import { useAuth } from '../Authentication/AuthProvider'
+import { useEffect } from 'react'
 
 interface RecipeListItemProp {
   recipe: RecipeListData
@@ -21,12 +35,52 @@ interface RecipeListItemProp {
 
 const RecipeListItem = (props: RecipeListItemProp) => {
   const { theme } = useTheme()
+  const auth = useAuth()
   const navigateTo = useNavigate()
   const index = props.index
   const recipe = props.recipe
 
+  const { data: favorited, isLoading: favoriteLoading } =
+    useCheckUserFavoritesQuery(
+      {
+        userId: auth?.user.id ?? -1,
+        recipeId: props.recipe.recipeId,
+      },
+      { skip: !auth }
+    )
+
+  useEffect(() => {
+    // console.log('favorited', favorited)
+  }, [favorited])
+
+  const [favoriteRecipe] = useFavoriteRecipeMutation()
+  const [unfavoriteRecipe] = useUnfavoriteRecipeMutation()
+
   const gotoRecipe = () => {
     navigateTo('/recipe-details/' + recipe.recipeId)
+  }
+
+  const goToEditRecipe = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation()
+    navigateTo('/edit-recipe/' + recipe.recipeId)
+  }
+
+  const handleToggleFavorite = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation()
+
+    if (favoriteLoading || !auth) return
+
+    let req: FavoriteRequest = {
+      userId: auth.user.id,
+      recipeId: props.recipe.recipeId,
+    }
+
+    console.log(props.recipe.recipeId)
+    if (favorited) {
+      unfavoriteRecipe(req)
+    } else {
+      favoriteRecipe(req)
+    }
   }
 
   return (
@@ -70,24 +124,40 @@ const RecipeListItem = (props: RecipeListItemProp) => {
               {recipe.category}
             </Typography>
           </div>
-          <Typography
-            sx={{ textAlign: 'left', color: theme.color }} // Theme color for text
-            variant="subtitle2"
-          >
-            Prep Time : {recipe.prepTime} | Cook Time : {recipe.cookTime}
-          </Typography>
+          <Grid2 container columns={24}>
+            <Grid2 size={23}>
+              <Typography
+                sx={{ textAlign: 'left', color: theme.color }} // Theme color for text
+                variant="subtitle2"
+              >
+                Prep Time : {recipe.prepTime} | Cook Time : {recipe.cookTime}
+              </Typography>
+            </Grid2>
+            <Grid2 size={1}>
+              <IconButton onClick={goToEditRecipe}>
+                <Edit />
+              </IconButton>
+            </Grid2>
 
-          <Typography
-            sx={{
-              textAlign: 'left',
-              marginTop: 2,
-              fontStyle: 'italic',
-              color: theme.color, // Theme color for text
-            }}
-            variant="body2"
-          >
-            {recipe.description}
-          </Typography>
+            <Grid2 size={23}>
+              <Typography
+                sx={{
+                  textAlign: 'left',
+                  marginTop: 2,
+                  fontStyle: 'italic',
+                  color: theme.color, // Theme color for text
+                }}
+                variant="body2"
+              >
+                {recipe.description}
+              </Typography>
+            </Grid2>
+            <Grid2 size={1}>
+              <IconButton onClick={handleToggleFavorite}>
+                {favorited ? <Favorite /> : <FavoriteBorder />}
+              </IconButton>
+            </Grid2>
+          </Grid2>
         </CardContent>
       </CardActionArea>
     </Card>

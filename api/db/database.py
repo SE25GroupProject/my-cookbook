@@ -132,12 +132,12 @@ class DatabaseConnection:
 
     def get_user_by_id(self, user_id: int) -> User:
         """Gets a user based on their username"""
-        print(user_id)
+        # print( id)
         command_string: str = "SELECT * FROM Users WHERE UserId = ?"
         self.cursor.execute(command_string, (user_id,))
         user_data = self.cursor.fetchone()
 
-        print(user_data)
+        # print(user_data)
         if user_data:
             return User(
                 userId=user_data[0], username=user_data[1], password=user_data[2]
@@ -181,6 +181,7 @@ class DatabaseConnection:
 
             recipe_id: int = self.cursor.lastrowid
 
+            # print("images")
             for image in recipe.images:
                 command_string: str = (
                     """INSERT INTO Images (recipeId, imageUrl) VALUES (?, ?)"""
@@ -319,10 +320,45 @@ class DatabaseConnection:
             )
 
             return recipe
-
+        
         except sqlite3.DatabaseError as e:
             print(e)
             return None
+    
+
+    def get_recipe_batch(self, recipeIds: List[int], fullRecipe: bool = False):
+        try: 
+            recipes = []
+            if fullRecipe: 
+                for recipeid in recipeIds:
+                    recipes.append(self.get_recipe(recipeid))
+            else: 
+                commandString: str = """SELECT * FROM Recipes WHERE recipeId IN (%s)"""%','.join('?'*len(recipeIds))
+                self.cursor.execute(commandString, (*recipeIds,))
+                recipeObjs = self.cursor.fetchall()
+                if not recipeObjs:
+                    print("No recipe values found.")
+                    return []
+
+                
+                for recipe in recipeObjs:
+                    recipes.append(RecipeListEntry(name=recipe[1], cookTime=recipe[2], prepTime=recipe[3], totalTime=recipe[4], 
+                                        description=recipe[5], category=recipe[6], rating=recipe[7], calories=recipe[8], 
+                                        fat=recipe[9], saturatedFat=recipe[10], cholesterol=recipe[11], sodium=recipe[12], 
+                                        carbs=recipe[13], fiber=recipe[14], sugar=recipe[15], protein=recipe[16], 
+                                        servings=recipe[17], recipeId=recipe[0]))
+
+            return recipes
+
+        except sqlite3.DatabaseError as e: 
+            print(e)
+            return []
+
+    def update_recipe(self, oldRecipeId: int, newRecipe: Recipe):
+        """Updates a recipe to have the data of the new recipe"""
+        recipe_owner: int = self.get_recipe_owner_by_recipeId(oldRecipeId)
+        self.delete_recipe(oldRecipeId)
+        self.create_recipe(newRecipe, recipe_owner)
 
     def update_recipe(self, old_recipe_id: int, new_recipe: Recipe):
         """Updates a recipe to have the data of the new recipe"""
@@ -336,7 +372,7 @@ class DatabaseConnection:
             command_string: str = """DELETE FROM Recipes WHERE recipeId = ?"""
             self.cursor.execute(command_string, (recipe_id,))
             return True
-
+        
         except sqlite3.DatabaseError as e:
             print(e)
             return False
@@ -365,7 +401,7 @@ class DatabaseConnection:
             self.cursor.execute(command_string, (user_id,))
             res = self.cursor.fetchall()
             return res
-
+        
         except sqlite3.DatabaseError as e:
             print(e)
             return None
@@ -415,14 +451,27 @@ class DatabaseConnection:
     def get_favorite_recipes(self, user_id: int):
         """Gets someones favorite recipes"""
         try:
-            command_string: str = """SELECT * FROM UserFavorites WHERE userId = ?"""
-            self.cursor.execute(command_string, (user_id,))
+            commandString: str = """SELECT recipeId FROM UserFavorites WHERE userId = ?"""
+            self.cursor.execute(commandString, (user_id,))
             res = self.cursor.fetchall()
             return res
-
+        
         except sqlite3.DatabaseError as e:
             print(e)
             return None
+    
+    def check_is_favorited(self, recipeId: int, userId: int):
+        """Checks to see whether a user has liked a particular post"""
+        try: 
+            commandString: str = """SELECT * FROM UserFavorites WHERE recipeId = ? AND userId = ?;"""
+            self.cursor.execute(commandString, (recipeId, userId,))
+            res = self.cursor.fetchone()
+            if(res): return True
+            return False
+            
+        except sqlite3.DatabaseError as e: 
+            print(e)
+            return False
 
     # ------------------------------------------------------
     # Recipe Search Interactions
@@ -447,7 +496,7 @@ class DatabaseConnection:
             )
             count = len(res.fetchall())
             return count
-        except sqlite3.DatabaseError as e:
+        except sqlite3.DatabaseError as e: 
             print(e)
             return -1
 
@@ -501,7 +550,7 @@ class DatabaseConnection:
 
             print(recipes)
             return recipes
-        except sqlite3.DatabaseError as e:
+        except sqlite3.DatabaseError as e: 
             print(e)
             return []
 
@@ -529,7 +578,7 @@ class DatabaseConnection:
 
             count = len(res.fetchall())
             return count
-        except sqlite3.DatabaseError as e:
+        except sqlite3.DatabaseError as e: 
             print(e)
             return -1
 
@@ -588,7 +637,7 @@ class DatabaseConnection:
                 )
 
             return recipes
-        except sqlite3.DatabaseError as e:
+        except sqlite3.DatabaseError as e: 
             print(e)
             return []
 
@@ -601,10 +650,10 @@ class DatabaseConnection:
             res = self.cursor.execute(command_string, (f"%{ing}%",))
 
             return res.fetchall()
-        except sqlite3.DatabaseError as e:
-            print(e)
-            return []
-
+        except sqlite3.DatabaseError as e: 
+                print(e)
+                return[]
+    
     # ------------------------------------------------------
     # Meal Plan Interactions
     # ------------------------------------------------------
