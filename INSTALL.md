@@ -25,11 +25,15 @@ Installation
     
     Before running the Docker command, create a `.env` file in the `api` folder with the following structure:
     
-        ATLAS_URI=
-        DB_NAME=cookbook
         GROQ_API_KEY=
+
+3. ** Creating the Database:**
+
+    Before running anything you need to create the database. 
+    - Download the recipe.json file from https://drive.google.com/file/d/12CZFb7Ugmiw9zQ7M_qpRsn7pmaV1zW0c/view
+    - Use the method in convert_json_to_sql.py with the path of your recipe.json file to create the database and fill it with data
     
-3.  **Start the Services:**
+4.  **Start the Services:**
     
     Make sure Docker and Docker Compose are installed, then run the following command in the project root:
     
@@ -39,7 +43,7 @@ Installation
     
     *   Build the images
     *   Start the backend and frontend services in detached mode
-4.  **Access the Application:**
+5.  **Access the Application:**
     
     Once the services are up, you can start development right away. Access the frontend and backend as needed from your Docker setup.
     
