@@ -479,6 +479,11 @@ async def login(request: Request, incomingUser: UserCred = Body(...)):
         raise HTTPException(status_code=400, detail="There is no user with that username")
     if user.Password == incomingUser.password:
         return {"id": user.UserId, "username": user.Username}
+        
+    return "Incorrect Username or Password"
+    # except:
+    #     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occured when logging in this user")
+    
     raise HTTPException(status_code=401, detail="Incorrect Username or Password")
 
 @userRouter.get("/getUser/{username}")
@@ -692,6 +697,7 @@ async def like_post(request: Request, post_id: int, user_id: int = Body(...)):
             detail=f"An error occurred while liking the post: {str(e)}"
         )
 
+
 @postRouter.put("/dislike/{post_id}", response_description="Dislike a post", status_code=200)
 async def dislike_post(request: Request, post_id: int, user_id: int = Body(...)):
     """Handles disliking a post with toggle and switch logic."""
@@ -747,6 +753,7 @@ async def dislike_post(request: Request, post_id: int, user_id: int = Body(...))
         )
 
 @postRouter.delete("/{post_id}", response_description="Delete a post", status_code=200)
+
 async def delete_post(request: Request, post_id: int, user_id: int = Body(...)):
     """Deletes a post by its ID, including all related reactions."""
     db:Database_Connection = request.state.db
@@ -771,7 +778,6 @@ async def delete_post(request: Request, post_id: int, user_id: int = Body(...)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred while deleting the post: {str(e)}"
         )
-  
 
 @postRouter.put("/{post_id}", response_description="Update a post", response_model=Post)
 async def update_post(request: Request, post_id: int, update: PostUpdate = Body(...)):

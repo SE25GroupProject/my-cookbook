@@ -1,6 +1,6 @@
 import sqlite3
 from typing import List
-from models import MealPlanEntry, RecipeListEntry, ShoppingListItem, Post, Comment, PostRecipe, Recipe, Instruction
+from api.models import MealPlanEntry, RecipeListEntry, ShoppingListItem, Post, Comment, PostRecipe, Recipe, Instruction
 
 try:
     from api.db.objects import User, Ingredient

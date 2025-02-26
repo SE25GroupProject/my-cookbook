@@ -8,9 +8,9 @@ this file. If not, please write to: help.cookbook@gmail.com
 
 """
  
-from dbMiddleware import DBConnectionMiddleware
+from api.dbMiddleware import DBConnectionMiddleware
 from fastapi.middleware.cors import CORSMiddleware
-from routes import router, userRouter, mealPlanRouter, shoppingRouter, postRouter
+from api.routes import router, userRouter, mealPlanRouter, shoppingRouter, postRouter
 
 from pymongo import MongoClient
 from fastapi import FastAPI, HTTPException
