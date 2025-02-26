@@ -627,7 +627,7 @@ class DatabaseConnection:
             return formatted_plan
         except sqlite3.DatabaseError as e:
             print(e)
-            return {}
+            return []
 
     def update_user_meal_plan(self, user_id: int, day: int, recipe_id: int):
         """Updates a user's meal plan"""
@@ -736,17 +736,17 @@ class DatabaseConnection:
         """Adds a new post to the database"""
         try:
             command_string = "INSERT INTO Posts (UserId, Message, Image, RecipeId, Date) VALUES (?, ?, ?, ?, ?)"
-            recipe_id = post.recipe.recipeId  # Already an int or None
-            self.cursor.execute(
-                command_string,
-                (
-                    post.userId,
-                    post.message,
-                    post.image,
-                    recipe_id,
-                    post.date,
-                ),
-            )
+            if post.recipe is not None:
+                recipe_id = post.recipe.recipeId  # Already an int or None
+            else:
+                recipe_id = None
+            self.cursor.execute(command_string, (
+                post.userId,
+                post.message,
+                post.image,
+                recipe_id,
+                post.date,
+            ))
             self.conn.commit()
             return True
         except sqlite3.DatabaseError as e:
@@ -754,30 +754,26 @@ class DatabaseConnection:
             return False
 
     def get_post(self, post_id: int) -> Post:
-        """Gets a post based on its postId, including reaction and comment data"""
-        command_string = "SELECT PostId, UserId, Message, Image, RecipeId, Date FROM Posts WHERE PostId = ?"
-        self.cursor.execute(command_string, (post_id,))
-        post_data = self.cursor.fetchone()
-        if post_data:
-            likes = self.get_post_reactions(post_id, "LIKE")
-            dislikes = self.get_post_reactions(post_id, "DISLIKE")
-            comments = self.get_post_comments(post_id)  # Fetch comments
-            date_value = (
-                post_data[5]
-                if post_data[5] is not None
-                else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            )
-            recipe_id = post_data[4]
-            if recipe_id is not None:
-                try:
-                    recipe_id = int(recipe_id)
-                    recipe_name = self.cursor.execute(
-                        "SELECT name FROM recipes WHERE recipeId = ?;", (recipe_id,)
-                    ).fetchone()[0]
-
-                except (ValueError, TypeError):
-                    recipe_id = None
-                    recipe_name = None
+            """Gets a post based on its postId, including reaction and comment data"""
+            command_string = "SELECT PostId, UserId, Message, Image, RecipeId, Date FROM Posts WHERE PostId = ?"
+            self.cursor.execute(command_string, (post_id,))
+            post_data = self.cursor.fetchone()
+            if post_data:
+                likes = self.get_post_reactions(post_id, 'LIKE')
+                dislikes = self.get_post_reactions(post_id, 'DISLIKE')
+                comments = self.get_post_comments(post_id)
+                date_value = post_data[5] if post_data[5] is not None else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                recipe_id = post_data[4]
+                recipe_obj = None  
+                if recipe_id is not None:
+                    try:
+                        recipe_id = int(recipe_id)
+                        result = self.cursor.execute("SELECT name FROM recipes WHERE recipeId = ?;", (recipe_id,)).fetchone()
+                        if result:
+                            recipe_name = result[0]
+                            recipe_obj = PostRecipe(recipeId=recipe_id, name=recipe_name)
+                    except (ValueError, TypeError, IndexError):
+                        pass  # recipe_obj stays None
 
                 recipe_obj = PostRecipe(recipeId=recipe_id, name=recipe_name)
                 return Post(
@@ -791,7 +787,7 @@ class DatabaseConnection:
                     dislikes=dislikes,
                     comments=comments,
                 )
-        return None
+            return None
 
     def get_all_posts(self) -> list[Post]:
         """Gets all posts from the database with their reactions and comments"""
@@ -802,41 +798,33 @@ class DatabaseConnection:
         posts_data = self.cursor.fetchall()
         posts = []
         for post_data in posts_data:
-            likes = self.get_post_reactions(post_data[0], "LIKE")
-            dislikes = self.get_post_reactions(post_data[0], "DISLIKE")
-            comments = self.get_post_comments(post_data[0])  # Fetch comments
-            date_value = (
-                post_data[5]
-                if post_data[5] is not None
-                else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            )
+            likes = self.get_post_reactions(post_data[0], 'LIKE')
+            dislikes = self.get_post_reactions(post_data[0], 'DISLIKE')
+            comments = self.get_post_comments(post_data[0])
+            date_value = post_data[5] if post_data[5] is not None else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             recipe_id = post_data[4]
+            recipe_obj = None  
             if recipe_id is not None:
                 try:
                     recipe_id = int(recipe_id)
-                    recipe_name = self.cursor.execute(
-                        "SELECT name FROM recipes WHERE recipeId = ?;", (recipe_id,)
-                    ).fetchone()[0]
+                    result = self.cursor.execute("SELECT name FROM recipes WHERE recipeId = ?;", (recipe_id,)).fetchone()
+                    if result:
+                        recipe_name = result[0]
+                        recipe_obj = PostRecipe(recipeId=recipe_id, name=recipe_name)
+                except (ValueError, TypeError, IndexError):
+                    pass  # recipe_obj stays None
 
-                except (ValueError, TypeError):
-                    recipe_id = None
-                    recipe_name = ""
-
-                recipe_obj = PostRecipe(recipeId=recipe_id, name=recipe_name)
-
-                posts.append(
-                    Post(
-                        postId=post_data[0],
-                        userId=post_data[1],
-                        message=post_data[2],
-                        image=post_data[3],
-                        recipe=recipe_obj,
-                        date=date_value,
-                        likes=likes,
-                        dislikes=dislikes,
-                        comments=comments,
-                    )
-                )
+            posts.append(Post(
+                postId=post_data[0],
+                userId=post_data[1],
+                message=post_data[2],
+                image=post_data[3],
+                recipe=recipe_obj,
+                date=date_value,
+                likes=likes,
+                dislikes=dislikes,
+                comments=comments,
+            ))
         return posts
 
     def get_post_reactions(self, post_id: int, reaction_type: str) -> list[int]:

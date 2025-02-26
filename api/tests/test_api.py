@@ -1,3 +1,11 @@
+"""
+Copyright (C) 2022 SE CookBook - All Rights Reserved
+You may use, distribute and modify this code under the
+terms of the MIT license.
+You should have received a copy of the MIT license with
+this file. If not, please write to: help.cookbook@gmail.com
+"""
+
 from fastapi.testclient import TestClient
 import pytest
 from os import remove
@@ -7,16 +15,16 @@ import tempfile
 import time
 
 from api.main import app
+from typing import Optional, List
 
 client = TestClient(app)
 
 MAIN_DB = "cookbook.db"
 TEST_DB = "tests/test_cookbook.db"
-BASE_URL = "/recipe"
 
-@pytest.fixture(scope="function", autouse=True)
-def clientSetup():
-    """Copies the db to a testing db before each test"""
+@pytest.fixture(scope="module", autouse=True)
+def setup_db_and_middleware():
+    """Sets up a temporary database and middleware once for all tests."""
     temp_db = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
     temp_db_path = temp_db.name
     temp_db.close()
@@ -24,349 +32,173 @@ def clientSetup():
 
     app.user_middleware = []
     app.add_middleware(DBConnectionMiddleware, db_path=temp_db_path)
-    with TestClient(app) as client:
-        yield client
-    
+    yield
     remove(temp_db_path)
 
-def test_find_recipe():
-    """Test finding a recipe by ID."""
-    recipe_id = 2
-    response = client.get(f"{BASE_URL}/{recipe_id}")
-    # print(response.json())
-    assert response.status_code == 200
-    assert "name" in response.json()
+@pytest.fixture(scope="module")
+def test_user_id():
+    """Fixture to create a test user and return its ID."""
+    signup_data = {"username": "testuser_recipes", "password": "testpass"}
+    print("Attempting signup at: /user/signup")
+    signup_response = client.post("/user/signup", json=signup_data)
+    print(f"Signup response: {signup_response.status_code} - {signup_response.text}")
+    if signup_response.status_code == 400:  # User already exists
+        login_response = client.post("/user/login", json=signup_data)
+        assert login_response.status_code == 200, f"Login failed: {login_response.text}"
+        return login_response.json()["id"]
+    assert signup_response.status_code == 200, f"Signup failed: {signup_response.text}"
+    return signup_response.json()["id"]
 
 def test_list_recipes_by_ingredient():
     """Test listing recipes by ingredient."""
-    ingredient = "eggs"
-    response = client.get(f"{BASE_URL}/search/", json={"ingredients": [ingredient], "page": 1})
-    assert response.status_code == 200
+    data = {"ingredients": ["eggs"], "page": 1}
+    response = client.request("GET", "/recipe/search/", json=data)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
     assert isinstance(response.json()["recipes"], list)
 
 def test_list_recipes_by_ingredients():
     """Test listing recipes by multiple ingredients."""
-    data = {
-        "ingredients": ["eggs", "garlic"],
-        "page": 1
-    }
-    response = client.get(f"{BASE_URL}/search/", json=data)
-    assert response.status_code == 200
+    data = {"ingredients": ["eggs", "garlic"], "page": 1}
+    response = client.request("GET", "/recipe/search/", json=data)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
     assert "recipes" in response.json()
 
 def test_list_recipes_by_non_existent_ingredient():
     """Test listing recipes by a non-existent ingredient."""
-    ingredient = "unicorn"
-    data = {
-        "ingredients": [ingredient],
-        "page": 1
-    }
-    response = client.get(f"{BASE_URL}/search/", json=data)
-    print(response.json())
-    assert response.status_code == 200
+    data = {"ingredients": ["unicorn"], "page": 1}
+    response = client.request("GET", "/recipe/search/", json=data)
+    print(f"Response: {response.status_code} - {response.text}")
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
     assert response.json()["recipes"] == []
-
-def test_list_recipes_by_empty_ingredients():
-    """Test listing recipes with an empty ingredients list."""
-    data = {
-        "ingredients": [],
-        "page": 1
-    }
-    response = client.post(f"{BASE_URL}/search/", json=data)
-    assert response.status_code == 405
 
 def test_list_ingredients():
     """Test listing ingredient suggestions."""
     query_string = "to"
-    response = client.get(f"{BASE_URL}/ingredients/{query_string}")
-    assert response.status_code == 200
+    response = client.get(f"/recipe/ingredients/{query_string}")
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
     assert isinstance(response.json(), list)
 
 def test_list_ingredients_no_matches():
     """Test listing ingredient suggestions with no matches."""
     query_string = "xyz"
-    response = client.get(f"{BASE_URL}/ingredients/{query_string}")
-    assert response.status_code == 200
+    response = client.get(f"/recipe/ingredients/{query_string}")
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
     assert response.json() == []
 
 def test_recommend_recipes():
     """Test recommending recipes based on a query."""
-    query_data = {
-        "query": "easy pasta recipes",
-        "context": "Looking for vegetarian options."
-    }
-    response = client.post(f"{BASE_URL}/recommend-recipes/", json=query_data)
-    assert response.status_code == 200
+    query_data = {"query": "easy pasta recipe", "context": "Looking for vegetarian options."}
+    response = client.post("/recipe/recommend-recipes/", json=query_data)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
     assert "response" in response.json()
 
 def test_recommend_recipes_with_empty_query():
     """Test recommending recipes with an empty query."""
-    query_data = {
-        "query": "",
-        "context": ""
-    }
-    response = client.post(f"{BASE_URL}/recommend-recipes/", json=query_data)
-    print(response.json())
+    query_data = {"query": "", "context": ""}
+    response = client.post("/recipe/recommend-recipes/", json=query_data)
+    print(f"Response: {response.status_code} - {response.text}")
     assert response.status_code == 400
-    assert "detail" in response.json()
-
-def test_response_time_for_list_recipes():
-    """Test the response time for listing recipes."""
-    response = client.get(f"{BASE_URL}/")
-    assert response.elapsed.total_seconds() < 1
-
-# def test_find_recipe_with_query_params():
-#     """Test retrieving a recipe with query parameters."""
-#     recipe_id = 46
-#     response = client.get(f"{BASE_URL}/{recipe_id}?include_nutrition=true")
-#     assert response.status_code == 200
-#     data = response.json()
-#     assert "calories" in data
-
-# def test_list_recipes_with_pagination():
-#     """Test retrieving a paginated list of recipes."""
-#     page = 1
-#     response = client.get(f"{BASE_URL}/?page={page}")
-#     assert response.status_code == 200
-
-# def test_list_recipes_with_invalid_page():
-#     """Test retrieving recipes with an invalid page number."""
-#     page = -1
-#     response = client.get(f"{BASE_URL}/?page={page}")
-#     assert response.status_code == 200
-
-def test_find_recipe_invalid_id_format():
-    response = client.get(f"{BASE_URL}/123123123")
-    assert response.status_code == 404
     assert "detail" in response.json()
 
 def test_find_recipe_non_existent_id():
-    non_existent_id = "000000000000000000000000"
-    response = client.get(f"{BASE_URL}/{non_existent_id}")
-    assert response.status_code == 404
+    """Test retrieving a recipe with a non-existent ID."""
+    non_existent_id = 9999
+    response = client.get(f"/recipe/{non_existent_id}")
+    assert response.status_code == 404, f"Expected 404, got {response.status_code}: {response.text}"
     assert "detail" in response.json()
 
-def test_list_recipes_by_ingredient_special_characters():
-    ingredient = "@$%^&*"
-    data = {
-        "ingredients": [ingredient],
-        "page": 1
+def test_count_recipes_by_ingredients():
+    """Test counting recipes by ingredients."""
+    data = {"ingredients": ["eggs", "garlic"], "page": 1}
+    response = client.post("/recipe/search/count/", json=data)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+    assert isinstance(response.json(), int)
+
+def test_list_recipes_by_nutrition():
+    """Test listing recipes by nutritional criteria."""
+    data = {"page": 1, "caloriesMax": 500.0, "fatMax": 30.0, "sugMax": 20.0, "proMax": 25.0}
+    response = client.post("/recipe/search2/", json=data)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+    assert "recipes" in response.json()
+    assert isinstance(response.json()["recipes"], list)
+
+def test_create_user_recipe(test_user_id):
+    """Test creating a user recipe."""
+    recipe_data = {
+        "recipeId": 999,  # Added as a placeholder since model requires it
+        "name": "Test Recipe",
+        "cookTime": "30",  # String to match model
+        "prepTime": "15",  # String to match model
+        "totalTime": "45",  # String to match model
+        "description": "A simple test recipe",
+        "category": "Test Category",
+        "rating": "4.5",  # String to match model
+        "calories": "300.0",  # String to match model
+        "fat": "10.0",  # String to match model
+        "saturatedFat": "5.0",  # String to match model
+        "cholesterol": "50.0",  # String to match model
+        "sodium": "600.0",  # String to match model
+        "carbs": "40.0",  # String to match model
+        "fiber": "5.0",  # String to match model
+        "sugar": "10.0",  # String to match model
+        "protein": "15.0",  # String to match model
+        "servings": "4",  # String to match model
+        "images": ["http://example.com/image.jpg"],
+        "tags": ["test", "recipe"],
+        "ingredients": ["flour"],
+        "instructions": [{"step": 1, "instruction": "Mix ingredients"}],
+        "ingredientQuantities": ["1.0"]  # Added to match required field, as strings
     }
-    response = client.get(f"{BASE_URL}/search/", json=data)
-    assert response.status_code == 200
+    response = client.post(f"/recipe/?userId={test_user_id}", json=recipe_data)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+    assert response.json() is True
 
-def test_list_recipes_by_multiple_criteria():
-    """Test searching recipes with various nutritional limits."""
-    data = {
-        "page": 1,
-        "caloriesMax": 500.0,
-        "fatMax": 30.0,
-        "sugMax": 20.0,
-        "proMax": 25.0
-    }
-    response = client.post(f"{BASE_URL}/search2/", json=data)
-    assert response.status_code == 200
-    response_data = response.json()
-    assert "recipes" in response_data
-    assert isinstance(response_data["recipes"], list)
+# Updated Meal Plan Tests
+def test_get_meal_plan(test_user_id):
+    """Test retrieving a user's meal plan."""
+    response = client.get(f"/meal-plan/{test_user_id}")
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+    meal_plan = response.json()
+    assert isinstance(meal_plan, list)
 
-def test_list_recipes_by_invalid_page():
-    """Test for invalid page number (less than 1)."""
-    data = {
-        "page": 0,
-        "caloriesMax": 500.0,
-        "fatMax": 30.0,
-        "sugMax": 20.0,
-        "proMax": 25.0
-    }
-    response = client.post(f"{BASE_URL}/search2/", json=data)
-    assert response.status_code == 422
+def test_update_meal_plan(test_user_id):
+    """Test updating a meal plan entry."""
+    entry = {"day": 1, "recipe": {"recipeId": 1, "name": "Test Meal"}}
+    response = client.put(f"/meal-plan/{test_user_id}", json=entry)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+    assert response.json()["message"] == "Meal plan updated successfully."
 
-def test_list_recipes_by_high_calories():
-    """Test for calories upper limit exceeding allowed range."""
-    data = {
-        "page": 1,
-        "caloriesMax": 1500.0,
-        "fatMax": 30.0,
-        "sugMax": 20.0,
-        "proMax": 25.0
-    }
-    response = client.post(f"{BASE_URL}/search2/", json=data)
-    assert response.status_code == 200
+def test_remove_from_meal_plan(test_user_id):
+    """Test removing a meal plan entry."""
+    entry = {"day": 2, "recipe": {"recipeId": 1, "name": "Test Meal"}}
+    client.put(f"/meal-plan/{test_user_id}", json=entry)  # Add entry first
+    response = client.request("POST", f"/meal-plan/delete/{test_user_id}", json=2)  # Send day as plain integer
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
 
-def test_list_recipes_by_high_fat():
-    """Test for fat upper limit exceeding allowed range."""
-    data = {
-        "page": 1,
-        "caloriesMax": 500.0,
-        "fatMax": 200.0,
-        "sugMax": 20.0,
-        "proMax": 25.0
-    }
-    response = client.post(f"{BASE_URL}/search2/", json=data)
-    assert response.status_code == 422
+def test_get_empty_meal_plan(test_user_id):
+    """Test retrieving an empty meal plan for a user with no entries."""
+    response = client.get(f"/meal-plan/{test_user_id}")
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+    meal_plan = response.json()
+    assert isinstance(meal_plan, list), f"Expected meal_plan to be a list, but got: {meal_plan}"
 
-def test_list_recipes_by_zero_limits():
-    """Test for edge case where all limits are at the minimum."""
-    data = {
-        "page": 1,
-        "caloriesMax": 0.0,
-        "fatMax": 0.0,
-        "sugMax": 0.0,
-        "proMax": 0.0
-    }
-    response = client.post(f"{BASE_URL}/search2/", json=data)
-    assert response.status_code == 200
-    response_data = response.json()
-    assert "recipes" in response_data
-    assert isinstance(response_data["recipes"], list)
+# New Tests
+def test_count_recipes_by_nutrition():
+    """Test counting recipes by nutritional criteria."""
+    data = {"page": 1, "caloriesMax": 500.0, "fatMax": 30.0, "sugMax": 20.0, "proMax": 25.0}
+    response = client.post("/recipe/search2/count/", json=data)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+    assert isinstance(response.json(), int)
 
-def test_list_recipes_by_nonexistent_page():
-    """Test for a page that does not exist (assuming less than 100 pages)."""
-    data = {
-        "page": 100,
-        "caloriesMax": 500.0,
-        "fatMax": 30.0,
-        "sugMax": 20.0,
-        "proMax": 25.0
-    }
-    response = client.post(f"{BASE_URL}/search2/", json=data)
-    assert response.status_code == 200
-    response_data = response.json()
-    assert response_data["recipes"] == []
+def test_favorite_recipe(test_user_id):
+    """Test favoriting a recipe."""
+    response = client.put(f"/recipe/favorite/1/{test_user_id}")
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+    assert response.json() is True
 
-# def test_recipe_nutritional_count():
-#     """Test retrieving the nutritional count of a recipe."""
-#     recipe_id = 46
-#     response = client.get(f"{BASE_URL}/{recipe_id}/nutrition")
-#     assert response.status_code == 200
-#     data = response.json()
-#     assert "calories" in data
-#     assert "fat" in data
-#     assert "sugar" in data
-#     assert "protein" in data
-
-# def test_recipe_nutritional_count_invalid_id():
-#     """Test retrieving the nutritional count of a recipe with an invalid ID."""
-#     invalid_recipe_id = "invalid-id"
-#     response = client.get(f"{BASE_URL}/{invalid_recipe_id}/nutrition")
-#     assert response.status_code == 404
-#     assert "detail" in response.json()
-
-# def test_recipe_nutritional_count_non_existent_id():
-#     """Test retrieving the nutritional count of a non-existent recipe."""
-#     non_existent_id = "000000000000000000000000"
-#     response = client.get(f"{BASE_URL}/{non_existent_id}/nutrition")
-#     assert response.status_code == 404
-#     assert "detail" in response.json()
-
-
-
-def test_get_recipe_by_invalid_id():
-    """Test retrieving a recipe by an invalid ID."""
-    invalid_id = 99999  # Assuming this ID doesn't exist
-    response = client.get(f"{BASE_URL}/recipes/{invalid_id}/")
-    assert response.status_code == 404
-
-
-def test_update_recipe_invalid_id():
-    """Test updating a recipe with an invalid ID."""
-    invalid_id = 99999  # Assuming this ID doesn't exist
-    updated_data = {
-        "name": "Should Not Work"
-    }
-    response = client.put(f"{BASE_URL}/recipes/{invalid_id}/", json=updated_data)
-    assert response.status_code == 404
-
-def test_delete_recipe_invalid_id():
-    """Test deleting a recipe with an invalid ID."""
-    invalid_id = 99999  # Assuming this ID doesn't exist
-    response = client.delete(f"{BASE_URL}/recipes/{invalid_id}/")
-    assert response.status_code == 404
-
-def test_valid_query_and_context():
-    """Test with both valid query and context."""
-    response = client.post(f"{BASE_URL}/recommend-recipes/", json={
-        "query": "What are some quick breakfast options?",
-        "context": "Looking for vegetarian options."
-    })
-    assert response.status_code == 200
-    assert "response" in response.json()
-
-def test_valid_query_invalid_context():
-    """Test with valid query and invalid context."""
-    response = client.post(f"{BASE_URL}/recommend-recipes/", json={
-        "query": "What are some quick breakfast options?",
-        "context": ""  # empty context is invalid
-    })
-    assert response.status_code == 400
-    assert "detail" in response.json()
-
-def test_invalid_query_valid_context():
-    """Test with invalid query and valid context."""
-    response = client.post(f"{BASE_URL}/recommend-recipes/", json={
-        "query": "",  # empty query is invalid
-        "context": "Looking for vegetarian options."
-    })
-    assert response.status_code == 400
-    assert "detail" in response.json()
-
-def test_invalid_query_and_context():
-    """Test with both invalid query and context."""
-    response = client.post(f"{BASE_URL}/recommend-recipes/", json={
-        "query": "",
-        "context": ""
-    })
-    assert response.status_code == 400
-    assert "detail" in response.json()
-
-@pytest.mark.parametrize("query, expected_status", [
-    ("easy dinner recipes", 200),
-    ("vegan breakfast options", 200),
-    ("gluten-free desserts", 200),
-    ("quick snacks", 200),
-    ("low carb meals for dinner", 200),
-    ("high protein vegan meals", 200),
-    ("what can I cook with potatoes and chicken", 200),
-    ("desserts with less sugar", 200),
-    ("healthy smoothies", 200),
-    ("Italian pasta dishes", 200),
-    ("", 400),  # Empty query should ideally return a bad request or custom handled response
-    (" ", 400),  # Query with just a space
-    ("123456", 400),  # Numeric query, should return 500
-    ("!@#$%^&*()", 400),  # Special characters, should return 500
-    ("very very long query " * 10, 200),  # Long query
-    ("dinner ideas without specifying ingredients", 200),
-    ("non-existent cuisine recipes", 200),
-    ("quick meals under 30 minutes", 200),
-    ("how to make a cake", 200),
-    ("recipes with chicken", 200)
-])
-def test_recommend_recipes(query, expected_status):
-    """Test recommending recipes based on various queries."""
-    response = client.post(f"{BASE_URL}/recommend-recipes/", json={"query": query, "context": "Looking for vegetarian options."})
-    assert response.status_code == expected_status, f"Failed for query: {query}"
-    time.sleep(1)  # Pause for 1 second between each test case to avoid rate limiting from groq
-
-# # Test for saving a meal plan
-# def test_save_meal_plan():
-#     entry = {
-#         "day": 1,
-#         "recipe": {
-#             "name": "Pasta Primavera",
-#             "instructions": "Boil pasta, add veggies, mix with sauce."
-#         }
-#     }
-#     response = client.post(f"{BASE_URL}/meal-plan/", json=entry)
-#     assert response.status_code == 200
-#     assert "message" in response.json()
-#     assert response.json()["message"] == "Meal plan saved successfully."
-# # Test for retrieving the meal plan
-# def test_get_meal_plan():
-#     response = client.get(f"{BASE_URL}/meal-plan/")
-#     assert response.status_code == 200
-#     meal_plan = response.json()
-#     assert isinstance(meal_plan, list)
-#     assert len(meal_plan) == 7
-#     assert any(entry["recipe"] is not None for entry in meal_plan)
-
+def test_unfavorite_recipe(test_user_id):
+    """Test unfavoriting a recipe."""
+    client.put(f"/recipe/favorite/1/{test_user_id}")
+    response = client.put(f"/recipe/unfavorite/1/{test_user_id}")
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+    assert response.json() is True

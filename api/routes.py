@@ -571,18 +571,22 @@ async def like_post(request: Request, post_id: int, user_id: int = Body(...)):
                 post_id, user_id, "LIKE"
             ):
                 return {"message": "Changed from dislike to like successfully."}
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to switch from dislike to like.",
-            )
-
-        # No existing reaction, add like
-        if db.add_post_reaction(post_id, user_id, "LIKE"):
-            return {"message": "Post liked successfully."}
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to like post.",
-        )
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to switch from dislike to like."
+                )
+        else:
+            # No existing reaction, add like
+            if db.add_post_reaction(post_id, user_id, "LIKE"):
+                return {"message": "Post liked successfully."}
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to like post."
+                )
+    except HTTPException as e:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -627,24 +631,27 @@ async def dislike_post(request: Request, post_id: int, user_id: int = Body(...))
                 post_id, user_id, "DISLIKE"
             ):
                 return {"message": "Changed from like to dislike successfully."}
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to switch from like to dislike.",
-            )
-
-        # No existing reaction, add dislike
-        if db.add_post_reaction(post_id, user_id, "DISLIKE"):
-            return {"message": "Post disliked successfully."}
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to dislike post.",
-        )
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to switch from like to dislike."
+                )
+        else:
+            # No existing reaction, add dislike
+            if db.add_post_reaction(post_id, user_id, "DISLIKE"):
+                return {"message": "Post disliked successfully."}
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to dislike post."
+                )
+    except HTTPException as e:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred while disliking the post: {str(e)}",
         )
-
 
 @postRouter.delete("/{post_id}", response_description="Delete a post", status_code=200)
 async def delete_post(request: Request, post_id: int, user_id: int = Body(...)):
@@ -691,66 +698,41 @@ async def update_post(request: Request, post_id: int, update: PostUpdate = Body(
     """Allows a user to edit their own post's message, image, or recipe."""
     db: DatabaseConnection = request.state.db
     try:
-        # Fetch the existing post
         post = db.get_post(post_id)
         if not post:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Post with ID {post_id} not found.",
-            )
-
+            raise HTTPException(status_code=404, detail=f"Post with ID {post_id} not found.")
         # Check if the user owns the post
         if post.userId != update.userId:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="You can only edit your own posts.",
-            )
-
+            raise HTTPException(status_code=403, detail="You can only edit your own posts.")
         # Check if the user exists
         if db.get_user_by_id(update.userId) is None:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"User with ID {update.userId} not found.",
-            )
-
+            raise HTTPException(status_code=400, detail=f"User with ID {update.userId} not found.")
         # Prepare update data (only include fields that were provided)
         update_data = {}
         if update.message is not None:
             update_data["Message"] = update.message
         if update.image is not None:
             update_data["Image"] = update.image
-        if update.recipe.recipeId is not None:
+        # Check if recipe exists before accessing recipeId
+        if update.recipe is not None and update.recipe.recipeId is not None:
             update_data["RecipeId"] = update.recipe.recipeId
-
-        # If no fields provided, return the current post without changes
+        
         if not update_data:
             return post
-
-        # Update the post in the database
+        
         if not db.update_post(post_id, update_data):
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to update post.",
-            )
-
-        # Fetch and return the updated post
+            raise HTTPException(status_code=500, detail="Failed to update post.")
+        
         updated_post = db.get_post(post_id)
         return updated_post
-
-    except DatabaseError as e:
-        if Exception is HTTPException:
-            raise e
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"An error occurred while updating the post: {str(e)}",
-        )
-
-
-@postRouter.post(
-    "/comments/{post_id}",
-    response_description="Add a comment to a post",
-    status_code=201,
-)
+    
+    except HTTPException as e:
+        raise
+    except Exception as e:
+        print(f"Error: {type(e).__name__} - {str(e)}")
+        raise HTTPException(status_code=500, detail=f"An error occurred while updating the post: {type(e).__name__}: {str(e)}")
+    
+@postRouter.post("/comments/{post_id}", response_description="Add a comment to a post", status_code=201)
 async def add_comment(request: Request, post_id: int, comment: Comment):
     """Adds a new comment to a post and returns the CommentId."""
     db: DatabaseConnection = request.state.db

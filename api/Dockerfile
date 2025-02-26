@@ -1,6 +1,6 @@
 FROM python:3.11-slim
 
-WORKDIR /api
+WORKDIR /
 
 COPY requirements.txt .
 
