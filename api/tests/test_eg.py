@@ -72,8 +72,8 @@ def test_signup_duplicate_email():
     # Attempt to sign up with the same email
     response = client.post("/user/signup", json=duplicate_user)
     assert response.status_code == 400
-    assert response.json()["detail"] == "User with that "
-    "username already exists"
+    testString = "User with that username already exists"
+    assert response.json()["detail"] == testString
 
 
 # Test cases for /login endpoint

@@ -10,7 +10,7 @@ def seedDatabase(databasePath, recipePath):
     insert_data(databasePath, recipePath)
 
     conn.execute(
-        """INSERT INTO Users (Username, Password) 
+        """INSERT INTO Users (Username, Password)
         VALUES ('TestUser', 'TestPass')""")
     conn.commit()
 
