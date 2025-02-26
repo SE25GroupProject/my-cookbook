@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://github.com/SE25GroupProject/my-cookbook/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/SE25GroupProject/my-cookbook/actions/workflows/build.yml)
-[![DOI](https://zenodo.org/badge/888533527.svg)](https://doi.org/10.5281/zenodo.14200973)
+[![DOI](https://zenodo.org/badge/926758263.svg)](https://doi.org/10.5281/zenodo.14928829)
 [![Repository size](https://img.shields.io/github/repo-size/SE25GroupProject/my-cookbook)](https://github.com/SE25GroupProject/my-cookbook)
 
 ![Open Issues](https://img.shields.io/github/issues/SE25GroupProject/my-cookbook)
