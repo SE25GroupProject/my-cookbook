@@ -2,9 +2,12 @@ from fastapi.testclient import TestClient
 import pytest
 from os import path, remove
 import shutil
-from api.dbMiddleware import DBConnectionMiddleware
-from api.db.convertJsonToSql import insertData
-
+try:
+    from api.dbMiddleware import DBConnectionMiddleware
+    from api.db.convertJsonToSql import insertData
+except:
+    from dbMiddleware import DBConnectionMiddleware
+    from db.convertJsonToSql import insertData
 from api.main import app
 
 client = TestClient(app)
