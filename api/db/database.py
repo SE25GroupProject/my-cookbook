@@ -31,8 +31,8 @@ class DatabaseConnection:
         PostReactions tables exist in the database"""
         # Check and create Users table if it doesn't exist
         cmd: str = (
-            """SELECT tbl_name FROM sqlite_master WHERE "
-            "type='table' AND tbl_name='Users'"""
+            """SELECT tbl_name FROM sqlite_master WHERE
+            type='table' AND tbl_name='Users'"""
         )
         user_table = self.cursor.execute(cmd).fetchone()
         if user_table is None:
@@ -44,8 +44,8 @@ class DatabaseConnection:
 
         # Checking if the tables exist
         cmd: str = (
-            "SELECT tbl_name FROM sqlite_master WHERE "
-            "type='table' AND tbl_name='Recipes'"
+            """SELECT tbl_name FROM sqlite_master WHERE
+            type='table' AND tbl_name='Recipes'"""
         )
         recipe_table = self.cursor.execute(cmd).fetchone()
         if recipe_table is None:
@@ -57,8 +57,8 @@ class DatabaseConnection:
 
         # Check and create Posts and PostReactions tables if they don't exist
         cmd: str = (
-            "SELECT tbl_name FROM sqlite_master WHERE "
-            "type='table' AND tbl_name='Posts'"
+            """SELECT tbl_name FROM sqlite_master WHERE
+            type='table' AND tbl_name='Posts'"""
         )
         posts_table = self.cursor.execute(cmd).fetchone()
         if posts_table is None:
@@ -70,13 +70,13 @@ class DatabaseConnection:
 
         # Checking if the Meal Plan table exist
         cmd: str = (
-            "SELECT tbl_name FROM sqlite_master "
-            "WHERE type='table' AND tbl_name='MealPlan'"
+            """SELECT tbl_name FROM sqlite_master
+            WHERE type='table' AND tbl_name='MealPlan'"""
         )
         meal_plan_table = self.cursor.execute(cmd).fetchone()
 
-        cmd = "SELECT tbl_name FROM sqlite_master "
-        "WHERE type='table' AND tbl_name='ShoppingList'"
+        cmd = """SELECT tbl_name FROM sqlite_master
+        WHERE type='table' AND tbl_name='ShoppingList'"""
         shopping_table = self.cursor.execute(cmd).fetchone()
         if meal_plan_table is None or shopping_table is None:
             with open("db/createMealPrepTable.sql",
@@ -86,8 +86,8 @@ class DatabaseConnection:
                 self.conn.commit()
 
         # Checking if the tables exist
-        cmd = "SELECT tbl_name FROM sqlite_master "
-        "WHERE type='table' AND tbl_name='UserRecipes'"
+        cmd = """SELECT tbl_name FROM sqlite_master
+        WHERE type='table' AND tbl_name='UserRecipes'"""
         user_recipe_table = self.cursor.execute(cmd).fetchone()
         if user_recipe_table is None:
             with open(
@@ -98,8 +98,8 @@ class DatabaseConnection:
                 self.cursor.executescript(sql_script)
                 self.conn.commit()
 
-        cmd = "SELECT tbl_name FROM sqlite_master "
-        "WHERE type='table' AND tbl_name='PostReactions'"
+        cmd = """SELECT tbl_name FROM sqlite_master
+        WHERE type='table' AND tbl_name='PostReactions'"""
         reactions_table = self.cursor.execute(cmd).fetchone()
         if reactions_table is None:
             with open(
@@ -111,8 +111,8 @@ class DatabaseConnection:
                 self.conn.commit()
 
         # Check and create Comments table
-        cmd = "SELECT tbl_name FROM sqlite_master "
-        "WHERE type='table' AND tbl_name='Comments'"
+        cmd = """SELECT tbl_name FROM sqlite_master
+        WHERE type='table' AND tbl_name='Comments'"""
         comments_table = self.cursor.execute(cmd).fetchone()
         if comments_table is None:
             with open("db/createCommentsTable.sql",
@@ -127,8 +127,8 @@ class DatabaseConnection:
     def add_user(self, user: User) -> int | bool:
         """Adds a new user to the database, returns UserId on success"""
         try:
-            get_id_command: str = "INSERT INTO Users "
-            "(Username, Password) VALUES (?, ?)"
+            get_id_command: str = """INSERT INTO Users
+            (Username, Password) VALUES (?, ?)"""
             self.cursor.execute(get_id_command, (user.Username, user.Password))
             self.conn.commit()
             return self.get_user_by_name(user.Username).UserId
@@ -230,8 +230,8 @@ class DatabaseConnection:
 
             for ingredient in recipe.ingredients:
                 command_string: str = (
-                    """INSERT INTO Ingredients "
-                    "(recipeId, name, amount) VALUES (?, ?, ?)"""
+                    """INSERT INTO Ingredients
+                    (recipeId, name, amount) VALUES (?, ?, ?)"""
                 )
                 self.cursor.execute(
                     command_string,
@@ -244,8 +244,8 @@ class DatabaseConnection:
 
             for instructions in recipe.instructions:
                 command_string: str = (
-                    """INSERT INTO Instructions "
-                    "(recipeId, step, instruction) VALUES (?, ?, ?)"""
+                    """INSERT INTO Instructions
+                    (recipeId, step, instruction) VALUES (?, ?, ?)"""
                 )
                 self.cursor.execute(
                     command_string,
@@ -277,8 +277,8 @@ class DatabaseConnection:
     def get_recipe(self, recipe_id: int):
         """Gets a recipe based on its id"""
         try:
-            command_string: str = """SELECT * FROM Recipes "
-            "WHERE recipeId = ?"""
+            command_string: str = """SELECT * FROM Recipes
+            WHERE recipeId = ?"""
             self.cursor.execute(command_string, (recipe_id,))
             recipe_res = self.cursor.fetchone()
             if not recipe_res:
@@ -302,16 +302,16 @@ class DatabaseConnection:
                 tags_list.append(tag[1])
 
             # print("got tags")
-            command_string: str = """SELECT * FROM Ingredients "
-            "WHERE recipeId = ?"""
+            command_string: str = """SELECT * FROM Ingredients
+            WHERE recipeId = ?"""
             self.cursor.execute(command_string, (recipe_id,))
             ingredient_res = self.cursor.fetchall()
             ingredients_list: list[str] = []
             for _, ingredient, _ in ingredient_res:
                 ingredients_list.append(ingredient)
 
-            command_string: str = """SELECT * FROM Instructions "
-            "WHERE recipeId = ?"""
+            command_string: str = """SELECT * FROM Instructions
+            WHERE recipeId = ?"""
             self.cursor.execute(command_string, (recipe_id,))
             instructions_res = self.cursor.fetchall()
             instructions_list: list[Instruction] = []
@@ -359,8 +359,8 @@ class DatabaseConnection:
                 for recipeid in recipeIds:
                     recipes.append(self.get_recipe(recipeid))
             else:
-                commandString: str = """SELECT * FROM Recipes "
-                "WHERE recipeId IN (%s)""" % ','.join(
+                commandString: str = """SELECT * FROM Recipes
+                WHERE recipeId IN (%s)""" % ','.join(
                     '?' * len(recipeIds))
                 self.cursor.execute(commandString, (*recipeIds,))
                 recipeObjs = self.cursor.fetchall()
@@ -451,8 +451,8 @@ class DatabaseConnection:
         """Unfavorites a recipe"""
         try:
             command_string: str = (
-                """DELETE FROM UserFavorites WHERE recipeId = ? "
-                "AND userId = ?"""
+                """DELETE FROM UserFavorites WHERE recipeId = ?
+                AND userId = ?"""
             )
             self.cursor.execute(
                 command_string,
@@ -471,8 +471,8 @@ class DatabaseConnection:
         """Favorites a recipe"""
         try:
             command_string: str = (
-                """INSERT INTO UserFavorites (recipeId, userId) "
-                "VALUES (?, ?)"""
+                """INSERT INTO UserFavorites (recipeId, userId)
+                VALUES (?, ?)"""
             )
             self.cursor.execute(
                 command_string,
@@ -490,8 +490,8 @@ class DatabaseConnection:
     def get_favorite_recipes(self, user_id: int):
         """Gets someones favorite recipes"""
         try:
-            commandString: str = """SELECT recipeId FROM UserFavorites "
-            "WHERE userId = ?"""
+            commandString: str = """SELECT recipeId FROM UserFavorites
+            WHERE userId = ?"""
             self.cursor.execute(commandString, (user_id,))
             res = self.cursor.fetchall()
             return res
@@ -503,8 +503,8 @@ class DatabaseConnection:
     def check_is_favorited(self, recipeId: int, userId: int):
         """Checks to see whether a user has liked a particular post"""
         try:
-            commandString: str = """SELECT * FROM UserFavorites "
-            "WHERE recipeId = ? AND userId = ?;"""
+            commandString: str = """SELECT * FROM UserFavorites
+            WHERE recipeId = ? AND userId = ?;"""
             self.cursor.execute(commandString, (recipeId, userId,))
             res = self.cursor.fetchone()
             if (res):
@@ -526,9 +526,9 @@ class DatabaseConnection:
         """Retrieves a count of recipe ids containing the given ingredients"""
         try:
             count_command: str = (
-                """SELECT recipeId FROM (SELECT DISTINCT name, recipeId "
-                "FROM ingredients WHERE name IN (%s)) GROUP BY recipeId "
-                "HAVING COUNT(name) >= ? ;""" %
+                """SELECT recipeId FROM (SELECT DISTINCT name, recipeId
+                FROM ingredients WHERE name IN (%s)) GROUP BY recipeId
+                HAVING COUNT(name) >= ? ;""" %
                 ",".join(
                     "?" *
                     len(ings)))
@@ -554,9 +554,9 @@ class DatabaseConnection:
         ingredients limited by the number per page"""
         try:
             command_string: str = (
-                """SELECT recipeId FROM (SELECT DISTINCT name, recipeId "
-                "FROM ingredients WHERE name IN (%s)) GROUP BY recipeId "
-                "HAVING COUNT(name) >= ? LIMIT ? OFFSET ?;""" %
+                """SELECT recipeId FROM (SELECT DISTINCT name, recipeId
+                FROM ingredients WHERE name IN (%s)) GROUP BY recipeId
+                HAVING COUNT(name) >= ? LIMIT ? OFFSET ?;""" %
                 ",".join(
                     "?" *
                     len(ings)))
@@ -616,9 +616,9 @@ class DatabaseConnection:
         the given ingredients"""
         try:
             count_command: str = (
-                """SELECT * FROM recipes "
-                "WHERE calories <= ? AND fat <= ? "
-                "AND sugar <= ? and protein <= ? ;"""
+                """SELECT * FROM recipes
+                WHERE calories <= ? AND fat <= ?
+                AND sugar <= ? and protein <= ? ;"""
             )
             res = self.cursor.execute(
                 count_command,
@@ -649,10 +649,10 @@ class DatabaseConnection:
         the given ingredients limited by the number per page"""
         try:
             command_string: str = (
-                """SELECT * FROM recipes "
-                "WHERE calories <= ? AND fat <= ? "
-                "AND sugar <= ? and protein <= ? "
-                "LIMIT ? OFFSET ?; """
+                """SELECT * FROM recipes
+                WHERE calories <= ? AND fat <= ?
+                AND sugar <= ? and protein <= ?
+                LIMIT ? OFFSET ?; """
             )
             print(command_string)
             res = self.cursor.execute(
@@ -703,8 +703,8 @@ class DatabaseConnection:
         """Gets a list of ingredients based on the input"""
         try:
             command_string: str = (
-                """SELECT name FROM ingredients "
-                "WHERE name LIKE ? GROUP BY name LIMIT 10;"""
+                """SELECT name FROM ingredients
+                WHERE name LIKE ? GROUP BY name LIMIT 10;"""
             )
             res = self.cursor.execute(command_string, (f"%{ing}%",))
 
@@ -744,9 +744,9 @@ class DatabaseConnection:
         """Updates a user's meal plan"""
         try:
             command_string: str = (
-                "INSERT INTO MealPlan(userId,recipeId,dayOfWeek) "
-                "VALUES (?,?,?) ON CONFLICT(userId, dayOfWeek) "
-                "DO UPDATE SET recipeId = excluded.recipeId;"
+                """INSERT INTO MealPlan(userId,recipeId,dayOfWeek)
+                VALUES (?,?,?) ON CONFLICT(userId, dayOfWeek)
+                DO UPDATE SET recipeId = excluded.recipeId;"""
             )
             self.cursor.execute(command_string, (user_id, recipe_id, day))
             self.conn.commit()
@@ -788,8 +788,8 @@ class DatabaseConnection:
     def get_user_shopping_list(self, user_id: int):
         """Gets a user's shopping list"""
         try:
-            command_string: str = "SELECT * FROM ShoppingList "
-            "WHERE userId = ?;"
+            command_string: str = """SELECT * FROM ShoppingList
+            WHERE userId = ?;"""
             shopping_list = self.cursor.execute(
                 command_string, (user_id,)).fetchall()
             formatted_list = [
@@ -812,10 +812,10 @@ class DatabaseConnection:
         """Updates a user's shopping list"""
         try:
             command_string: str = (
-                "INSERT INTO ShoppingList(userId,name,quantity,unit,checked) "
-                "VALUES (?,?,?,?,?) ON CONFLICT(userId, name) "
-                "DO UPDATE SET quantity = excluded.quantity, "
-                "unit = excluded.unit, checked = excluded.checked;"
+                """INSERT INTO ShoppingList(userId,name,quantity,unit,checked)
+                VALUES (?,?,?,?,?) ON CONFLICT(userId, name)
+                DO UPDATE SET quantity = excluded.quantity,
+                unit = excluded.unit, checked = excluded.checked;"""
             )
             self.cursor.execute(
                 command_string,
@@ -867,8 +867,8 @@ class DatabaseConnection:
     def add_post(self, post: Post) -> bool:
         """Adds a new post to the database"""
         try:
-            command_string = "INSERT INTO Posts "
-            "(UserId, Message, Image, RecipeId, Date) VALUES (?, ?, ?, ?, ?)"
+            command_string = """INSERT INTO Posts
+            (UserId, Message, Image, RecipeId, Date) VALUES (?, ?, ?, ?, ?)"""
             if post.recipe is not None:
                 recipe_id = post.recipe.recipeId  # Already an int or None
             else:
@@ -892,8 +892,8 @@ class DatabaseConnection:
     def get_post(self, post_id: int) -> Post:
         """Gets a post based on its postId,
         including reaction and comment data"""
-        command_string = "SELECT PostId, UserId, "
-        "Message, Image, RecipeId, Date FROM Posts WHERE PostId = ?"
+        command_string = """SELECT PostId, UserId,
+        Message, Image, RecipeId, Date FROM Posts WHERE PostId = ?"""
         self.cursor.execute(command_string, (post_id,))
         post_data = self.cursor.fetchone()
         if post_data:
@@ -911,8 +911,8 @@ class DatabaseConnection:
                 try:
                     recipe_id = int(recipe_id)
                     recipe_name = self.cursor.execute(
-                        "SELECT name FROM recipes "
-                        "WHERE recipeId = ?;", (recipe_id,)).fetchone()[0]
+                        """SELECT name FROM recipes
+                        WHERE recipeId = ?;""", (recipe_id,)).fetchone()[0]
                 except (ValueError, TypeError, IndexError):
                     recipe_id = None
                     recipe_name = None
@@ -955,8 +955,8 @@ class DatabaseConnection:
                 try:
                     recipe_id = int(recipe_id)
                     recipe_name = self.cursor.execute(
-                        "SELECT name FROM recipes "
-                        "WHERE recipeId = ?;", (recipe_id,)).fetchone()[0]
+                        """SELECT name FROM recipes
+                        wHERE recipeId = ?;""", (recipe_id,)).fetchone()[0]
 
                 except (ValueError, TypeError):
                     recipe_id = None
@@ -986,8 +986,8 @@ class DatabaseConnection:
         """Gets all user IDs that have reacted to a
         post with a given reaction type"""
         command_string = (
-            "SELECT UserId FROM PostReactions "
-            "WHERE PostId = ? AND ReactionType = ?"
+            """SELECT UserId FROM PostReaction
+            WHERE PostId = ? AND ReactionType = ?"""
         )
         self.cursor.execute(command_string, (post_id, reaction_type))
         return [row[0] for row in self.cursor.fetchall()]
@@ -1000,19 +1000,19 @@ class DatabaseConnection:
         """Adds a reaction to a post, updating if it already exists"""
         try:
             check_command = (
-                "SELECT ReactionType FROM PostReactions "
-                "WHERE PostId = ? AND UserId = ?"
+                """SELECT ReactionType FROM PostReactions
+                WHERE PostId = ? AND UserId = ?"""
             )
             self.cursor.execute(check_command, (post_id, user_id))
             existing_reaction = self.cursor.fetchone()
             if existing_reaction:
-                update_command = "UPDATE PostReactions "
-                "SET ReactionType = ? WHERE PostId = ? AND UserId = ?"
+                update_command = """UPDATE PostReactions
+                SET ReactionType = ? WHERE PostId = ? AND UserId = ?"""
                 self.cursor.execute(
                     update_command, (reaction_type, post_id, user_id))
             else:
-                insert_command = "INSERT INTO PostReactions "
-                "(PostId, UserId, ReactionType) VALUES (?, ?, ?)"
+                insert_command = """INSERT INTO PostReactions
+                (PostId, UserId, ReactionType) VALUES (?, ?, ?)"""
                 self.cursor.execute(
                     insert_command, (post_id, user_id, reaction_type))
             self.conn.commit()
@@ -1024,8 +1024,8 @@ class DatabaseConnection:
     def remove_post_reaction(self, post_id: int, user_id: int) -> bool:
         """Removes a reaction from a post"""
         try:
-            command_string = "DELETE FROM PostReactions "
-            "WHERE PostId = ? AND UserId = ?"
+            command_string = """DELETE FROM PostReactions
+            WHERE PostId = ? AND UserId = ?"""
             self.cursor.execute(command_string, (post_id, user_id))
             self.conn.commit()
             return True
@@ -1075,8 +1075,8 @@ class DatabaseConnection:
     def add_comment(self, comment: Comment) -> int | bool:
         """Adds a new comment to a post and returns the CommentId"""
         try:
-            command_string = "INSERT INTO Comments "
-            "(PostId, UserId, Message, Date) VALUES (?, ?, ?, ?)"
+            command_string = """INSERT INTO Comments
+            (PostId, UserId, Message, Date) VALUES (?, ?, ?, ?)"""
             self.cursor.execute(
                 command_string,
                 (comment.postId,
@@ -1097,8 +1097,8 @@ class DatabaseConnection:
     def get_post_comments(self, post_id: int) -> List[Comment]:
         """Fetches all comments for a given post"""
         try:
-            command_string = "SELECT CommentId, UserId, "
-            "PostId, Message, Date FROM Comments WHERE PostId = ?"
+            command_string = """SELECT CommentId, UserId,
+            PostId, Message, Date FROM Comments WHERE PostId = ?"""
             self.cursor.execute(command_string, (post_id,))
             comments_data = self.cursor.fetchall()
             return [
