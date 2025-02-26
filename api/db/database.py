@@ -986,7 +986,7 @@ class DatabaseConnection:
         """Gets all user IDs that have reacted to a
         post with a given reaction type"""
         command_string = (
-            """SELECT UserId FROM PostReaction
+            """SELECT UserId FROM PostReactions
             WHERE PostId = ? AND ReactionType = ?"""
         )
         self.cursor.execute(command_string, (post_id, reaction_type))
