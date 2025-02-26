@@ -389,7 +389,7 @@ async def count_recipes_by_ingredients(request: Request, inp: RecipeListRequest 
     return count
 
 # In Use - Refactored
-@router.post("/search/", response_description="Get Recipes that match all the ingredients in the request", status_code=200, response_model=RecipeListResponse)
+@router.get("/search/", response_description="Get Recipes that match all the ingredients in the request", status_code=200, response_model=RecipeListResponse)
 async def list_recipes_by_ingredients(request: Request, inp: RecipeListRequest = Body(...)):
     """Lists recipes matching all provided ingredients"""
     db:Database_Connection = request.state.db
@@ -435,12 +435,16 @@ async def list_ingredients(queryString : str, request: Request):
 @router.post("/recommend-recipes/", response_model=dict)
 async def recommend_recipes(request: Request, query: RecipeQuery = Body(...)):
     db:Database_Connection = request.state.db
+
+    query.query = query.query.replace('\n', ' ').replace('\t', ' ').replace('  ', ' ').strip()
+    query.context = query.context.strip()
+    print(len(query.query))
+    print(len(query.context))
+    if not query.query or len(query.query) == 0 or len(query.context) == 0 or not query.context or query.query.isdigit() or not any(c.isalpha() for c in query.query):
+        print("GOT HERE")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Query or Context")
+
     try:
-        query.query = query.query.replace('\n', ' ').replace('\t', ' ').replace('  ', ' ').strip()
-        query.context = query.context.strip()
-        if not query.query or not query.context or query.query.isdigit() or not any(c.isalpha() for c in query.query):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Query or Context")
-        
         response = client.chat.completions.create(
             messages=[
                 {
@@ -504,7 +508,7 @@ async def get_recipe(request: Request, recipeId: int) -> Recipe:
     print(f"getting {recipeId}")
     recipe: Recipe = db.get_recipe(recipeId)
     if recipe is None:
-        raise HTTPException(status_code=400, detail="There is not recipe with that Id")
+        raise HTTPException(status_code=404, detail="There is not recipe with that Id")
     return recipe
 
 @router.get("/batch")

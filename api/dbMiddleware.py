@@ -15,4 +15,6 @@ class DBConnectionMiddleware(BaseHTTPMiddleware):
         # Create a DB connection and attach it to the request's state
         request.state.db = Database_Connection(dbPath=self.db_path)
         response = await call_next(request)
+
+        request.state.db.conn.close()
         return response
