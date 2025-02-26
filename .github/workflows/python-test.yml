@@ -44,7 +44,7 @@ jobs:
           coverage report
 
       - name: Upload coverage report
-        if: success()
+        if: always()
         env: # Set GITHUB_TOKEN for Coveralls
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
