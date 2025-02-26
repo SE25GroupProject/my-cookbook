@@ -79,7 +79,9 @@ export const SocialSlice = apiSlice.injectEndpoints({
           body: userId,
         }
       },
-      invalidatesTags: (result, error, postId) => [{ type: 'Post', postId }],
+      invalidatesTags: (result, error, { postId }) => [
+        { type: 'Post', postId },
+      ],
     }),
 
     likePost: builder.mutation<string, PostUpdate>({
@@ -91,7 +93,9 @@ export const SocialSlice = apiSlice.injectEndpoints({
           body: userId,
         }
       },
-      invalidatesTags: (result, error, postId) => [{ type: 'Post', postId }],
+      invalidatesTags: (result, error, { postId }) => [
+        { type: 'Post', postId },
+      ],
     }),
 
     dislikePost: builder.mutation<string, PostUpdate>({
@@ -103,7 +107,9 @@ export const SocialSlice = apiSlice.injectEndpoints({
           body: userId,
         }
       },
-      invalidatesTags: (result, error, postId) => [{ type: 'Post', postId }],
+      invalidatesTags: (result, error, { postId }) => [
+        { type: 'Post', postId },
+      ],
     }),
 
     addComment: builder.mutation<string, PostCommentRequest>({
@@ -112,7 +118,9 @@ export const SocialSlice = apiSlice.injectEndpoints({
         method: 'POST',
         body: data,
       }),
-      invalidatesTags: (result, error, postId) => [{ type: 'Post', postId }],
+      invalidatesTags: (result, error, { postId }) => [
+        { type: 'Post', postId },
+      ],
     }),
 
     deleteComment: builder.mutation<string, PostComment>({
@@ -121,7 +129,9 @@ export const SocialSlice = apiSlice.injectEndpoints({
         method: 'DELETE',
         body: data,
       }),
-      invalidatesTags: (result, error, postId) => [{ type: 'Post', postId }],
+      invalidatesTags: (result, error, { postId }) => [
+        { type: 'Post', postId },
+      ],
     }),
   }),
 })

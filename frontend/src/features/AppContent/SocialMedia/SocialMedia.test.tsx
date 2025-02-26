@@ -1,31 +1,34 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import { ThemeProvider } from '../../Themes/themeContext'
 import SocialMedia from './SocialMedia'
 import userEvent from '@testing-library/user-event'
+import { renderWithProviders } from '../../../utils/testingUtils'
+import { testPosts } from '../testVariables'
+import { http, HttpResponse } from 'msw'
+import { server } from '../../api/msw'
+
+beforeAll(() => server.listen())
+afterEach(() => {
+  server.resetHandlers()
+})
+afterAll(() => {
+  server.close()
+})
 
 describe('Display Social Media Page Items', () => {
   test('Ensure Posts are visible', async () => {
-    render(
-      <BrowserRouter
-        future={{
-          v7_startTransition: true,
-          v7_relativeSplatPath: true,
-        }}
-      >
-        <ThemeProvider>
-          <SocialMedia />
-        </ThemeProvider>
-      </BrowserRouter>
-    )
+    await renderWithProviders(<SocialMedia />)
 
-    const headings = screen.getAllByRole('heading', {
-      level: 6,
-      name: 'Recipe Title',
-    })
+    await waitFor(() => {
+      const headings = screen.getAllByRole('heading', {
+        level: 6,
+        name: 'Recipe Title',
+      })
 
-    headings.forEach((heading) => {
-      expect(heading).toHaveTextContent(/Recipe/i)
+      headings.forEach((heading, index) => {
+        expect(heading).toHaveTextContent(`Test ${index + 1}`)
+      })
     })
 
     const postImages = screen.queryAllByRole('image', { name: 'Post Image' })
@@ -43,34 +46,12 @@ describe('Display Social Media Page Items', () => {
     })
   })
 
-  test.skip('Ensure Post Comments are visible', () => {
-    render(
-      <BrowserRouter
-        future={{
-          v7_startTransition: true,
-          v7_relativeSplatPath: true,
-        }}
-      >
-        <ThemeProvider>
-          <SocialMedia />
-        </ThemeProvider>
-      </BrowserRouter>
-    )
+  test.skip('Ensure Post Comments are visible', async () => {
+    await renderWithProviders(<SocialMedia />)
   })
 
   test('Ensure Update Text Box is visible', async () => {
-    render(
-      <BrowserRouter
-        future={{
-          v7_startTransition: true,
-          v7_relativeSplatPath: true,
-        }}
-      >
-        <ThemeProvider>
-          <SocialMedia />
-        </ThemeProvider>
-      </BrowserRouter>
-    )
+    await renderWithProviders(<SocialMedia />)
 
     expect(
       await screen.findByRole('textbox', { name: "What's Cookin'?" })
@@ -78,19 +59,8 @@ describe('Display Social Media Page Items', () => {
     expect(screen.getByRole('button', { name: 'Submit Recipe' })).toBeDisabled()
   })
 
-  test('Ensure Recipe Dropdown is visible', () => {
-    render(
-      <BrowserRouter
-        future={{
-          v7_startTransition: true,
-          v7_relativeSplatPath: true,
-        }}
-      >
-        <ThemeProvider>
-          <SocialMedia />
-        </ThemeProvider>
-      </BrowserRouter>
-    )
+  test('Ensure Recipe Dropdown is visible', async () => {
+    await renderWithProviders(<SocialMedia />)
 
     expect(
       screen.getByRole('combobox', { name: 'Your Recipes' })
@@ -98,18 +68,7 @@ describe('Display Social Media Page Items', () => {
   })
 
   test('Ensure Image Modal can be viewed', async () => {
-    render(
-      <BrowserRouter
-        future={{
-          v7_startTransition: true,
-          v7_relativeSplatPath: true,
-        }}
-      >
-        <ThemeProvider>
-          <SocialMedia />
-        </ThemeProvider>
-      </BrowserRouter>
-    )
+    await renderWithProviders(<SocialMedia />)
 
     const imgBtn = screen.getByLabelText(/Click to Change Image/i)
     expect(screen.getByAltText(/Recipe Image/i)).toBeInTheDocument()

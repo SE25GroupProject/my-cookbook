@@ -30,7 +30,7 @@ class Recipe(BaseModel):
     description: Optional[str] = None
     images: Optional[list] = None  # URLs of images related to the recipe
     category: str
-    tags: List[str]
+    tags:  Optional[List[str]]
     ingredientQuantities: Optional[list[int]]
     ingredients: List[str]  # List of ingredients required
     rating: Optional[str] = None

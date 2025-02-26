@@ -150,7 +150,7 @@ const RecipeInformationWrapped = () => {
   const [addToMealPlan] = useUpdateMealPlanMutation()
 
   const { data: recipe, isLoading, isSuccess } = useGetRecipeQuery(id as string)
-  console.log(recipe)
+  // console.log(recipe)
   let images = recipe?.images ? [...recipe?.images] : []
 
   let triviaPaperStyles = {

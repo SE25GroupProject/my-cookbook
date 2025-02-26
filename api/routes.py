@@ -18,7 +18,7 @@ import pymongo
 from groq import Groq
 from pydantic import BaseModel, conint, conlist, PositiveInt, Field
 import logging
-from api.models import Recipe, RecipeListRequest, RecipeListResponse, RecipeListRequest2, RecipeQuery, MealPlanEntry, UserCred, ShoppingListItem, PostUpdate, Post, Comment
+from api.models import Recipe, RecipeListEntry, RecipeListRequest, RecipeListResponse, RecipeListRequest2, RecipeQuery, MealPlanEntry, UserCred, ShoppingListItem, PostUpdate, Post, Comment
 from api.db.objects import User
 from api.db.database import Database_Connection
 from api.dbMiddleware import DBConnectionMiddleware
@@ -514,20 +514,32 @@ async def get_recipe(request: Request, recipeId: int) -> Recipe:
         raise HTTPException(status_code=404, detail="There is not recipe with that Id")
     return recipe
 
-@router.get("/batch")
-async def get_recipes(request: Request, recipeIds: List[int]) -> Recipe:
+@router.post("/batch")
+async def get_recipes_batch(request: Request, recipeIds: List[int]) -> List[Recipe]:
     db:Database_Connection = request.state.db
-    recipes = {}
-    for recipeId in recipeIds:
-        recipe: Recipe = db.get_recipe(recipeId)
-        recipes[recipeId] = recipe
+    recipes = db.get_recipe_batch(recipeIds, True)
+    # for recipeId in recipeIds:
+    #     recipe: Recipe = db.get_recipe(recipeId)
+    #     recipes[recipeId] = recipe
     if recipes is None:
         raise HTTPException(status_code=400, detail="There is no recipes with those Ids")
     return recipes
 
+@router.get("/user/{userId}")
+async def get_user_recipes(request: Request, userId: int):
+    db:Database_Connection = request.state.db
+    recipeIds: list[int] = [data[0] for data in db.get_recipes_owned_by_userId(userId)]
+    recipeObj: list[dict] = db.get_recipe_batch(recipeIds)
+    # for recipeId in recipeIds:
+    #     recipeObj.append(db.get_recipe(recipeId).to_dict())
+    
+    # This should be fine as if there are no recipes owned by a user it should just return the empty list
+    # Can be changed to None if needed
+    return recipeObj
+
 # Todo: This may have to change as I am not sure if this is the proper way to expect a body for a post request
-@router.post("/")
-async def create_user_recipe(request: Request, recipeObject: Recipe, userId: int) -> bool:
+@router.post("/user/{userId}")
+async def create_user_recipe(request: Request, recipeObject: Recipe, userId: int ) -> bool:
     db:Database_Connection = request.state.db
     success = db.create_recipe(recipeObject, userId)
     if success:
@@ -535,7 +547,7 @@ async def create_user_recipe(request: Request, recipeObject: Recipe, userId: int
     
     return False
 
-@router.put("/{recipeId}")
+@router.put("/user/{recipeId}")
 async def update_user_recipe(request: Request, recipeId: int, newRecipe: Recipe, userId: int):
     db:Database_Connection = request.state.db
     recipes = db.get_recipes_owned_by_userId(userId)
@@ -567,6 +579,26 @@ async def unfavorite_recipe(request: Request, recipeId: int, userId: int):
     
     return False
 
+@router.get("/favorite/{userId}")
+async def get_user_favorites(request: Request, userId: int):
+    db:Database_Connection = request.state.db
+    recipes = db.get_favorite_recipes(userId)
+    if recipes is None:
+        raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to find favorites."
+            )
+    
+    recipeIds: list[int] = [data[0] for data in recipes]
+    recipeObj: list[dict] = db.get_recipe_batch(recipeIds)
+    return recipeObj
+
+@router.get("/favorite/{recipeId}/{userId}")
+async def check_favorite(request:Request, recipeId: int, userId: int):
+    db:Database_Connection = request.state.db
+    res =  db.check_is_favorited(recipeId, userId)
+    print(res)
+    return res
 
 # --------------------------------------------------------
 # Updated Post Routes
@@ -756,18 +788,6 @@ async def delete_post(request: Request, post_id: int, user_id: int = Body(...)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred while deleting the post: {str(e)}"
         )
-
-@router.get("/user/{userId}")
-async def get_user_recipes(request: Request, userId: int):
-    db: Database_Connection = request.state.db
-    recipeIds: list[int] = db.get_recipes_owned_by_userId(userId)
-    recipeObj: list[dict] = []
-    for recipeId in recipeIds:
-        recipeObj.append(db.get_recipe(recipeId).to_dict())
-    
-    # This should be fine as if there are no recipes owned by a user it should just return the empty list
-    # Can be changed to None if needed
-    return recipeObj
 
 @postRouter.put("/{post_id}", response_description="Update a post", response_model=Post)
 async def update_post(request: Request, post_id: int, update: PostUpdate = Body(...)):

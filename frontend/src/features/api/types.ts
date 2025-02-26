@@ -66,6 +66,10 @@ export class RecipeObject implements Recipe {
   instructions!: Instruction[]
 }
 
+export type UserRecipe = Partial<Recipe> & {
+  userId: number
+}
+
 export interface NutritionMax {
   caloriesMax: number
   fatMax: number
@@ -147,9 +151,6 @@ export type PostRequest = Pick<
 >
 
 export type PostUpdate = Pick<Post, 'postId' | 'userId'>
-// & {
-//   recipe: number
-// }
 
 export interface ShoppingItem {
   name: string
@@ -174,4 +175,9 @@ export type MealPlanUpdate = MealPlanEntry & {
 export interface MealPlanDelete {
   day: number
   userId: number
+}
+
+export interface FavoriteRequest {
+  userId: number
+  recipeId: number
 }

@@ -4,6 +4,7 @@ import { useAuth } from './AuthProvider'
 import {
   Box,
   Button,
+  CircularProgress,
   Container,
   Dialog,
   Paper,
@@ -31,6 +32,10 @@ import { useFixScroll } from '../SocialMedia/FixScroll'
 import RecipeListItem from '../RecipeList/RecipeLIstItem'
 import PostModal from '../SocialMedia/PostModal'
 import { useGetPostsByUserQuery } from '../SocialMedia/SocialSlice'
+import {
+  useGetUserFavoritesQuery,
+  useGetUserRecipesQuery,
+} from '../UserRecipes/UserRecipeSlice'
 
 const Profile = () => {
   const auth = useAuth()
@@ -64,9 +69,14 @@ const Profile = () => {
     isSuccess,
   } = useGetPostsByUserQuery(userId, { skip: userId == -1 })
 
-  const userRecipes: Recipe[] = [mockRecipe, mockRecipeTwo]
-  const favRecipes: Recipe[] = [mockRecipeTwo, mockRecipe]
-
+  const { data: userRecipes, isLoading: userRecipesLoading } =
+    useGetUserRecipesQuery(userId, {
+      skip: userId == -1,
+    })
+  const { data: favRecipes, isLoading: favRecipesLoading } =
+    useGetUserFavoritesQuery(userId, {
+      skip: userId == -1,
+    })
   const postsPerPage = 10
 
   const [currentPosts, setCurrentPosts] = useState<Post[]>([])
@@ -260,19 +270,67 @@ const Profile = () => {
                 </Box>
               </Box>
             </TabPanel>
-            <TabPanel value="2" sx={{ p: 2 }}>
-              <Stack spacing={2} alignItems="center">
-                {favRecipes.map((recipe, index) => (
-                  <RecipeListItem recipe={recipe} index={index} />
-                ))}
+            <TabPanel
+              value="2"
+              sx={{
+                py: 1,
+                px: 0,
+                overflow: 'hidden',
+                width: '100%',
+                boxSizing: 'border-box',
+              }}
+            >
+              <Stack
+                spacing={2}
+                alignItems="center"
+                maxHeight={'57vh'}
+                overflow={'auto'}
+                width={'102%'}
+              >
+                {favRecipes ? (
+                  favRecipes.map((recipe, index) => (
+                    <RecipeListItem recipe={recipe} index={index} />
+                  ))
+                ) : favRecipesLoading ? (
+                  <Stack spacing={2}>
+                    <CircularProgress />
+                    <Typography variant="h6">Loading...</Typography>
+                  </Stack>
+                ) : (
+                  <Typography variant="h6">No Favorite Recipes!</Typography>
+                )}
               </Stack>
             </TabPanel>
-            <TabPanel value="3" sx={{ p: 2 }}>
-              <Stack spacing={2} alignItems="center">
-                {userRecipes.map((recipe, index) => (
-                  <RecipeListItem recipe={recipe} index={index} />
-                ))}
-              </Stack>
+            <TabPanel
+              value="3"
+              sx={{
+                py: 1,
+                px: 0,
+                overflow: 'hidden',
+                width: '100%',
+                boxSizing: 'border-box',
+              }}
+            >
+              {userRecipes ? (
+                <Stack
+                  spacing={2}
+                  alignItems="center"
+                  maxHeight={'57vh'}
+                  overflow={'auto'}
+                  width={'102%'}
+                >
+                  {userRecipes.map((recipe, index) => (
+                    <RecipeListItem recipe={recipe} index={index} />
+                  ))}
+                </Stack>
+              ) : userRecipesLoading ? (
+                <Stack spacing={2}>
+                  <CircularProgress />
+                  <Typography variant="h6">Loading...</Typography>
+                </Stack>
+              ) : (
+                <Typography variant="h6">No User Recipes!</Typography>
+              )}
             </TabPanel>
           </TabContext>
         </Stack>
