@@ -171,7 +171,6 @@ def test_create_post_no_image(test_user_id):
     assert response.status_code == 201, f"Create post failed: {response.text}"
     assert response.json()["message"] == "Post created successfully."
 
-    
     response = client.get("/posts/")
     posts = response.json()
     print(posts)
