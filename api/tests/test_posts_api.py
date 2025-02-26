@@ -116,18 +116,16 @@ def test_dislike_post(test_post_id, test_user_id):
 def test_update_post(test_post_id, test_user_id):
     """Test updating a post’s message."""
     data = {
-        "update": {
-            "message": "Updated test post",
-        },
-        "user_id": test_user_id
+    "userId": 1,
+    "message": "Updated test post"
     }
     response = client.put(f"/posts/{test_post_id}", json=data)
     assert response.status_code == 200
     updated_post = response.json()
     assert updated_post["message"] == "Updated test post"
 
-def test_delete_post(test_post_id):
-    """Test deleting a post."""
-    response = client.delete(f"/posts/{test_post_id}")
-    assert response.status_code == 200
+def test_delete_post(test_post_id, test_user_id):
+    response = client.request("DELETE", f"/posts/{test_post_id}", json=test_user_id)
+    print(f"Response: {response.status_code} - {response.text}")
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
     assert response.json()["message"] == "Post deleted successfully."
