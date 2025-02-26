@@ -1,7 +1,5 @@
 """Holds classes of all objects for database use"""
-from datetime import datetime
-from pydantic import BaseModel, Field
-from typing import Optional, List
+
 
 class User():
     def __init__(self, username: str, password: str, userId: int = -1):
@@ -16,22 +14,31 @@ class User():
         }
 
         return output
-    
+
+
 class Ingredient():
     def __init__(self, name: str, amount: float):
         self.Name = name
         self.Amount = amount
 
+
 class Instruction():
     def __init__(self, step: int, instruction: str):
         self.Step = step
         self.Instruction = instruction
-    
+
+
 class Recipe():
 
-    def __init__(self, name: str, cookTime: str, prepTime: str, totalTime: str, description: str, category: str, rating: float, calories: float, fat: float, saturatedFat: float,
-                cholesterol: float, sodium: float, carbs: float, fiber: float, sugar: float, protein: float, servings: float, images: list[str], 
-                tags: list[str], ingredients: list[Ingredient], instructions: list[Instruction], recipeId = -1):
+    def __init__(self, name: str, cookTime: str, prepTime: str,
+                 totalTime: str, description: str, category: str,
+                 rating: float, calories: float, fat: float,
+                 saturatedFat: float, cholesterol: float,
+                 sodium: float, carbs: float, fiber: float,
+                 sugar: float, protein: float, servings: float,
+                 images: list[str], tags: list[str],
+                 ingredients: list[Ingredient], instructions:
+                 list[Instruction], recipeId=-1):
         self.RecipeId = recipeId
         self.Name = name
         self.CookTime = cookTime
@@ -54,7 +61,7 @@ class Recipe():
         self.Tags = tags
         self.Ingredients = ingredients
         self.Instructions = instructions
-    
+
     def to_dict(self) -> dict:
         output = {
             "name": self.Name,
@@ -81,4 +88,3 @@ class Recipe():
         }
 
         return output
-
