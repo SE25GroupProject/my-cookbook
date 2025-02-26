@@ -124,6 +124,49 @@ def test_update_post(test_post_id, test_user_id):
     updated_post = response.json()
     assert updated_post["message"] == "Updated test post"
 
+def test_create_post_no_image(test_user_id):
+    """Test creating a post with no image."""
+    data = {
+        "userId": test_user_id,
+        "message": "Post with no image"
+    }
+    response = client.post("/posts/", json=data)
+    assert response.status_code == 201, f"Create post failed: {response.text}"
+    assert response.json()["message"] == "Post created successfully."
+    posts = client.get("/posts/").json()
+    post = next((p for p in posts if p["message"] == "Post with no image"), None)
+    assert post is not None, "Post not found"
+    assert post["image"] is None
+
+def test_like_non_existent_post(test_user_id):
+    """Test liking a post that doesn’t exist."""
+    non_existent_post_id = 9999  # Assuming this ID doesn’t exist
+    response = client.put(f"/posts/like/{non_existent_post_id}", json=test_user_id)
+    assert response.status_code == 404, f"Expected 404, got {response.status_code}: {response.text}"
+    assert "detail" in response.json()
+    assert "not found" in response.json()["detail"].lower()
+
+def test_dislike_after_like(test_post_id, test_user_id):
+    """Test switching from like to dislike."""
+    # First, like the post
+    like_response = client.put(f"/posts/like/{test_post_id}", json=test_user_id)
+    assert like_response.status_code == 200
+
+    # Then, dislike it
+    dislike_response = client.put(f"/posts/dislike/{test_post_id}", json=test_user_id)
+    assert dislike_response.status_code == 200, f"Expected 200, got {dislike_response.status_code}: {dislike_response.text}"
+    post = client.get(f"/posts/{test_post_id}").json()
+    assert test_user_id not in post["likes"]
+    assert test_user_id in post["dislikes"]
+
+def test_get_non_existent_post():
+    """Test retrieving a post that doesn’t exist."""
+    non_existent_post_id = 9999  # Assuming this ID doesn’t exist
+    response = client.get(f"/posts/{non_existent_post_id}")
+    assert response.status_code == 404, f"Expected 404, got {response.status_code}: {response.text}"
+    assert "detail" in response.json()
+    assert "not found" in response.json()["detail"].lower()
+    
 def test_delete_post(test_post_id, test_user_id):
     response = client.request("DELETE", f"/posts/{test_post_id}", json=test_user_id)
     print(f"Response: {response.status_code} - {response.text}")

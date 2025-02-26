@@ -142,4 +142,66 @@ def test_delete_comment_nonexistent(test_post_id, test_user_id):
     assert response.status_code == 404, f"Expected 404, got {response.status_code}: {response.text}"
     assert "detail" in response.json()
     assert "not found" in response.json()["detail"].lower()
+
+def test_add_multiple_comments(test_post_id, test_user_id):
+    """Test adding multiple comments to a post."""
+    comments = [
+        {"userId": test_user_id, "postId": test_post_id, "message": "First comment"},
+        {"userId": test_user_id, "postId": test_post_id, "message": "Second comment"}
+    ]
+    comment_ids = []
+    for comment_data in comments:
+        response = client.post(f"/posts/comments/{test_post_id}", json=comment_data)
+        print(f"Add multiple comments response status: {response.status_code}")
+        print(f"Add multiple comments response body: {response.text}")
+        assert response.status_code == 201, f"Failed with {response.status_code}: {response.text}"
+        response_json = response.json()
+        assert response_json["message"] == "Comment added successfully"
+        comment_ids.append(response_json["commentId"])
+
+    # Verify all comments are present
+    response = client.get(f"/posts/{test_post_id}")
+    assert response.status_code == 200
+    post = response.json()
+    assert len(post["comments"]) >= 2, "Expected at least 2 comments"
+    messages = [c["message"] for c in post["comments"]]
+    assert "First comment" in messages
+    assert "Second comment" in messages
+
+def test_delete_comment_by_non_owner(test_post_id, test_user_id):
+    """Test deleting a comment by a user who doesn't own it."""
+    # Create a second user
+    signup_data = {"username": "otheruser_comments", "password": "otherpass"}
+    signup_response = client.post("/user/signup", json=signup_data)
+    if signup_response.status_code == 400:
+        login_response = client.post("/user/login", json=signup_data)
+        assert login_response.status_code == 200
+        other_user_id = login_response.json()["id"]
+    else:
+        assert signup_response.status_code == 200
+        other_user_id = signup_response.json()["id"]
+
+    # Add a comment with test_user_id
+    comment_data = {
+        "userId": test_user_id,
+        "postId": test_post_id,
+        "message": "Comment by owner"
+    }
+    add_response = client.post(f"/posts/comments/{test_post_id}", json=comment_data)
+    assert add_response.status_code == 201
+    comment_id = add_response.json()["commentId"]
+
+    # Attempt to delete with other_user_id
+    delete_data = {"postId": test_post_id, "userId": other_user_id}
+    response = client.request("DELETE", f"/posts/comments/{comment_id}", json=delete_data)
+    print(f"Delete by non-owner response status: {response.status_code}")
+    print(f"Delete by non-owner response body: {response.text}")
+    assert response.status_code == 403, f"Expected 403, got {response.status_code}: {response.text}"
+    assert "detail" in response.json()
+    assert "own comments" in response.json()["detail"].lower()
+
+    # Verify comment still exists
+    post_response = client.get(f"/posts/{test_post_id}")
+    post = post_response.json()
+    assert any(c["commentId"] == comment_id for c in post["comments"]), "Comment was unexpectedly deleted"
     

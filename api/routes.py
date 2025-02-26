@@ -663,6 +663,8 @@ async def like_post(request: Request, post_id: int, user_id: int = Body(...)):
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail="Failed to like post."
                 )
+    except HTTPException as e:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -718,6 +720,8 @@ async def dislike_post(request: Request, post_id: int, user_id: int = Body(...))
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail="Failed to dislike post."
                 )
+    except HTTPException as e:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
