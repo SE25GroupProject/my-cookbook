@@ -60,5 +60,4 @@ def insertData(path, recipesJson):
                 instructionCounter += 1
 
             counter += 1
-
         conn.commit()

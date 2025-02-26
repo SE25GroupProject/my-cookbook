@@ -9,17 +9,8 @@ except Exception:
 from datetime import datetime
 
 class Database_Connection():
-    """Used as a singleton to access the database"""
-    
-    def __new__(self, dbPath: str = 'db/cookbook.db'):
-        """Handles ensuring that this class is a singleton"""
-        if not hasattr(self, 'instance'):
-            self.instance = super(Database_Connection, self).__new__(self)
-        return self.instance
-    
     def __init__(self, dbPath: str = 'db/cookbook.db'):
         """Handles initializing the class"""
-        # print("Db Path: " + dbPath)
         self.conn = sqlite3.connect(dbPath, check_same_thread=False)
         self.cursor = self.conn.cursor()
 
@@ -91,6 +82,7 @@ class Database_Connection():
         try:
             getIdCommand: str = "INSERT INTO Users (Username, Password) VALUES (?, ?)"
             self.cursor.execute(getIdCommand, (user.Username, user.Password))
+            self.conn.commit()
             return self.get_user_by_name(user.Username).UserId
         except Exception as e:
             print(f"Error adding user: {e}")
@@ -106,6 +98,19 @@ class Database_Connection():
             return user
         except:
             return None
+        
+    def get_user_by_name2(self, username: str) -> User:
+        """Gets a user based on their username"""
+        try: 
+            commandString: str = "SELECT * FROM Users"
+            self.cursor.execute(commandString)
+            res = self.cursor.fetchall()
+            # user: User = User(res[1], res[2], res[0])
+            # return user
+            return res
+        except:
+            return None
+
 
     
     def get_user_by_id(self, id: int) -> User:
@@ -163,6 +168,21 @@ class Database_Connection():
         except Exception as e:
             print(e)
             return False
+    
+    def testing(self):
+        try:
+            commandString: str = """SELECT recipeId FROM Recipes"""
+            self.cursor.execute(commandString)
+            recipeRes = self.cursor.fetchone()
+            if not recipeRes:
+                print("No recipe value found.")
+                return None
+            
+            print("Recipe Res")
+        
+        except Exception as e:
+            print(e)
+            return None
         
     def get_recipe(self, recipeId: int):
         """Gets a recipe based on its id"""
@@ -174,7 +194,8 @@ class Database_Connection():
                 print("No recipe value found.")
                 return None
             
-            print(recipeRes)
+            # print(recipeRes)
+        
 
             commandString: str = """SELECT * FROM Images WHERE recipeId = ?"""
             self.cursor.execute(commandString, (recipeId,))
@@ -190,14 +211,14 @@ class Database_Connection():
             for tag in tagsRes:
                 tagsList.append(tag[1])
 
-            print("got tags")
+            # print("got tags")
             commandString: str = """SELECT * FROM Ingredients WHERE recipeId = ?"""
             self.cursor.execute(commandString, (recipeId,))
             ingredientsRes = self.cursor.fetchall()
             ingredientsList: list[str] = []
             for _, ingredient, amount in ingredientsRes:
                 ingredientsList.append(ingredient)
-            print("got ingredients")
+            # print("got ingredients")
             commandString: str = """SELECT * FROM Instructions WHERE recipeId = ?"""
             self.cursor.execute(commandString, (recipeId,))
             instructionsRes = self.cursor.fetchall()
@@ -205,7 +226,7 @@ class Database_Connection():
             for _, step, instruction in instructionsRes:
                 instructionsList.append(Instruction(step = step, instruction = instruction))
 
-            print(instructionsList)
+            # print(instructionsList)
             recipe: Recipe = Recipe(recipeId = recipeRes[0], name = recipeRes[1], cookTime = recipeRes[2], 
                                     prepTime = recipeRes[3], totalTime = recipeRes[4], description = recipeRes[5],
                                     category = recipeRes[6], rating = recipeRes[7], calories = recipeRes[8], 
@@ -334,6 +355,7 @@ class Database_Connection():
                                     carbs=recipe[13], fiber=recipe[14], sugar=recipe[15], protein=recipe[16], 
                                     servings=recipe[17], recipeId=recipe[0]))
 
+            print(recipes)
             return recipes
         except Exception as e: 
             print(e)

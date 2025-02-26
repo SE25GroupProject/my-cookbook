@@ -1,10 +1,31 @@
 from fastapi.testclient import TestClient
-import os
-import sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../api')))
-from routes import app  # Replace `your_app` with the actual module name containing your FastAPI app.
+import pytest
+from os import path, remove
+import shutil
+from api.dbMiddleware import DBConnectionMiddleware
+from api.db.convertJsonToSql import insertData
+
+from api.main import app
 
 client = TestClient(app)
+
+MAIN_DB = "cookbook.db"
+TEST_DB = "tests/test_cookbook.db"
+
+@pytest.fixture(scope="function", autouse=True)
+def setup_db():
+    """Copies the db to a testing db before each test"""
+    if path.exists(TEST_DB):
+        remove(TEST_DB)
+    insertData(TEST_DB, "tests/recipeTest.json")
+    yield
+    remove(TEST_DB)
+
+@pytest.fixture(scope="module")
+def clientSetup():
+    app.add_middleware(DBConnectionMiddleware, db_path=TEST_DB)
+    with TestClient(app) as client:
+        yield client
 
 # Sample data for testing
 valid_user = {"email": "test@example.com", "password": "securepassword"}

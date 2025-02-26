@@ -1,8 +1,31 @@
-import requests
+from fastapi.testclient import TestClient
 import pytest
-from fastapi import HTTPException
+from os import path, remove
+import shutil
+from api.dbMiddleware import DBConnectionMiddleware
+from api.db.convertJsonToSql import insertData
 
-BASE_URL = "http://localhost:8000"
+from api.main import app
+
+client = TestClient(app)
+
+MAIN_DB = "cookbook.db"
+TEST_DB = "tests/test_cookbook.db"
+
+@pytest.fixture(scope="function", autouse=True)
+def setup_db():
+    """Copies the db to a testing db before each test"""
+    if path.exists(TEST_DB):
+        remove(TEST_DB)
+    insertData(TEST_DB, "tests/recipeTest.json")
+    yield
+    remove(TEST_DB)
+
+@pytest.fixture(scope="module")
+def clientSetup():
+    app.add_middleware(DBConnectionMiddleware, db_path=TEST_DB)
+    with TestClient(app) as client:
+        yield client
 
 @pytest.fixture(scope="module")
 def test_user_id():

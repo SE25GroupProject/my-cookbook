@@ -389,7 +389,7 @@ async def count_recipes_by_ingredients(request: Request, inp: RecipeListRequest 
     return count
 
 # In Use - Refactored
-@router.post("/search/", response_description="Get Recipes that match all the ingredients in the request", status_code=200, response_model=RecipeListResponse)
+@router.get("/search/", response_description="Get Recipes that match all the ingredients in the request", status_code=200, response_model=RecipeListResponse)
 async def list_recipes_by_ingredients(request: Request, inp: RecipeListRequest = Body(...)):
     """Lists recipes matching all provided ingredients"""
     db:Database_Connection = request.state.db
@@ -435,12 +435,16 @@ async def list_ingredients(queryString : str, request: Request):
 @router.post("/recommend-recipes/", response_model=dict)
 async def recommend_recipes(request: Request, query: RecipeQuery = Body(...)):
     db:Database_Connection = request.state.db
+
+    query.query = query.query.replace('\n', ' ').replace('\t', ' ').replace('  ', ' ').strip()
+    query.context = query.context.strip()
+    print(len(query.query))
+    print(len(query.context))
+    if not query.query or len(query.query) == 0 or len(query.context) == 0 or not query.context or query.query.isdigit() or not any(c.isalpha() for c in query.query):
+        print("GOT HERE")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Query or Context")
+
     try:
-        query.query = query.query.replace('\n', ' ').replace('\t', ' ').replace('  ', ' ').strip()
-        query.context = query.context.strip()
-        if not query.query or not query.context or query.query.isdigit() or not any(c.isalpha() for c in query.query):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Query or Context")
-        
         response = client.chat.completions.create(
             messages=[
                 {
@@ -465,6 +469,8 @@ async def recommend_recipes(request: Request, query: RecipeQuery = Body(...)):
 @userRouter.post("/signup")
 async def signup(request: Request, incomingUser: UserCred = Body(...)):
     db:Database_Connection = request.state.db
+    if len(incomingUser.username) == 0 or len(incomingUser.password) == 0:
+        raise HTTPException(status_code=400, detail="Username and Password cannot be empty")
     user: User = User(incomingUser.username, incomingUser.password)
     if db.get_user_by_name(user.Username) is not None:
         raise HTTPException(status_code=400, detail="User with that username already exists")
@@ -479,17 +485,18 @@ async def login(request: Request, incomingUser: UserCred = Body(...)):
         raise HTTPException(status_code=400, detail="There is no user with that username")
     if user.Password == incomingUser.password:
         return {"id": user.UserId, "username": user.Username}
-        
-    return "Incorrect Username or Password"
+    
+    raise HTTPException(status_code=400, detail="Incorrect Username or Password")
     # except:
     #     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occured when logging in this user")
     
     raise HTTPException(status_code=401, detail="Incorrect Username or Password")
 
-@userRouter.get("/getUser/{username}")
+@userRouter.get("/getUser/{username}", status_code=200)
 async def getUser(request: Request, username: str) -> dict:
     db:Database_Connection = request.state.db
     user: User = db.get_user_by_name(username)
+    print(username)
     if user is None:
         raise HTTPException(status_code=400, detail="There is no user with that username")
     return user.to_dict()
@@ -504,7 +511,7 @@ async def get_recipe(request: Request, recipeId: int) -> Recipe:
     print(f"getting {recipeId}")
     recipe: Recipe = db.get_recipe(recipeId)
     if recipe is None:
-        raise HTTPException(status_code=400, detail="There is not recipe with that Id")
+        raise HTTPException(status_code=404, detail="There is not recipe with that Id")
     return recipe
 
 @router.get("/batch")
