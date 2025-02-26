@@ -13,8 +13,6 @@ jobs:
     runs-on: ubuntu-latest
 
     env: # Global environment variables
-      ATLAS_URI: "mongodb+srv://se-group23:TfE2up8EBCGvlv73@cluster0.ichs9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-      DB_NAME: "CookBook"
       GROQ_API_KEY: "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"
       PORT: "8000"
 
