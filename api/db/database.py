@@ -91,6 +91,7 @@ class Database_Connection():
         try:
             getIdCommand: str = "INSERT INTO Users (Username, Password) VALUES (?, ?)"
             self.cursor.execute(getIdCommand, (user.Username, user.Password))
+            self.conn.commit()
             return self.get_user_by_name(user.Username).UserId
         except Exception as e:
             print(f"Error adding user: {e}")
@@ -110,12 +111,12 @@ class Database_Connection():
     
     def get_user_by_id(self, id: int) -> User:
         """Gets a user based on their username"""
-        print( id)
+        # print( id)
         command_string: str = "SELECT * FROM Users WHERE UserId = ?"
         self.cursor.execute(command_string, (id,))
         user_data = self.cursor.fetchone()
 
-        print(user_data)
+        # print(user_data)
         if user_data:
             return User(userId=user_data[0], username=user_data[1], password=user_data[2])
         return None
@@ -127,7 +128,6 @@ class Database_Connection():
     def create_recipe(self, recipe: Recipe, userId: int):
         """Creates a recipe based on the object provided"""
         try:
-            print(recipe)
             commandString: str = """INSERT INTO Recipes (name, cookTime, prepTime, totalTime, description, category, rating, calories, fat, saturatedFat, cholesterol, sodium, carbs, fiber, sugar, protein, servings)   
                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
             
@@ -138,17 +138,21 @@ class Database_Connection():
             
             recipeId: int = self.cursor.lastrowid
 
+            # print("images")
             for image in recipe.images:
                 commandString: str = """INSERT INTO Images (recipeId, imageUrl) VALUES (?, ?)"""
                 self.cursor.execute(commandString, (recipeId, image,))
+            # print("tags")
 
             for tag in recipe.tags:
                 commandString: str = """INSERT INTO Tags (recipeId, tag) VALUES (?, ?)"""
                 self.cursor.execute(commandString, (recipeId, tag,))
+            # print("ing")
 
             for ingredient in recipe.ingredients:
                 commandString: str = """INSERT INTO Ingredients (recipeId, name, amount) VALUES (?, ?, ?)"""
                 self.cursor.execute(commandString, (recipeId, ingredient, 0,))
+            # print("inst")
 
             for instructions in recipe.instructions:
                 commandString: str = """INSERT INTO Instructions (recipeId, step, instruction) VALUES (?, ?, ?)"""
@@ -164,6 +168,8 @@ class Database_Connection():
             print(e)
             return False
         
+
+        
     def get_recipe(self, recipeId: int):
         """Gets a recipe based on its id"""
         try:
@@ -174,7 +180,7 @@ class Database_Connection():
                 print("No recipe value found.")
                 return None
             
-            print(recipeRes)
+            # print("Images")
 
             commandString: str = """SELECT * FROM Images WHERE recipeId = ?"""
             self.cursor.execute(commandString, (recipeId,))
@@ -183,6 +189,8 @@ class Database_Connection():
             for image in imagesRes:
                 imageList.append(image[1])
 
+
+            # print("got images")
             commandString: str = """SELECT * FROM Tags WHERE recipeId = ?"""
             self.cursor.execute(commandString, (recipeId,))
             tagsRes = self.cursor.fetchall()
@@ -190,14 +198,14 @@ class Database_Connection():
             for tag in tagsRes:
                 tagsList.append(tag[1])
 
-            print("got tags")
+            # print("got tags")
             commandString: str = """SELECT * FROM Ingredients WHERE recipeId = ?"""
             self.cursor.execute(commandString, (recipeId,))
             ingredientsRes = self.cursor.fetchall()
             ingredientsList: list[str] = []
             for _, ingredient, amount in ingredientsRes:
                 ingredientsList.append(ingredient)
-            print("got ingredients")
+            # print("got ingredients")
             commandString: str = """SELECT * FROM Instructions WHERE recipeId = ?"""
             self.cursor.execute(commandString, (recipeId,))
             instructionsRes = self.cursor.fetchall()
@@ -220,6 +228,35 @@ class Database_Connection():
             print(e)
             return None
     
+
+    def get_recipe_batch(self, recipeIds: List[int], fullRecipe: bool = False):
+        try: 
+            recipes = []
+            if fullRecipe: 
+                for recipeid in recipeIds:
+                    recipes.append(self.get_recipe(recipeid))
+            else: 
+                commandString: str = """SELECT * FROM Recipes WHERE recipeId IN (%s)"""%','.join('?'*len(recipeIds))
+                self.cursor.execute(commandString, (*recipeIds,))
+                recipeObjs = self.cursor.fetchall()
+                if not recipeObjs:
+                    print("No recipe values found.")
+                    return []
+
+                
+                for recipe in recipeObjs:
+                    recipes.append(RecipeListEntry(name=recipe[1], cookTime=recipe[2], prepTime=recipe[3], totalTime=recipe[4], 
+                                        description=recipe[5], category=recipe[6], rating=recipe[7], calories=recipe[8], 
+                                        fat=recipe[9], saturatedFat=recipe[10], cholesterol=recipe[11], sodium=recipe[12], 
+                                        carbs=recipe[13], fiber=recipe[14], sugar=recipe[15], protein=recipe[16], 
+                                        servings=recipe[17], recipeId=recipe[0]))
+
+            return recipes
+
+        except Exception as e: 
+            print(e)
+            return []
+
     def update_recipe(self, oldRecipeId: int, newRecipe: Recipe):
         """Updates a recipe to have the data of the new recipe"""
         recipe_owner: int = self.get_recipe_owner_by_recipeId(oldRecipeId)
@@ -271,6 +308,7 @@ class Database_Connection():
         try:
             commandString: str = """DELETE FROM UserFavorites WHERE recipeId = ? AND userId = ?"""
             self.cursor.execute(commandString, (recipeId, userId,))
+            self.conn.commit()
             return True
         
         except Exception as e:
@@ -282,6 +320,7 @@ class Database_Connection():
         try:
             commandString: str = """INSERT INTO UserFavorites (recipeId, userId) VALUES (?, ?)"""
             self.cursor.execute(commandString, (recipeId, userId,))
+            self.conn.commit()
             return True
         
         except Exception as e:
@@ -291,7 +330,7 @@ class Database_Connection():
     def get_favorite_recipes(self, userId: int):
         """Gets someones favorite recipes"""
         try:
-            commandString: str = """SELECT * FROM UserFavorites WHERE userId = ?"""
+            commandString: str = """SELECT recipeId FROM UserFavorites WHERE userId = ?"""
             self.cursor.execute(commandString, (userId,))
             res = self.cursor.fetchall()
             return res
@@ -299,6 +338,19 @@ class Database_Connection():
         except Exception as e:
             print(e)
             return None
+    
+    def check_is_favorited(self, recipeId: int, userId: int):
+        """Checks to see whether a user has liked a particular post"""
+        try: 
+            commandString: str = """SELECT * FROM UserFavorites WHERE recipeId = ? AND userId = ?;"""
+            self.cursor.execute(commandString, (recipeId, userId,))
+            res = self.cursor.fetchone()
+            if(res): return True
+            return False
+            
+        except Exception as e: 
+            print(e)
+            return False
 
     # ------------------------------------------------------
     # Recipe Search Interactions

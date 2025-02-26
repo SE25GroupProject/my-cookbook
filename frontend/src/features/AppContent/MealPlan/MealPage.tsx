@@ -8,11 +8,20 @@ import {
 } from './MealPlanSlice'
 import { useAuth } from '../Authentication/AuthProvider'
 import { PostRecipe } from '../../api/types'
-import { Button, IconButton, Link, Typography } from '@mui/material'
+import {
+  Backdrop,
+  Button,
+  CircularProgress,
+  IconButton,
+  Link,
+  Typography,
+} from '@mui/material'
 import jsPDF from 'jspdf'
 import { Delete, Dock } from '@mui/icons-material'
 import autoTable from 'jspdf-autotable'
 import { useNavigate } from 'react-router-dom'
+import { useLazyGetBatchRecipesQuery } from '../../api/apiSlice'
+import { doc } from 'prettier'
 
 const MealPage = () => {
   const { theme } = useTheme()
@@ -34,7 +43,7 @@ const MealPage = () => {
   const { data: mealPlanEntries } = useGetMealPlanQuery(userId, {
     skip: userId == -1,
   })
-  const [removeFromMealPlan] = useRemoveFromMealPlanMutation()
+  const [removeFromMealPlan, result] = useRemoveFromMealPlanMutation()
 
   useEffect(() => {
     let allEntries = {}
@@ -58,57 +67,132 @@ const MealPage = () => {
     removeFromMealPlan({ day: day, userId: auth?.user.id })
   }
 
+  const [getMealRecipes] = useLazyGetBatchRecipesQuery()
+
   const printMealPlan = () => {
-    const recipeIds = mealPlanEntries?.map((entry) => entry.recipe.recipeId)
+    const recipeIds =
+      mealPlanEntries?.map((entry) => entry.recipe.recipeId) ?? []
 
-    // Batch call to get all the recipes and promise?
+    getMealRecipes(recipeIds)
+      .unwrap()
+      .then((response) => {
+        // Batch call to get all the recipes and promise?
 
-    const pdf = new jsPDF({ format: 'letter' })
-    pdf.setFontSize(48)
-    pdf.text('Your Custom Meal Plan', 11, 20)
+        const pdf = new jsPDF({ format: 'letter' })
+        pdf.setFontSize(48)
+        pdf.text('Your Custom Meal Plan', 11, 20)
 
-    pdf.setFontSize(24)
-    pdf.text('We hope you enjoy!', 13, 30)
+        pdf.setFontSize(24)
+        pdf.text('We hope you enjoy!', 13, 30)
 
-    const headers = ['Day', 'Recipe']
+        const headers = ['Day', 'Recipe']
 
-    const body = daysOfTheWeek.map((day, index) => [
-      day,
-      mealPlan[index]?.name ?? 'No Meal Planned',
-    ])
+        const body = daysOfTheWeek.map((day, index) => [
+          day,
+          mealPlan[index]?.name ?? 'No Meal Planned',
+        ])
 
-    autoTable(pdf, {
-      head: [headers],
-      body: body,
-      startY: 40,
-      headStyles: {
-        fillColor: theme.background,
-        textColor: theme.color,
-        fontStyle: 'bold',
-        fontSize: 14,
-        halign: 'left',
-      },
-      columnStyles: {
-        0: { cellWidth: 40 },
-        1: { cellWidth: 150 },
-      },
-      alternateRowStyles: { fillColor: [255, 245, 217] },
-      bodyStyles: {
-        fontSize: 10,
-        cellPadding: { top: 1, right: 5, bottom: 1, left: 2 },
-        textColor: [0, 0, 0],
-      },
-      margin: { top: 10, left: 13 },
-    })
+        autoTable(pdf, {
+          head: [headers],
+          body: body,
+          startY: 40,
+          headStyles: {
+            fillColor: theme.background,
+            textColor: theme.color,
+            fontStyle: 'bold',
+            fontSize: 14,
+            halign: 'left',
+          },
+          columnStyles: {
+            0: { cellWidth: 40 },
+            1: { cellWidth: 150 },
+          },
+          alternateRowStyles: { fillColor: [255, 245, 217] },
+          bodyStyles: {
+            fontSize: 10,
+            cellPadding: { top: 1, right: 5, bottom: 1, left: 2 },
+            textColor: [0, 0, 0],
+          },
+          margin: { top: 10, left: 13 },
+        })
 
-    mealPlanEntries?.forEach((entry, index) => {
-      pdf.addPage('letter')
+        response?.forEach((recipe, index) => {
+          pdf.addPage('letter')
 
-      pdf.setFontSize(48)
-      pdf.text(entry.recipe.name, 11, 20)
-    })
+          pdf.setFontSize(48)
+          pdf.text(recipe.name, 11, 20)
 
-    pdf.save('MealPlan.pdf')
+          if (recipe.images[0]) {
+            var img = new Image()
+            img.src = recipe.images[0]
+            pdf.addImage(img, 'png', 100, 10, 124, 70)
+          }
+          pdf.setFontSize(10)
+          pdf.text(`Prep Time: ${recipe.prepTime}`, 131, 55)
+          pdf.text(`Cook Time: ${recipe.cookTime}`, 161, 55)
+          pdf.text(`Total Time: ${recipe.totalTime}`, 131, 60)
+          pdf.text(`Category: ${recipe.category}`, 161, 60)
+
+          pdf.setFontSize(18)
+          pdf.text(`Calories: ${recipe.calories}`, 11, 43)
+          pdf.text(`Servings: ${recipe.servings}`, 160, 43)
+
+          pdf.setFontSize(10)
+          pdf.text(`Fat: ${recipe.fat}`, 11, 55)
+          pdf.text(`Carbs: ${recipe.carbs}`, 41, 55)
+          pdf.text(`Fiber: ${recipe.fiber}`, 71, 55)
+          pdf.text(`Saturated Fat: ${recipe.saturatedFat}`, 101, 55)
+
+          pdf.text(`Sugar: ${recipe.sugar}`, 11, 60)
+          pdf.text(`Protein: ${recipe.protein}`, 41, 60)
+          pdf.text(`Cholesterol: ${recipe.cholesterol}`, 71, 60)
+          pdf.text(`Sodium: ${recipe.sodium}`, 101, 60)
+
+          pdf.setFontSize(14)
+          pdf.text(`Description:`, 11, 78)
+          pdf.text(`Ingredients:`, 160, 78)
+
+          pdf.setFontSize(10)
+          var splitDescription = pdf.splitTextToSize(recipe.description, 120)
+          pdf.text(splitDescription, 11, 85)
+
+          pdf.text(recipe.ingredients, 160, 85)
+
+          const recipeBody = recipe.instructions.map((istr, istrIndex) => [
+            istr.step,
+            istr.instruction,
+          ])
+
+          autoTable(pdf, {
+            head: [['Step', 'Instruction']],
+            body: recipeBody,
+            startY: 150,
+            headStyles: {
+              fillColor: theme.background,
+              textColor: theme.color,
+              fontStyle: 'bold',
+              fontSize: 14,
+              halign: 'left',
+            },
+            columnStyles: {
+              0: { cellWidth: 15 },
+              1: { cellWidth: 175 },
+            },
+            alternateRowStyles: { fillColor: [255, 245, 217] },
+            bodyStyles: {
+              fontSize: 10,
+              cellPadding: { top: 1, right: 5, bottom: 1, left: 2 },
+              textColor: [0, 0, 0],
+            },
+            margin: { top: 10, left: 13 },
+          })
+        })
+
+        pdf.save('MealPlan.pdf')
+      })
+      .catch((err) => {
+        console.log(err)
+      })
   }
 
   return (
@@ -178,6 +262,18 @@ const MealPage = () => {
       >
         Print Meal Plan
       </button>
+
+      {result.isLoading && (
+        <Backdrop
+          sx={(bdTheme) => ({
+            color: '#fff',
+            zIndex: bdTheme.zIndex.drawer + 1,
+          })}
+          open={true}
+        >
+          <CircularProgress color="inherit" />
+        </Backdrop>
+      )}
     </div>
   )
 }

@@ -11,7 +11,7 @@ this file. If not, please write to: help.cookbook@gmail.com
 import { useParams } from 'react-router-dom'
 import { useGetRecipeQuery } from '../../api/apiSlice'
 import React, { useEffect, useState } from 'react'
-import { Recipe, RecipeObject } from '../../api/types'
+import { Recipe, RecipeObject, UserRecipe } from '../../api/types'
 import { Controller, Form, FormProvider, useForm } from 'react-hook-form'
 import {
   Box,
@@ -43,12 +43,18 @@ import {
   AddCircleOutline,
   Close,
   DeleteOutline,
+  Description,
   Edit,
   HelpOutline,
   QuestionMark,
   Replay,
 } from '@mui/icons-material'
 import { RECIPE_CATEGORIES } from '../RecipeList/recipeCategories'
+import {
+  useCreateUserRecipeMutation,
+  useEditUserRecipeMutation,
+} from './UserRecipeSlice'
+import { useAuth } from '../Authentication/AuthProvider'
 
 /**
  * File name: RecipeForm.tsx
@@ -84,8 +90,9 @@ const transformTimeToString = (time: Time): string => {
 const RecipeForm = () => {
   const { id } = useParams()
   const { theme } = useTheme()
+  const auth = useAuth()
   const [tabValue, setTabValue] = useState('1')
-  const [forceShrink, setForceShrink] = useState(false)
+  const [forceShrink, setForceShrink] = useState(true)
 
   const [prepTime, setPrepTime] = useState<Time>({ min: 0, hour: 0 })
   const [cookTime, setCookTime] = useState<Time>({ min: 0, hour: 0 })
@@ -113,6 +120,8 @@ const RecipeForm = () => {
   const [stepToEditIdx, setStepToEditIdx] = useState(-1)
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null)
   const openStepAdd = Boolean(anchorEl)
+  const [createRecipe] = useCreateUserRecipeMutation()
+  const [editRecipe] = useEditUserRecipeMutation()
 
   const handleOpenAddStepPopup = (
     event: React.MouseEvent<HTMLButtonElement>
@@ -141,9 +150,9 @@ const RecipeForm = () => {
     setOpenStepEdit(false)
   }
 
-  let userRecipe: Recipe | undefined = new RecipeObject()
+  let defaultUserRecipe: Recipe | undefined = new RecipeObject()
 
-  const formMethods = useForm<Recipe>({ defaultValues: userRecipe })
+  const formMethods = useForm<Recipe>({ defaultValues: defaultUserRecipe })
   const { handleSubmit, control, reset, register } = formMethods
 
   const {
@@ -184,6 +193,8 @@ const RecipeForm = () => {
   }
 
   const onSubmit = handleSubmit((data) => {
+    if (!auth) return
+
     data.prepTime = transformTimeToString(prepTime)
     data.cookTime = transformTimeToString(cookTime)
     data.totalTime = transformTimeToString(totalTime)
@@ -194,7 +205,58 @@ const RecipeForm = () => {
       instruction: inst,
     }))
 
-    console.log(data)
+    let userRecipe: UserRecipe = {
+      userId: auth.user.id,
+      name: data.name ?? '',
+      cookTime: data.cookTime ?? '',
+      prepTime: data.prepTime ?? '',
+      totalTime: data.totalTime ?? '',
+      description: data.description ?? '',
+      category: data.category ?? '',
+      rating: data.rating ?? 5,
+      calories: data.calories ?? 0,
+      fat: data.fat ?? 0,
+      saturatedFat: data.saturatedFat ?? 0,
+      cholesterol: data.cholesterol ?? 0,
+      sodium: data.sodium ?? 0,
+      carbs: data.carbs ?? 0,
+      fiber: data.fiber ?? 0,
+      sugar: data.sugar ?? 0,
+      protein: data.protein ?? 0,
+      servings: data.servings ?? 0,
+      images: data.images ?? [],
+      tags: data.tags ?? [],
+      ingredientQuantities: [],
+      ingredients: data.ingredients ?? [],
+      instructions: data.instructions ?? [],
+    }
+
+    console.log(userRecipe)
+
+    // Edit
+    if (id) {
+      editRecipe(userRecipe)
+        .unwrap()
+        .then((response) => {
+          alert(`Succesfully Edited ${userRecipe.name}`)
+        })
+        .catch((err) => {
+          console.log(err)
+          alert(`Error! Unable to edit recipe.`)
+        })
+
+      // Create
+    } else {
+      createRecipe(userRecipe)
+        .unwrap()
+        .then((response) => {
+          alert(`Succesfully Created ${userRecipe.name}`)
+        })
+        .catch((err) => {
+          console.log(err)
+          alert(`Error! Unable to create recipe.`)
+        })
+    }
   })
 
   const onTimeChanged = (
@@ -379,25 +441,29 @@ const RecipeForm = () => {
                               <Controller
                                 name="category"
                                 control={control}
-                                render={({ field, fieldState }) => (
+                                render={({ field: { onChange, value } }) => (
                                   <Autocomplete
+                                    onChange={(event, item) => {
+                                      onChange(item)
+                                    }}
+                                    value={value}
                                     options={RECIPE_CATEGORIES}
                                     getOptionLabel={(option) => option || ''}
-                                    onInputChange={(e, v) => field.onChange(v)}
+                                    // onInputChange={(e, v) => field.onChange(v)}
                                     renderInput={(params) => (
                                       <TextField
                                         {...params}
-                                        inputRef={field.ref}
-                                        error={fieldState.invalid}
+                                        // inputRef={field.ref}
+                                        // error={fieldState.invalid}
                                         label="Category"
                                       />
                                     )}
                                     clearOnEscape
                                     autoHighlight
-                                    value={field.value || ''}
-                                    onBlur={field.onBlur}
-                                    onChange={field.onChange}
-                                    ref={field.ref}
+                                    // value={field.value || ''}
+                                    // onBlur={field.onBlur}
+                                    // onChange={(e, data) => onChange}
+                                    // ref={field.ref}
                                     fullWidth
                                   ></Autocomplete>
                                 )}
