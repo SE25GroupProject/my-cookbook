@@ -124,6 +124,7 @@ class DatabaseConnection:
             command_string: str = "SELECT * FROM Users WHERE Username = ?"
             self.cursor.execute(command_string, (username,))
             res = self.cursor.fetchone()
+            if res is None: return None
             user: User = User(res[1], res[2], res[0])
             return user
         except sqlite3.DatabaseError:
@@ -703,6 +704,7 @@ class DatabaseConnection:
                 ),
             )
             self.conn.commit()
+
             return True
         except sqlite3.DatabaseError as e:
             print(e)

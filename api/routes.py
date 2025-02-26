@@ -223,7 +223,7 @@ async def count_recipes_by_ingredients(
 
 
 # In Use - Refactored
-@router.get(
+@router.post(
     "/search/",
     response_description="Get Recipes that match all the ingredients in the request",
     status_code=200,
