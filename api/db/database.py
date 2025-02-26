@@ -75,8 +75,8 @@ class DatabaseConnection:
         )
         meal_plan_table = self.cursor.execute(cmd).fetchone()
 
-        cmd = """SELECT tbl_name FROM sqlite_master
-        WHERE type='table' AND tbl_name='ShoppingList'"""
+        cmd = ("""SELECT tbl_name FROM sqlite_master
+        WHERE type='table' AND tbl_name='ShoppingList'""")
         shopping_table = self.cursor.execute(cmd).fetchone()
         if meal_plan_table is None or shopping_table is None:
             with open("db/createMealPrepTable.sql",
@@ -86,8 +86,8 @@ class DatabaseConnection:
                 self.conn.commit()
 
         # Checking if the tables exist
-        cmd = """SELECT tbl_name FROM sqlite_master
-        WHERE type='table' AND tbl_name='UserRecipes'"""
+        cmd = ("""SELECT tbl_name FROM sqlite_master
+        WHERE type='table' AND tbl_name='UserRecipes'""")
         user_recipe_table = self.cursor.execute(cmd).fetchone()
         if user_recipe_table is None:
             with open(
@@ -98,8 +98,8 @@ class DatabaseConnection:
                 self.cursor.executescript(sql_script)
                 self.conn.commit()
 
-        cmd = """SELECT tbl_name FROM sqlite_master
-        WHERE type='table' AND tbl_name='PostReactions'"""
+        cmd = ("""SELECT tbl_name FROM sqlite_master
+        WHERE type='table' AND tbl_name='PostReactions'""")
         reactions_table = self.cursor.execute(cmd).fetchone()
         if reactions_table is None:
             with open(
@@ -111,8 +111,8 @@ class DatabaseConnection:
                 self.conn.commit()
 
         # Check and create Comments table
-        cmd = """SELECT tbl_name FROM sqlite_master
-        WHERE type='table' AND tbl_name='Comments'"""
+        cmd = ("""SELECT tbl_name FROM sqlite_master
+        WHERE type='table' AND tbl_name='Comments'""")
         comments_table = self.cursor.execute(cmd).fetchone()
         if comments_table is None:
             with open("db/createCommentsTable.sql",
