@@ -14,4 +14,4 @@
 3. Follow good documentation styles and language.
 
 ## Observe the code of conduct before commenting or commiting into the code.
-Code of Conduct: https://github.com/sam16222/CSC510_43_Project1/blob/main/CODE_OF_CONDUCT.md
+Code of Conduct: https://github.com/SE25GroupProject/my-cookbook/blob/main/CODE_OF_CONDUCT.md
