@@ -50,6 +50,7 @@ Whether you're working with a stocked pantry or just a few ingredients, CookBook
 - **📖 Step-by-Step Guidance**: Get detailed, easy-to-follow instructions for every recipe.
 - **🌟 Flexible & Adaptable**: Use as few or as many ingredients as you want—CookBook adjusts to you!
 - **🍴 Recipes for Everyone**: Explore a variety of recipes across multiple cuisines and cultures.
+- **💬 Social & Interactive**: Share recipes, engage with the community, and build your own recipe collection.
 
 With CookBook, you'll never run out of cooking inspiration again! 🥗🍜🍰
 
@@ -65,9 +66,11 @@ Most of us have faced these situations:
 ### How CookBook Solves These Problems:
 
 - 🍳 **Ingredient-Based Recipes**: Enter the ingredients you have, and CookBook finds recipes to match.
+- 🍲**Custom Recipes**: Create and store your favorite recipes, which might not be immediately available in our database!
 - 📜 **Step-by-Step Instructions**: Follow clear directions, even if you're new to cooking!
 - 🌍 **Explore Global Cuisines**: Try dishes from different cultures with ease.
 - 🖥️ **Familiar & Intuitive Interface**: Just like your favorite search engine, simply enter your ingredients and hit "Proceed" to get recipe suggestions.
+- 💬 **Engage with a Community**: Post, comment, and share recipes with fellow food lovers.
 
 CookBook isn’t just a tool—it’s your cooking companion, saving time and bringing creativity to your kitchen! 🍲✨
 
@@ -96,16 +99,15 @@ CookBook isn’t just a tool—it’s your cooking companion, saving time and br
   
 </p><br><br>
 
-# 🚀What's New?
+# 🚀 What's New?
 
-## New features:
+## New Features:
 
-- 🎤 **Voice-Guided Recipes**: Choose from multiple voices to guide you while you cook.
-- 🖼️ **Personalized Themes**: Customize your CookBook experience with themes like _Midnight Chef_ or _Literary Lemon_.
-- 📝 **Printable Meal Plans**: Plan your meals for the week and print them for easy access.
-- 🛒 **Smart Shopping Lists**: Automatically generate and export shopping lists as PDFs.
-- 🍝 **Advanced Filters**: Search recipes by cuisine type, cooking time, or dietary preferences.
-- 🤝 **Social Sharing**: Easily share recipes with friends via Discord, Slack, or social media.
+- 🏠 **User Accounts**: Log in for a personalized experience—access your saved recipes, posts, and settings in one place.
+- ✍️ **Custom Recipes**: Create your own dishes, add ingredients and steps, then save or share them.
+- 🌎 **Social Media Forum**: Post pictures, share recipes, and chat with other cooks in a lively foodie community.
+- ⭐ **Favorite Recipes**: Mark your top picks for quick access anytime.
+- 🔄 **Refactored APIs**: Smoother, faster performance for searching and posting with no hiccups.
 
 ## With CookBook, cooking becomes an adventure. What will you create today? 🥘👨‍🍳👩‍🍳
 
@@ -121,31 +123,16 @@ CookBook is designed with scalability, safety, and reliability in mind. The soft
 
 ### Scalability Enhancements
 
-- **[Content Delivery Network (CDN)](https://github.com/yzhu27/CookBook/blob/main/docs/Scalability.md#content-delivery-network)**: Accelerates content delivery by distributing data globally.
-- **[Load Balancing](https://github.com/yzhu27/CookBook/blob/main/docs/Scalability.md#load-balancing-on-cloudflare)**: Ensures optimal resource utilization and improves availability.
-- **[Cache](https://github.com/yzhu27/CookBook/blob/main/docs/Scalability.md#cache)**: Reduces latency and increases speed by caching frequently accessed content.
+- **[Content Delivery Network (CDN)](https://github.com/SE25GroupProject/my-cookbook/blob/main/docs/Scalability.md#content-delivery-network)**: Accelerates content delivery by distributing data globally.
+- **[Load Balancing](https://github.com/SE25GroupProject/my-cookbook/blob/main/docs/Scalability.md#load-balancing-on-cloudflare)**: Ensures optimal resource utilization and improves availability.
+- **[Cache](https://github.com/SE25GroupProject/my-cookbook/blob/main/docs/Scalability.md#cache)**: Reduces latency and increases speed by caching frequently accessed content.
 
 ### Safety Enhancements
 
-- **[Domain](https://github.com/yzhu27/CookBook/blob/main/docs/Safety.md#domain)**: Ensures secure domain configurations.
-- **[SSL/TLS](https://github.com/yzhu27/CookBook/blob/main/docs/Safety.md#ssltls)**: Encrypts communication between users and the server for secure data transfer.
-- **[DDoS Protection](https://github.com/yzhu27/CookBook/blob/main/docs/Safety.md#ddos-protection)**: Protects against distributed denial-of-service attacks to ensure site reliability.
-
----
-
-# 🌐 Access the Website
-
-Access CookBook directly via this link: [Cook Book](https://cookbook-alpha.vercel.app/).
-
-### 🛠️ Troubleshooting
-
-If the page fails to load, you can try the following:
-
-- Switch to a different network environment (e.g., home network or mobile hotspot).
-- Some users may experience DNS resolution failures under NC State's network due to DNS server issues.
-
-If problems persist, follow the installation instructions below to run CookBook locally.
-
+- **[Domain](https://github.com/SE25GroupProject/my-cookbook/blob/main/docs/Safety.md#domain)**: Ensures secure domain configurations.
+- **[SSL/TLS](https://github.com/SE25GroupProject/my-cookbook/blob/main/docs/Safety.md#ssltls)**: Encrypts communication between users and the server for secure data transfer.
+- **[DDoS Protection](https://github.com/SE25GroupProject/my-cookbook/blob/main/docs/Safety.md#ddos-protection)**: Protects against distributed denial-of-service attacks to ensure site reliability.
+  
 ---
 
 # 🛠️Installations
