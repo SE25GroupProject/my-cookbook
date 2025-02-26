@@ -389,7 +389,7 @@ async def count_recipes_by_ingredients(request: Request, inp: RecipeListRequest 
     return count
 
 # In Use - Refactored
-@router.post("/search/", response_description="Get Recipes that match all the ingredients in the request", status_code=200, response_model=RecipeListResponse)
+@router.get("/search/", response_description="Get Recipes that match all the ingredients in the request", status_code=200, response_model=RecipeListResponse)
 async def list_recipes_by_ingredients(request: Request, inp: RecipeListRequest = Body(...)):
     """Lists recipes matching all provided ingredients"""
     db:Database_Connection = request.state.db
@@ -435,12 +435,16 @@ async def list_ingredients(queryString : str, request: Request):
 @router.post("/recommend-recipes/", response_model=dict)
 async def recommend_recipes(request: Request, query: RecipeQuery = Body(...)):
     db:Database_Connection = request.state.db
+
+    query.query = query.query.replace('\n', ' ').replace('\t', ' ').replace('  ', ' ').strip()
+    query.context = query.context.strip()
+    print(len(query.query))
+    print(len(query.context))
+    if not query.query or len(query.query) == 0 or len(query.context) == 0 or not query.context or query.query.isdigit() or not any(c.isalpha() for c in query.query):
+        print("GOT HERE")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Query or Context")
+
     try:
-        query.query = query.query.replace('\n', ' ').replace('\t', ' ').replace('  ', ' ').strip()
-        query.context = query.context.strip()
-        if not query.query or not query.context or query.query.isdigit() or not any(c.isalpha() for c in query.query):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Query or Context")
-        
         response = client.chat.completions.create(
             messages=[
                 {
@@ -465,6 +469,8 @@ async def recommend_recipes(request: Request, query: RecipeQuery = Body(...)):
 @userRouter.post("/signup")
 async def signup(request: Request, incomingUser: UserCred = Body(...)):
     db:Database_Connection = request.state.db
+    if len(incomingUser.username) == 0 or len(incomingUser.password) == 0:
+        raise HTTPException(status_code=400, detail="Username and Password cannot be empty")
     user: User = User(incomingUser.username, incomingUser.password)
     if db.get_user_by_name(user.Username) is not None:
         raise HTTPException(status_code=400, detail="User with that username already exists")
@@ -479,17 +485,18 @@ async def login(request: Request, incomingUser: UserCred = Body(...)):
         raise HTTPException(status_code=400, detail="There is no user with that username")
     if user.Password == incomingUser.password:
         return {"id": user.UserId, "username": user.Username}
-        
-    return "Incorrect Username or Password"
+    
+    raise HTTPException(status_code=400, detail="Incorrect Username or Password")
     # except:
     #     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occured when logging in this user")
     
     raise HTTPException(status_code=401, detail="Incorrect Username or Password")
 
-@userRouter.get("/getUser/{username}")
+@userRouter.get("/getUser/{username}", status_code=200)
 async def getUser(request: Request, username: str) -> dict:
     db:Database_Connection = request.state.db
     user: User = db.get_user_by_name(username)
+    print(username)
     if user is None:
         raise HTTPException(status_code=400, detail="There is no user with that username")
     return user.to_dict()
@@ -504,7 +511,7 @@ async def get_recipe(request: Request, recipeId: int) -> Recipe:
     print(f"getting {recipeId}")
     recipe: Recipe = db.get_recipe(recipeId)
     if recipe is None:
-        raise HTTPException(status_code=400, detail="There is not recipe with that Id")
+        raise HTTPException(status_code=404, detail="There is not recipe with that Id")
     return recipe
 
 @router.post("/batch")
@@ -691,6 +698,8 @@ async def like_post(request: Request, post_id: int, user_id: int = Body(...)):
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail="Failed to like post."
                 )
+    except HTTPException as e:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -746,6 +755,8 @@ async def dislike_post(request: Request, post_id: int, user_id: int = Body(...))
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail="Failed to dislike post."
                 )
+    except HTTPException as e:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -753,7 +764,6 @@ async def dislike_post(request: Request, post_id: int, user_id: int = Body(...))
         )
 
 @postRouter.delete("/{post_id}", response_description="Delete a post", status_code=200)
-
 async def delete_post(request: Request, post_id: int, user_id: int = Body(...)):
     """Deletes a post by its ID, including all related reactions."""
     db:Database_Connection = request.state.db
@@ -781,65 +791,42 @@ async def delete_post(request: Request, post_id: int, user_id: int = Body(...)):
 
 @postRouter.put("/{post_id}", response_description="Update a post", response_model=Post)
 async def update_post(request: Request, post_id: int, update: PostUpdate = Body(...)):
-    """Allows a user to edit their own post's message, image, or recipe."""
-    db:Database_Connection = request.state.db
+    db: Database_Connection = request.state.db
     try:
-        # Fetch the existing post
         post = db.get_post(post_id)
         if not post:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Post with ID {post_id} not found."
-            )
+            raise HTTPException(status_code=404, detail=f"Post with ID {post_id} not found.")
         
-        # Check if the user owns the post
         if post.userId != update.userId:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="You can only edit your own posts."
-            )
+            raise HTTPException(status_code=403, detail="You can only edit your own posts.")
         
-        # Check if the user exists
         if db.get_user_by_id(update.userId) is None:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"User with ID {update.userId} not found."
-            )       
+            raise HTTPException(status_code=400, detail=f"User with ID {update.userId} not found.")
         
-        
-        # Prepare update data (only include fields that were provided)
         update_data = {}
         if update.message is not None:
             update_data["Message"] = update.message
         if update.image is not None:
             update_data["Image"] = update.image
-        if update.recipe.recipeId is not None:
+        # Check if recipe exists before accessing recipeId
+        if update.recipe is not None and update.recipe.recipeId is not None:
             update_data["RecipeId"] = update.recipe.recipeId
         
-        # If no fields provided, return the current post without changes
         if not update_data:
             return post
         
-        # Update the post in the database
         if not db.update_post(post_id, update_data):
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to update post."
-            )
+            raise HTTPException(status_code=500, detail="Failed to update post.")
         
-        # Fetch and return the updated post
         updated_post = db.get_post(post_id)
         return updated_post
     
+    except HTTPException as e:
+        raise
     except Exception as e:
-        if Exception is HTTPException: 
-            raise e
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"An error occurred while updating the post: {str(e)}"
-            )
-
+        print(f"Error: {type(e).__name__} - {str(e)}")
+        raise HTTPException(status_code=500, detail=f"An error occurred while updating the post: {type(e).__name__}: {str(e)}")
+    
 @postRouter.post("/comments/{post_id}", response_description="Add a comment to a post", status_code=201)
 async def add_comment(request: Request, post_id: int, comment: Comment):
     """Adds a new comment to a post and returns the CommentId."""

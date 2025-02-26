@@ -9,17 +9,8 @@ except Exception:
 from datetime import datetime
 
 class Database_Connection():
-    """Used as a singleton to access the database"""
-    
-    def __new__(self, dbPath: str = 'db/cookbook.db'):
-        """Handles ensuring that this class is a singleton"""
-        if not hasattr(self, 'instance'):
-            self.instance = super(Database_Connection, self).__new__(self)
-        return self.instance
-    
     def __init__(self, dbPath: str = 'db/cookbook.db'):
         """Handles initializing the class"""
-        # print("Db Path: " + dbPath)
         self.conn = sqlite3.connect(dbPath, check_same_thread=False)
         self.cursor = self.conn.cursor()
 
@@ -107,6 +98,19 @@ class Database_Connection():
             return user
         except:
             return None
+        
+    def get_user_by_name2(self, username: str) -> User:
+        """Gets a user based on their username"""
+        try: 
+            commandString: str = "SELECT * FROM Users"
+            self.cursor.execute(commandString)
+            res = self.cursor.fetchall()
+            # user: User = User(res[1], res[2], res[0])
+            # return user
+            return res
+        except:
+            return None
+
 
     
     def get_user_by_id(self, id: int) -> User:
@@ -167,6 +171,21 @@ class Database_Connection():
         except Exception as e:
             print(e)
             return False
+    
+    def testing(self):
+        try:
+            commandString: str = """SELECT recipeId FROM Recipes"""
+            self.cursor.execute(commandString)
+            recipeRes = self.cursor.fetchone()
+            if not recipeRes:
+                print("No recipe value found.")
+                return None
+            
+            print("Recipe Res")
+        
+        except Exception as e:
+            print(e)
+            return None
         
 
         
@@ -180,7 +199,8 @@ class Database_Connection():
                 print("No recipe value found.")
                 return None
             
-            # print("Images")
+            # print(recipeRes)
+        
 
             commandString: str = """SELECT * FROM Images WHERE recipeId = ?"""
             self.cursor.execute(commandString, (recipeId,))
@@ -213,7 +233,7 @@ class Database_Connection():
             for _, step, instruction in instructionsRes:
                 instructionsList.append(Instruction(step = step, instruction = instruction))
 
-            print(instructionsList)
+            # print(instructionsList)
             recipe: Recipe = Recipe(recipeId = recipeRes[0], name = recipeRes[1], cookTime = recipeRes[2], 
                                     prepTime = recipeRes[3], totalTime = recipeRes[4], description = recipeRes[5],
                                     category = recipeRes[6], rating = recipeRes[7], calories = recipeRes[8], 
@@ -386,6 +406,7 @@ class Database_Connection():
                                     carbs=recipe[13], fiber=recipe[14], sugar=recipe[15], protein=recipe[16], 
                                     servings=recipe[17], recipeId=recipe[0]))
 
+            print(recipes)
             return recipes
         except Exception as e: 
             print(e)
@@ -450,7 +471,7 @@ class Database_Connection():
             return formattedPlan
         except Exception as e:
             print(e)
-            return{}
+            return []
 
     def update_user_meal_plan(self, UserId: int, day: int, recipeId:int):
         try: 
@@ -520,7 +541,10 @@ class Database_Connection():
     def add_post(self, post: Post) -> bool:
         try:
             command_string = "INSERT INTO Posts (UserId, Message, Image, RecipeId, Date) VALUES (?, ?, ?, ?, ?)"
-            recipe_id = post.recipe.recipeId  # Already an int or None
+            if post.recipe is not None:
+                recipe_id = post.recipe.recipeId  # Already an int or None
+            else:
+                recipe_id = None
             self.cursor.execute(command_string, (
                 post.userId,
                 post.message,
@@ -535,40 +559,41 @@ class Database_Connection():
             return False
 
     def get_post(self, post_id: int) -> Post:
-        """Gets a post based on its postId, including reaction and comment data"""
-        command_string = "SELECT PostId, UserId, Message, Image, RecipeId, Date FROM Posts WHERE PostId = ?"
-        self.cursor.execute(command_string, (post_id,))
-        post_data = self.cursor.fetchone()
-        if post_data:
-            likes = self.get_post_reactions(post_id, 'LIKE')
-            dislikes = self.get_post_reactions(post_id, 'DISLIKE')
-            comments = self.get_post_comments(post_id)  # Fetch comments
-            date_value = post_data[5] if post_data[5] is not None else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            recipe_id = post_data[4]
-            if recipe_id is not None:
-                try:
-                    recipe_id = int(recipe_id)
-                    recipe_name = self.cursor.execute("SELECT name FROM recipes WHERE recipeId = ?;", (recipe_id,)).fetchone()[0]
+            """Gets a post based on its postId, including reaction and comment data"""
+            command_string = "SELECT PostId, UserId, Message, Image, RecipeId, Date FROM Posts WHERE PostId = ?"
+            self.cursor.execute(command_string, (post_id,))
+            post_data = self.cursor.fetchone()
+            if post_data:
+                likes = self.get_post_reactions(post_id, 'LIKE')
+                dislikes = self.get_post_reactions(post_id, 'DISLIKE')
+                comments = self.get_post_comments(post_id)
+                date_value = post_data[5] if post_data[5] is not None else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                recipe_id = post_data[4]
+                recipe_obj = None  
+                if recipe_id is not None:
+                    try:
+                        recipe_id = int(recipe_id)
+                        result = self.cursor.execute("SELECT name FROM recipes WHERE recipeId = ?;", (recipe_id,)).fetchone()
+                        if result:
+                            recipe_name = result[0]
+                            recipe_obj = PostRecipe(recipeId=recipe_id, name=recipe_name)
+                    except (ValueError, TypeError, IndexError):
+                        pass  # recipe_obj stays None
 
-                except (ValueError, TypeError):
-                    recipe_id = None
-                    recipe_name = None
+                return Post(
+                    postId=post_data[0],
+                    userId=post_data[1],
+                    message=post_data[2],
+                    image=post_data[3],
+                    recipe=recipe_obj,
+                    date=date_value,
+                    likes=likes,
+                    dislikes=dislikes,
+                    comments=comments,
+                )
+            return None
 
-            recipe_obj = PostRecipe(recipeId=recipe_id, name=recipe_name)
-            return Post(
-                postId=post_data[0],
-                userId=post_data[1],
-                message=post_data[2],
-                image=post_data[3],
-                recipe=recipe_obj,
-                date=date_value,
-                likes=likes,
-                dislikes=dislikes,
-                comments=comments,
-            )
-        return None
-
-    def get_all_posts(self) -> list[Post]:
+    def get_all_posts(self) -> List[Post]:
         """Gets all posts from the database with their reactions and comments"""
         command_string = "SELECT PostId, UserId, Message, Image, RecipeId, Date FROM Posts"
         self.cursor.execute(command_string)
@@ -577,20 +602,20 @@ class Database_Connection():
         for post_data in posts_data:
             likes = self.get_post_reactions(post_data[0], 'LIKE')
             dislikes = self.get_post_reactions(post_data[0], 'DISLIKE')
-            comments = self.get_post_comments(post_data[0])  # Fetch comments
+            comments = self.get_post_comments(post_data[0])
             date_value = post_data[5] if post_data[5] is not None else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             recipe_id = post_data[4]
+            recipe_obj = None  
             if recipe_id is not None:
                 try:
                     recipe_id = int(recipe_id)
-                    recipe_name = self.cursor.execute("SELECT name FROM recipes WHERE recipeId = ?;", (recipe_id,)).fetchone()[0]
+                    result = self.cursor.execute("SELECT name FROM recipes WHERE recipeId = ?;", (recipe_id,)).fetchone()
+                    if result:
+                        recipe_name = result[0]
+                        recipe_obj = PostRecipe(recipeId=recipe_id, name=recipe_name)
+                except (ValueError, TypeError, IndexError):
+                    pass  # recipe_obj stays None
 
-                except (ValueError, TypeError):
-                    recipe_id = None
-                    recipe_name = ""
-
-            recipe_obj = PostRecipe(recipeId=recipe_id, name=recipe_name)
-            
             posts.append(Post(
                 postId=post_data[0],
                 userId=post_data[1],
