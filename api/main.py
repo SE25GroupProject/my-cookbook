@@ -12,7 +12,8 @@ import certifi
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.db_middleware import DBConnectionMiddleware
-from api.routes import router, userRouter, mealPlanRouter, shoppingRouter, postRouter
+from api.routes import router, userRouter, mealPlanRouter
+from api.routes import shoppingRouter, postRouter
 
 sys.path.insert(0, "../")
 
