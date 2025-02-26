@@ -4,7 +4,7 @@ from api.models import MealPlanEntry, RecipeListEntry, ShoppingListItem, Post, C
 
 try:
     from api.db.objects import User, Ingredient
-except Exception:
+except sqlite3.DatabaseError:
     from db.objects import User, Ingredient
 from datetime import datetime
 
@@ -84,7 +84,7 @@ class Database_Connection():
             self.cursor.execute(getIdCommand, (user.Username, user.Password))
             self.conn.commit()
             return self.get_user_by_name(user.Username).UserId
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             print(f"Error adding user: {e}")
             return False
         
@@ -168,7 +168,7 @@ class Database_Connection():
             self.conn.commit()
             return recipeId
 
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             print(e)
             return False
     
@@ -183,7 +183,7 @@ class Database_Connection():
             
             print("Recipe Res")
         
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             print(e)
             return None
         
@@ -244,7 +244,7 @@ class Database_Connection():
 
             return recipe
         
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             print(e)
             return None
     
@@ -273,7 +273,7 @@ class Database_Connection():
 
             return recipes
 
-        except Exception as e: 
+        except sqlite3.DatabaseError as e: 
             print(e)
             return []
 
@@ -290,7 +290,7 @@ class Database_Connection():
             self.cursor.execute(commandString, (recipeId,))
             return True
         
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             print(e)
             return False
     
@@ -303,7 +303,7 @@ class Database_Connection():
             userId = res[0]
             user: User = self.get_user_by_id(userId)
             return user
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             print(e)
             return None
         
@@ -315,7 +315,7 @@ class Database_Connection():
             res = self.cursor.fetchall()
             return res
         
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             print(e)
             return None
         
@@ -331,7 +331,7 @@ class Database_Connection():
             self.conn.commit()
             return True
         
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             print(e)
             return False
         
@@ -343,7 +343,7 @@ class Database_Connection():
             self.conn.commit()
             return True
         
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             print(e)
             return False
         
@@ -355,7 +355,7 @@ class Database_Connection():
             res = self.cursor.fetchall()
             return res
         
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             print(e)
             return None
     
@@ -368,7 +368,7 @@ class Database_Connection():
             if(res): return True
             return False
             
-        except Exception as e: 
+        except sqlite3.DatabaseError as e: 
             print(e)
             return False
 
@@ -382,7 +382,7 @@ class Database_Connection():
             res = self.cursor.execute(countCommand, (*ings, len(ings), ))
             count = len(res.fetchall())
             return count
-        except Exception as e: 
+        except sqlite3.DatabaseError as e: 
             print(e)
             return -1
         
@@ -408,7 +408,7 @@ class Database_Connection():
 
             print(recipes)
             return recipes
-        except Exception as e: 
+        except sqlite3.DatabaseError as e: 
             print(e)
             return[]
         
@@ -419,7 +419,7 @@ class Database_Connection():
 
             count = len(res.fetchall())
             return count
-        except Exception as e: 
+        except sqlite3.DatabaseError as e: 
             print(e)
             return -1
 
@@ -441,7 +441,7 @@ class Database_Connection():
                                     servings=recipe[17], recipeId=recipe[0]))
 
             return recipes
-        except Exception as e: 
+        except sqlite3.DatabaseError as e: 
             print(e)
             return[]
         
@@ -451,7 +451,7 @@ class Database_Connection():
             res = self.cursor.execute(commandString, (f"%{ing}%", ))
 
             return res.fetchall()
-        except Exception as e: 
+        except sqlite3.DatabaseError as e: 
                 print(e)
                 return[]
     
@@ -469,7 +469,7 @@ class Database_Connection():
                 entry.recipe.name = self.cursor.execute("SELECT name FROM recipes WHERE recipeId = ? ;", (entry.recipe.recipeId,)).fetchone()[0]
 
             return formattedPlan
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             print(e)
             return []
 
@@ -479,7 +479,7 @@ class Database_Connection():
             self.cursor.execute(commandString, (UserId, recipeId, day))
             self.conn.commit()
             return True
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             print(e)
             return f"There was an error with updating the meal plan of user {UserId} for the day {day}"
     
@@ -492,7 +492,7 @@ class Database_Connection():
             commandString: str = "DELETE FROM MealPlan WHERE userId = ? AND dayOfWeek = ?"
             self.cursor.execute(commandString, (UserId, day))
             self.conn.commit()
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             print(e)
             return f"There was an error removing the instance with userId of {UserId} and day of {day} from the database."
     
@@ -506,7 +506,7 @@ class Database_Connection():
             shoppingList = self.cursor.execute(commandString, (UserId,)).fetchall()
             formattedList = [ShoppingListItem(name=shoppingItem[1], quantity=shoppingItem[2], unit=shoppingItem[3], checked=shoppingItem[4]) for shoppingItem in shoppingList]
             return formattedList
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             print(e)
             return[]
         
@@ -516,7 +516,7 @@ class Database_Connection():
             self.cursor.execute(commandString, (UserId, name, quantity, unit, 1 if checked else 0,))
             self.conn.commit()
             return True
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             print(e)
             return f"There was an error with updating the shopping list of user {UserId} for the item {name}"
         
@@ -530,7 +530,7 @@ class Database_Connection():
             self.cursor.execute(commandString, (UserId, name))
             self.conn.commit()
             return True
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             print(e)
             return f"There was an error removing the instance with userId of {UserId} and name of {name} from the database."
 
@@ -554,7 +554,7 @@ class Database_Connection():
             ))
             self.conn.commit()
             return True
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             print(f"Error adding post: {e}")
             return False
 
@@ -647,7 +647,7 @@ class Database_Connection():
                 self.cursor.execute(insert_command, (post_id, user_id, reaction_type))
             self.conn.commit()
             return True
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             print(f"Error adding/updating reaction: {e}")
             return False
 
@@ -657,7 +657,7 @@ class Database_Connection():
             self.cursor.execute(command_string, (post_id, user_id))
             self.conn.commit()
             return True
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             print(f"Error removing reaction: {e}")
             return False
 
@@ -670,7 +670,7 @@ class Database_Connection():
             self.cursor.execute("DELETE FROM Posts WHERE PostId = ?", (post_id,))
             self.conn.commit()
             return True
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             print(f"Error deleting post: {e}")
             return False
     
@@ -685,7 +685,7 @@ class Database_Connection():
             self.cursor.execute(command_string, values)
             self.conn.commit()
             return True
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             print(f"Error updating post: {e}")
             return False
 
@@ -708,7 +708,7 @@ class Database_Connection():
                 self.cursor.execute("SELECT last_insert_rowid()")
                 comment_id = self.cursor.fetchone()[0]
                 return comment_id
-            except Exception as e:
+            except sqlite3.DatabaseError as e:
                 print(f"Error adding comment: {e}")
                 return False
 
@@ -725,7 +725,7 @@ class Database_Connection():
                 message=row[3],
                 date=row[4] if row[4] is not None else datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             ) for row in comments_data]
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             print(f"Error fetching comments: {e}")
             return []
 
@@ -736,6 +736,6 @@ class Database_Connection():
             self.cursor.execute(command_string, (comment_id,))
             self.conn.commit()
             return True
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             print(f"Error deleting comment: {e}")
             return False
