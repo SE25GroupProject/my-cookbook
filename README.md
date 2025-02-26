@@ -14,6 +14,7 @@
 ![Flake8 Workflow](https://github.com/SE25GroupProject/my-cookbook/actions/workflows/flake8.yml/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/SE25GroupProject/my-cookbook/badge.svg?branch=main)](https://coveralls.io/github/SE25GroupProject/my-cookbook?branch=main)
 
+![SQLite](https://img.shields.io/badge/SQLite-#003B57?style=for-the-badge&logo=sqlite)
 ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
 ![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
 ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
