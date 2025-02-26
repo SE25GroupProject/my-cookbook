@@ -8,7 +8,7 @@ import tempfile
 
 from api.main import app
 
-client = client = TestClient(app)
+client = TestClient(app)
 
 @pytest.fixture(scope="module", autouse=True)
 def setup_db_and_middleware():
@@ -204,4 +204,3 @@ def test_delete_comment_by_non_owner(test_post_id, test_user_id):
     post_response = client.get(f"/posts/{test_post_id}")
     post = post_response.json()
     assert any(c["commentId"] == comment_id for c in post["comments"]), "Comment was unexpectedly deleted"
-    

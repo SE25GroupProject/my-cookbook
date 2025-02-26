@@ -408,7 +408,7 @@ class Database_Connection():
             return formattedPlan
         except Exception as e:
             print(e)
-            return{}
+            return []
 
     def update_user_meal_plan(self, UserId: int, day: int, recipeId:int):
         try: 
