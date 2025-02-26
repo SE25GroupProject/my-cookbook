@@ -1,4 +1,4 @@
-from api.db.convertJsonToSql import insertData
+from api.db.convert_json_to_sql import insert_data
 import sqlite3
 
 def seedDatabase(databasePath, recipePath):
@@ -6,7 +6,7 @@ def seedDatabase(databasePath, recipePath):
     conn = sqlite3.connect(databasePath)
     cursor = conn.cursor()
     ensureTables(cursor, conn)
-    insertData(databasePath, recipePath)
+    insert_data(databasePath, recipePath)
 
 
     conn.execute("INSERT INTO Users (Username, Password) VALUES ('TestUser', 'TestPass')")

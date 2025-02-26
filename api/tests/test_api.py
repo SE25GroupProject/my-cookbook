@@ -1,8 +1,8 @@
 from fastapi.testclient import TestClient
 import pytest
-from os import path, remove
-from api.dbMiddleware import DBConnectionMiddleware
-from api.db.convertJsonToSql import insertData
+from os import remove
+from api.db_middleware import DBConnectionMiddleware
+from api.db.convert_json_to_sql import insert_data
 import tempfile
 import time
 
@@ -20,7 +20,7 @@ def clientSetup():
     temp_db = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
     temp_db_path = temp_db.name
     temp_db.close()
-    insertData(temp_db_path, "tests/recipeTest.json")
+    insert_data(temp_db_path, "tests/recipeTest.json")
 
     app.user_middleware = []
     app.add_middleware(DBConnectionMiddleware, db_path=temp_db_path)

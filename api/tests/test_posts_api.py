@@ -1,9 +1,8 @@
 from fastapi.testclient import TestClient
 import pytest
 from os import path, remove
-import shutil
-from api.dbMiddleware import DBConnectionMiddleware
-from api.db.convertJsonToSql import insertData
+from api.db_middleware import DBConnectionMiddleware
+from api.db.convert_json_to_sql import insert_data
 
 from api.main import app
 
@@ -17,7 +16,7 @@ def setup_db():
     """Copies the db to a testing db before each test"""
     if path.exists(TEST_DB):
         remove(TEST_DB)
-    insertData(TEST_DB, "tests/recipeTest.json")
+    insert_data(TEST_DB, "tests/recipeTest.json")
     yield
     remove(TEST_DB)
 

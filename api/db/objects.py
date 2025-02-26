@@ -1,7 +1,4 @@
 """Holds classes of all objects for database use"""
-from datetime import datetime
-from pydantic import BaseModel, Field
-from typing import Optional, List
 
 class User():
     def __init__(self, username: str, password: str, userId: int = -1):
