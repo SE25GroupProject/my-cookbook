@@ -54,6 +54,7 @@ const SocialMedia = () => {
   // const [posts, setPosts] = useState<Post[]>([...testPosts])
 
   const { data: posts, isLoading, isSuccess } = useGetPostsQuery()
+  // console.log(posts)
 
   const userRecipes: PostRecipe[] = [...testRecipes]
 
@@ -113,7 +114,7 @@ const SocialMedia = () => {
       // 20 more records in .5 secs
       setTimeout(() => {
         setCurrentPosts(currentPosts.concat(postsToDisplay))
-      }, 1500)
+      }, 100)
     }
   }
 
@@ -244,6 +245,7 @@ const SocialMedia = () => {
                   borderRadius: 8,
                 },
               }}
+              slotProps={{ input: { 'aria-label': "What's Cookin'?" } }}
               endAdornment={
                 <InputAdornment position="end">
                   <IconButton
