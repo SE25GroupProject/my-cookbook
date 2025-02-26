@@ -7,8 +7,11 @@ try:
 except ImportError:
     from db.database import DatabaseConnection
 
-class DBConnectionMiddleware(BaseHTTPMiddleware): # pylint: disable=too-few-public-methods
+
+class DBConnectionMiddleware(BaseHTTPMiddleware):
+    # pylint: disable=too-few-public-methods
     """Middleware for handling database connections in FastAPI applications."""
+
     def __init__(self, app: FastAPI, db_path: str = "db/cookbook.db"):
         super().__init__(app)
         self.db_path = pathlib.Path(db_path).absolute()

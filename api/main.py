@@ -12,7 +12,11 @@ from pymongo import MongoClient
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.db_middleware import DBConnectionMiddleware
-from api.routes import router, userRouter, mealPlanRouter, shoppingRouter, postRouter
+from api.routes import (router,
+                        userRouter,
+                        mealPlanRouter,
+                        shoppingRouter,
+                        postRouter)
 
 sys.path.insert(0, '../')
 
@@ -41,22 +45,27 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
+
 @app.on_event("startup")
 def startup_db_client():
     """Initializes the database client when the application starts"""
-    app.mongodb_client = MongoClient(config["ATLAS_URI"], tlsCAFile = ca)
+    app.mongodb_client = MongoClient(config["ATLAS_URI"],
+                                     tlsCAFile=ca)
     app.database = app.mongodb_client[config["DB_NAME"]]
+
 
 @app.on_event("shutdown")
 def shutdown_db_client():
     """Closes the database client when the application shuts down"""
     app.mongodb_client.close()
 
+
 app.include_router(router, tags=["recipes"], prefix="/recipe")
 app.include_router(userRouter, tags=["user"], prefix="/user")
 app.include_router(mealPlanRouter, tags=["mealplan"], prefix="/meal-plan")
 app.include_router(shoppingRouter, tags=["shopping"], prefix="/shopping-list")
 app.include_router(postRouter, tags=["post"], prefix="/posts")
+
 
 def get_database():
     """Returns the database connection."""

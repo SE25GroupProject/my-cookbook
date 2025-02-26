@@ -21,8 +21,10 @@ def insert_data(path, recipes_json):
         for item in data:
             conn.execute(
                 """
-                INSERT INTO Recipes (name, cookTime, prepTime, totalTime, description, category,
-                rating, calories, fat, saturatedFat, cholesterol, sodium, carbs, fiber,
+                INSERT INTO Recipes (name, cookTime,
+                prepTime, totalTime, description, category,
+                rating, calories, fat, saturatedFat,
+                cholesterol, sodium, carbs, fiber,
                 sugar, protein, servings)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 (
@@ -66,7 +68,8 @@ def insert_data(path, recipes_json):
             for ingredient in item["ingredients"]:
                 ingredient_to_use = None
                 try:
-                    ingredient_to_use = item["ingredientQuantities"][ingredient_counter]
+                    ingQuant = item["ingredientQuantities"]
+                    ingredient_to_use = ingQuant[ingredient_counter]
                 except IndexError:
                     pass
 

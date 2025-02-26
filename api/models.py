@@ -37,7 +37,7 @@ class Recipe(BaseModel):
     description: Optional[str] = None
     images: Optional[list] = None  # URLs of images related to the recipe
     category: str
-    tags:  Optional[List[str]]
+    tags: Optional[List[str]]
     ingredientQuantities: Optional[list[int]]
     ingredients: List[str]  # List of ingredients required
     rating: Optional[str] = None
@@ -63,14 +63,31 @@ class Recipe(BaseModel):
                 "cookTime": "24H",
                 "prepTime": "45M",
                 "totalTime": "24H45M",
-                "description": "Make and share this Low-Fat Berry Blue Frozen Dessert recipe from Food.com.",
+                "description": "Make and share this Low-Fat Berry "
+                "Blue Frozen Dessert recipe from Food.com.",
                 "images": [
-                    "https://img.sndimg.com/food/image/upload/w_555,h_416,c_fit,fl_progressive,q_95/v1/img/recipes/38/YUeirxMLQaeE1h3v3qnM_229%20berry%20blue%20frzn%20dess.jpg",
-                    "https://img.sndimg.com/food/image/upload/w_555,h_416,c_fit,fl_progressive,q_95/v1/img/recipes/38/AFPDDHATWzQ0b1CDpDAT_255%20berry%20blue%20frzn%20dess.jpg",
-                    "https://img.sndimg.com/food/image/upload/w_555,h_416,c_fit,fl_progressive,q_95/v1/img/recipes/38/UYgf9nwMT2SGGJCuzILO_228%20berry%20blue%20frzn%20dess.jpg",
-                    "https://img.sndimg.com/food/image/upload/w_555,h_416,c_fit,fl_progressive,q_95/v1/img/recipes/38/PeBMJN2TGSaYks2759BA_20140722_202142.jpg",
-                    "https://img.sndimg.com/food/image/upload/w_555,h_416,c_fit,fl_progressive,q_95/v1/img/recipes/38/picuaETeN.jpg",
-                    "https://img.sndimg.com/food/image/upload/w_555,h_416,c_fit,fl_progressive,q_95/v1/img/recipes/38/pictzvxW5.jpg",
+                    "https://img.sndimg.com/food/image/upload/"
+                    "w_555,h_416,c_fit,fl_progressive,q_95/v1/"
+                    "img/recipes/38/YUeirxMLQaeE1h3v3qnM_229%20"
+                    "berry%20blue%20frzn%20dess.jpg",
+                    "https://img.sndimg.com/food/image/upload/"
+                    "w_555,h_416,c_fit,fl_progressive,q_95/v1/"
+                    "img/recipes/38/AFPDDHATWzQ0b1CDpDAT_255%20"
+                    "berry%20blue%20frzn%20dess.jpg",
+                    "https://img.sndimg.com/food/image/upload/"
+                    "w_555,h_416,c_fit,fl_progressive,q_95/v1/"
+                    "img/recipes/38/UYgf9nwMT2SGGJCuzILO_228%20"
+                    "berry%20blue%20frzn%20dess.jpg",
+                    "https://img.sndimg.com/food/image/upload/"
+                    "w_555,h_416,c_fit,fl_progressive,q_95/v1/"
+                    "img/recipes/38/PeBMJN2TGSaYks2759BA_"
+                    "20140722_202142.jpg",
+                    "https://img.sndimg.com/food/image/upload/"
+                    "w_555,h_416,c_fit,fl_progressive,q_95/v1/"
+                    "img/recipes/38/picuaETeN.jpg",
+                    "https://img.sndimg.com/food/image/upload/"
+                    "w_555,h_416,c_fit,fl_progressive,q_95/v1/"
+                    "img/recipes/38/pictzvxW5.jpg",
                 ],
                 "category": "Frozen Desserts",
                 "tags": [
@@ -107,11 +124,17 @@ class Recipe(BaseModel):
                     "Let stand for 45 minutes, stirring occasionally.",
                     "Transfer berry-sugar mixture to food processor.",
                     "Add yogurt and process until smooth.",
-                    "Strain through fine sieve. Pour into baking pan (or transfer to ice cream maker and process according to manufacturers' directions). Freeze uncovered until edges are solid but centre is soft.  Transfer to processor and blend until smooth again.",
+                    "Strain through fine sieve. Pour into baking pan "
+                    "(or transfer to ice cream maker and process "
+                    "according to manufacturers' directions). Freeze "
+                    "uncovered until edges are solid but centre is "
+                    "soft.  Transfer to processor and blend until "
+                    "smooth again.",
                     "Return to pan and freeze until edges are solid.",
                     "Transfer to processor and blend until smooth again.",
                     "Fold in remaining 2 cups of blueberries.",
-                    "Pour into plastic mold and freeze overnight. Let soften slightly to serve.",
+                    "Pour into plastic mold and freeze overnight. "
+                    "Let soften slightly to serve.",
                 ],
             }
         }
@@ -155,15 +178,20 @@ class RecipeListResponse(BaseModel):
     recipes: List[RecipeListEntry] = Field(
         ..., description="List of recipes matching the filter criteria"
     )
-    page: int = Field(..., ge=1, description="Current page number, must be at least 1")
+    page: int = Field(...,
+                      ge=1,
+                      description="Current page number, must be at least 1")
 
 
 class RecipeListRequest2(BaseModel):
     """A data model representing a recipe filter request"""
 
-    page: int = Field(..., ge=1, description="Current page number, must be at least 1")
+    page: int = Field(...,
+                      ge=1,
+                      description="Current page number, must be at least 1")
     caloriesMax: float = Field(
-        ..., ge=0, le=4000, description="Calories upper limit, between 0 and 100"
+        ..., ge=0, le=4000, description="Calories upper limit, "
+        "between 0 and 100"
     )
     fatMax: float = Field(
         ..., ge=0, le=140, description="Fat upper limit, between 0 and 100"
@@ -210,8 +238,10 @@ class Comment(BaseModel):
     commentId: Optional[int] = Field(
         default=None, description="Auto-incremented ID of the comment"
     )
-    userId: int = Field(..., description="ID of the user who created the comment")
-    postId: int = Field(..., description="ID of the post the comment is related to")
+    userId: int = Field(...,
+                        description="ID of the user who created the comment")
+    postId: int = Field(...,
+                        description="ID of the post the comment is related to")
     message: str = Field(..., description="Content of the comment")
     date: Optional[str] = Field(
         default_factory=lambda: datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -227,10 +257,11 @@ class Post(BaseModel):
     )
     userId: int = Field(..., description="ID of the user who created the post")
     message: str = Field(..., description="Content of the post")
-    image: Optional[str] = Field(default=None, description="Base64-encoded image data")
+    image: Optional[str] = Field(default=None,
+                                 description="Base64-encoded image data")
     recipe: Optional[PostRecipe] = Field(
-        default=None, description="id and name of recipe associated with the post"
-    )
+        default=None, description="id and name of recipe "
+        "associated with the post")
     date: Optional[str] = Field(
         default_factory=lambda: datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         description="Timestamp of the post",
@@ -239,8 +270,8 @@ class Post(BaseModel):
         default_factory=list, description="List of UserIds who liked the post"
     )
     dislikes: List[int] = Field(
-        default_factory=list, description="List of UserIds who disliked the post"
-    )
+        default_factory=list,
+        description="List of UserIds who disliked the post")
     comments: List[Comment] = Field(
         default_factory=list, description="List of comments on the post"
     )
@@ -252,8 +283,10 @@ class PostUpdate(BaseModel):
     userId: Optional[int] = Field(
         None, description="Id of user the post was created by"
     )
-    message: Optional[str] = Field(None, description="Updated content of the post")
-    image: Optional[str] = Field(None, description="Updated Base64-encoded image data")
+    message: Optional[str] = Field(
+        None, description="Updated content of the post")
+    image: Optional[str] = Field(
+        None, description="Updated Base64-encoded image data")
     recipe: Optional[PostRecipe] = Field(
         None, description="Updated Recipe ID associated with the post"
     )

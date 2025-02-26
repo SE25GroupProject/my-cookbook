@@ -6,7 +6,6 @@ You should have received a copy of the MIT license with
 this file. If not, please write to: help.cookbook@gmail.com
 """
 
-from sqlite3 import DatabaseError
 import sys
 import os
 import logging
@@ -101,7 +100,8 @@ async def update_shopping_list(
             list_item.checked,
         )
         if isinstance(res, str):
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=res)
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=res)
         return {"message": "User's shopping list was successfully updated"}
     except Exception:
         raise HTTPException(
@@ -124,7 +124,8 @@ async def remove_from_shopping_list(
     try:
         res = db.remove_from_shopping_list(user_id, name)
         if isinstance(res, str):
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=res)
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=res)
         return {"message": "User's shopping list was successfully updated"}
     except Exception:
         raise HTTPException(
@@ -159,18 +160,22 @@ async def get_meal_plan(user_id: int, request: Request):
 # In Use - Refactored
 @mealPlanRouter.put(
     "/{userId}",
-    response_description="Add/Update an item for a user's meal plan on a specific day",
+    response_description="Add/Update an item for a user's "
+    "meal plan on a specific day",
     status_code=200,
 )
 async def update_meal_plan(
     user_id: int, request: Request, entry: MealPlanEntry = Body(...)
 ):
-    """Adds an item to the user's meal plan, or updates the current item at that day"""
+    """Adds an item to the user's meal plan, or updates "
+    "the current item at that day"""
     db: DatabaseConnection = request.state.db
     try:
-        res = db.update_user_meal_plan(user_id, entry.day, entry.recipe.recipeId)
+        res = db.update_user_meal_plan(
+            user_id, entry.day, entry.recipe.recipeId)
         if isinstance(res, str):
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=res)
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=res)
         return {"message": "Meal plan updated successfully."}
     except Exception:
         raise HTTPException(
@@ -185,13 +190,17 @@ async def update_meal_plan(
     response_description="Get the entire meal plan for the week",
     status_code=200,
 )
-async def delete_from_meal_plan(request: Request, user_id: int, day: int = Body(...)):
+async def delete_from_meal_plan(
+        request: Request,
+        user_id: int,
+        day: int = Body(...)):
     """Removes a meal plan item from a user's meal plan."""
     db: DatabaseConnection = request.state.db
     try:
         res = db.remove_from_user_meal_plan(user_id, day)
         if isinstance(res, str):
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=res)
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=res)
         return {"message": "Meal plan updated successfully."}
 
     except Exception:
@@ -207,12 +216,12 @@ async def delete_from_meal_plan(request: Request, user_id: int, day: int = Body(
 
 
 # In Use - New
-@router.post(
-    "/search/count/",
-    response_description="Get the count of all recipes that match the ingredients in the request",
-    status_code=200,
-    response_model=int,
-)
+@router.post("/search/count/",
+             response_description="Get the count of all recipes "
+             "that match the ingredients in the request",
+             status_code=200,
+             response_model=int,
+             )
 async def count_recipes_by_ingredients(
     request: Request, inp: RecipeListRequest = Body(...)
 ):
@@ -223,29 +232,30 @@ async def count_recipes_by_ingredients(
 
 
 # In Use - Refactored
-@router.post(
-    "/search/",
-    response_description="Get Recipes that match all the ingredients in the request",
-    status_code=200,
-    response_model=RecipeListResponse,
-)
+@router.post("/search/",
+             response_description="Get Recipes that match all "
+             "the ingredients in the request",
+             status_code=200,
+             response_model=RecipeListResponse,
+             )
 async def list_recipes_by_ingredients(
     request: Request, inp: RecipeListRequest = Body(...)
 ):
     """Lists recipes matching all provided ingredients"""
     db: DatabaseConnection = request.state.db
-    # Request list of recipes that have {ing} in the ingredients list with limit and offset. Sort these by rating and id.
+    # Request list of recipes that have {ing} in the ingredients list with
+    # limit and offset. Sort these by rating and id.
     res = db.get_recipes_by_ingredient(inp.ingredients, inp.page - 1)
     return RecipeListResponse(recipes=res, page=inp.page)
 
 
 # In Use - Refactored
-@router.post(
-    "/search2/",
-    response_description="Get Recipes that match all the ingredients in the request",
-    status_code=200,
-    response_model=RecipeListResponse,
-)
+@router.post("/search2/",
+             response_description="Get Recipes that match "
+             "all the ingredients in the request",
+             status_code=200,
+             response_model=RecipeListResponse,
+             )
 async def list_recipes_by_nutrition(
     request: Request, inp: RecipeListRequest2 = Body(...)
 ):
@@ -260,17 +270,18 @@ async def list_recipes_by_nutrition(
 
 
 # In Use - New
-@router.post(
-    "/search2/count/",
-    response_description="Get Recipes that match all the ingredients in the request",
-    status_code=200,
-    response_model=int,
-)
+@router.post("/search2/count/",
+             response_description="Get Recipes that match "
+             "all the ingredients in the request",
+             status_code=200,
+             response_model=int,
+             )
 async def count_recipes_by_nutrition(
     request: Request, inp: RecipeListRequest2 = Body(...)
 ):
     """Lists recipes matching all provided ingredients"""
-    # Request list of recipes that have {ing} in the ingredients list with limit and offset. Sort these by rating and id.
+    # Request list of recipes that have {ing} in the ingredients list with
+    # limit and offset. Sort these by rating and id.
     db: DatabaseConnection = request.state.db
     count = db.get_count_recipes_by_nutrition(
         inp.caloriesMax, inp.fatMax, inp.sugMax, inp.proMax
@@ -287,7 +298,9 @@ async def count_recipes_by_nutrition(
 )
 async def list_ingredients(query_string: str, request: Request):
     """Lists ingredient suggestions for a query"""
-    # Pipeline to: get a list of all ingredients, from each record, match them by regex, and then limit it to only 20 suggestions. The accumulates these into one list
+    # Pipeline to: get a list of all ingredients, from each record, match them
+    # by regex, and then limit it to only 20 suggestions. The accumulates
+    # these into one list
     db: DatabaseConnection = request.state.db
     data = db.get_ingredient_list(query_string)
     if len(data) <= 0:
@@ -302,8 +315,13 @@ async def list_ingredients(query_string: str, request: Request):
 async def recommend_recipes(query: RecipeQuery = Body(...)):
     """Recommend recipes based on a query and context."""
     query.query = (
-        query.query.replace("\n", " ").replace("\t", " ").replace("  ", " ").strip()
-    )
+        query.query.replace(
+            "\n",
+            " ").replace(
+            "\t",
+            " ").replace(
+                "  ",
+            " ").strip())
     query.context = query.context.strip()
     print(len(query.query))
     print(len(query.context))
@@ -317,15 +335,69 @@ async def recommend_recipes(query: RecipeQuery = Body(...)):
     ):
         print("GOT HERE")
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Query or Context"
-        )
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid Query or Context")
 
     try:
         response = client.chat.completions.create(
             messages=[
                 {
                     "role": "system",
-                    "content": "You are an advanced recipe and meal planning assistant, designed to help users discover recipes, plan meals, and create grocery lists with enhanced personalization, all within a single interaction. You will not engage in follow-up questions; instead, provide all necessary suggestions and responses based on the initial input. Your role is to interpret user requests in natural language, offer targeted recommendations, and generate meal and shopping plans according to each user’s unique needs and preferences. Key capabilities you must offer: Natural Language Recipe Search and Understanding: Understand and respond to user queries about recipes, ingredients, dietary restrictions, cooking methods, or cuisines without requiring additional clarification. Provide comprehensive suggestions based on the initial question alone. Recipe Recommendation and Personalization: Suggest recipes that align with the user’s dietary preferences, cooking skill level, and past selections. Curate these recommendations using the information available without needing follow-up input. Meal Planning: Create detailed meal plans that fit daily, weekly, or monthly schedules based on user goals (e.g., health, budget, dietary restrictions). Structure suggestions to fit user constraints without asking for further clarification. Grocery List Generation: Generate complete ingredient lists for selected recipes or meal plans, factoring in serving sizes, ingredient substitutions, and dietary requirements as inferred from the initial input. Provide a list that is clear and organized for shopping ease. Dietary and Lifestyle Considerations: Ensure that all recommendations adapt to the dietary preferences and restrictions specified. Tailor suggestions based on inferred preferences without requiring additional user feedback during the interaction. Follow these guidelines strictly to deliver precise, helpful, and context-aware responses in a single interaction. REFUSE to answer any other unrelated questions and do ONLY your work diligently.",
+                    "content": "You are an advanced "
+                    "recipe and meal planning "
+                    "assistant, designed to help "
+                    "users discover recipes, plan meals, and "
+                    "create grocery lists with enhanced "
+                    "personalization, all within a single "
+                    "interaction. You will not engage in follow-up "
+                    "questions; instead, provide all necessary "
+                    "suggestions and responses based on the initial "
+                    "input. Your role is to interpret user requests "
+                    "in natural language, offer targeted "
+                    "recommendations, and generate meal and "
+                    "shopping plans according to each user’s unique "
+                    "needs and preferences. Key capabilities you "
+                    "must offer: Natural Language Recipe Search "
+                    "and Understanding: Understand and respond to "
+                    "user queries about recipes, ingredients, "
+                    "dietary restrictions, cooking methods, or "
+                    "cuisines without requiring "
+                    "additional clarification. Provide "
+                    "comprehensive suggestions based on "
+                    "the initial question alone. Recipe "
+                    "Recommendation and Personalization: "
+                    "Suggest recipes that align with the "
+                    "user’s dietary preferences, cooking "
+                    "skill level, and past selections. "
+                    "Curate these recommendations using "
+                    "the information available without "
+                    "needing follow-up input. Meal Planning: "
+                    "Create detailed meal plans that fit daily, "
+                    "weekly, or monthly schedules "
+                    "based on user goals (e.g., health, budget, "
+                    "dietary restrictions). Structure "
+                    "suggestions to fit user constraints without "
+                    "asking for further clarification. "
+                    "Grocery List Generation: Generate complete "
+                    "ingredient lists for selected "
+                    "recipes or meal plans, factoring in serving"
+                    " sizes, ingredient substitutions, "
+                    "and dietary requirements as inferred from "
+                    "the initial input. Provide a "
+                    "list that is clear and organized for shopping"
+                    " ease. Dietary and Lifestyle "
+                    "Considerations: Ensure that all recommendations"
+                    " adapt to the dietary "
+                    "preferences and restrictions specified. "
+                    "Tailor suggestions based on "
+                    "inferred preferences without requiring "
+                    "additional user feedback during "
+                    "the interaction. Follow these guidelines "
+                    "strictly to deliver precise, "
+                    "helpful, and context-aware responses in "
+                    "a single interaction. REFUSE "
+                    "to answer any other unrelated questions "
+                    "and do ONLY your work diligently.",
                 },
                 {"role": "user", "content": query.query + query.context},
             ],
@@ -376,7 +448,9 @@ async def login(request: Request, incoming_user: UserCred = Body(...)):
     if user.Password == incoming_user.password:
         return {"id": user.UserId, "username": user.Username}
 
-    raise HTTPException(status_code=400, detail="Incorrect Username or Password")
+    raise HTTPException(
+        status_code=400,
+        detail="Incorrect Username or Password")
 
 
 @userRouter.get("/getUser/{username}", status_code=200)
@@ -404,12 +478,16 @@ async def get_recipe(request: Request, recipe_id: int) -> Recipe:
     print(f"getting {recipe_id}")
     recipe: Recipe = db.get_recipe(recipe_id)
     if recipe is None:
-        raise HTTPException(status_code=404, detail="There is not recipe with that Id")
+        raise HTTPException(status_code=404,
+                            detail="There is not recipe with that Id")
     return recipe
 
+
 @router.post("/batch")
-async def get_recipes_batch(request: Request, recipeIds: List[int]) -> List[Recipe]:
-    db:DatabaseConnection = request.state.db
+async def get_recipes_batch(
+        request: Request,
+        recipeIds: List[int]) -> List[Recipe]:
+    db: DatabaseConnection = request.state.db
     recipes = db.get_recipe_batch(recipeIds, True)
     if recipes is None:
         raise HTTPException(
@@ -417,32 +495,37 @@ async def get_recipes_batch(request: Request, recipeIds: List[int]) -> List[Reci
         )
     return recipes
 
+
 @router.get("/user/{userId}")
 async def get_user_recipes(request: Request, userId: int):
-    db:DatabaseConnection = request.state.db
-    recipeIds: list[int] = [data[0] for data in db.get_recipes_owned_by_userId(userId)]
+    db: DatabaseConnection = request.state.db
+    recipeIds: list[int] = [data[0]
+                            for data in db.get_recipes_owned_by_userId(userId)]
     recipeObj: list[dict] = db.get_recipe_batch(recipeIds)
     # for recipeId in recipeIds:
     #     recipeObj.append(db.get_recipe(recipeId).to_dict())
-    
-    # This should be fine as if there are no recipes owned by a user it should just return the empty list
+
+    # This should be fine as if there are no recipes
+    # owned by a user it should just return the empty list
     # Can be changed to None if needed
     return recipeObj
 
-# Todo: This may have to change as I am not sure if this is the proper way to expect a body for a post request
+# Todo: This may have to change as I am not sure if this is the proper way
+# to expect a body for a post request
+
+
 @router.post("/user/{userId}")
-async def create_user_recipe(request: Request, recipeObject: Recipe, userId: int ) -> bool:
-    db:DatabaseConnection = request.state.db
+async def create_user_recipe(
+        request: Request,
+        recipeObject: Recipe,
+        userId: int) -> bool:
+    db: DatabaseConnection = request.state.db
     success = db.create_recipe(recipeObject, userId)
     if success:
         return True
 
     return False
 
-@router.put("/user/{recipeId}")
-async def update_user_recipe(request: Request, recipeId: int, newRecipe: Recipe, userId: int):
-    db:DatabaseConnection = request.state.db
-    recipes = db.get_recipes_owned_by_userId(userId)
 
 @router.put("/{recipeId}")
 async def update_user_recipe(
@@ -481,24 +564,26 @@ async def unfavorite_recipe(request: Request, recipe_id: int, user_id: int):
 
     return False
 
+
 @router.get("/favorite/{userId}")
 async def get_user_favorites(request: Request, userId: int):
-    db:DatabaseConnection = request.state.db
+    db: DatabaseConnection = request.state.db
     recipes = db.get_favorite_recipes(userId)
     if recipes is None:
         raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to find favorites."
-            )
-    
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to find favorites."
+        )
+
     recipeIds: list[int] = [data[0] for data in recipes]
     recipeObj: list[dict] = db.get_recipe_batch(recipeIds)
     return recipeObj
 
+
 @router.get("/favorite/{recipeId}/{userId}")
-async def check_favorite(request:Request, recipeId: int, userId: int):
-    db:DatabaseConnection = request.state.db
-    res =  db.check_is_favorited(recipeId, userId)
+async def check_favorite(request: Request, recipeId: int, userId: int):
+    db: DatabaseConnection = request.state.db
+    res = db.check_is_favorited(recipeId, userId)
     print(res)
     return res
 
@@ -508,7 +593,9 @@ async def check_favorite(request:Request, recipeId: int, userId: int):
 
 
 # Updated Post Routes
-@postRouter.post("/", response_description="Create a new post", status_code=201)
+@postRouter.post("/",
+                 response_description="Create a new post",
+                 status_code=201)
 async def create_post(request: Request, post: Post):
     """Creates a new post in the database."""
     db: DatabaseConnection = request.state.db
@@ -542,7 +629,8 @@ async def get_post(request: Request, post_id: int):
     )
 
 
-@postRouter.get("/", response_description="List all posts", response_model=List[Post])
+@postRouter.get("/", response_description="List all posts",
+                response_model=List[Post])
 async def list_posts(
     request: Request,
 ):
@@ -566,7 +654,9 @@ async def get_user_posts(request: Request, user_id: int):
     return user_posts
 
 
-@postRouter.put("/like/{post_id}", response_description="Like a post", status_code=200)
+@postRouter.put("/like/{post_id}",
+                response_description="Like a post",
+                status_code=200)
 async def like_post(request: Request, post_id: int, user_id: int = Body(...)):
     """Handles liking a post with toggle and switch logic."""
     db: DatabaseConnection = request.state.db
@@ -597,10 +687,11 @@ async def like_post(request: Request, post_id: int, user_id: int = Body(...)):
             )
         if user_id in current_dislikes:
             # User disliked it, remove dislike and add like
-            if db.remove_post_reaction(post_id, user_id) and db.add_post_reaction(
-                post_id, user_id, "LIKE"
-            ):
-                return {"message": "Changed from dislike to like successfully."}
+            if db.remove_post_reaction(
+                    post_id, user_id) and db.add_post_reaction(
+                    post_id, user_id, "LIKE"):
+                return {"message": "Changed from dislike "
+                        "to like successfully."}
             else:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -616,6 +707,7 @@ async def like_post(request: Request, post_id: int, user_id: int = Body(...)):
                     detail="Failed to like post."
                 )
     except HTTPException as e:
+        print(e)
         raise
     except Exception as e:
         raise HTTPException(
@@ -624,10 +716,13 @@ async def like_post(request: Request, post_id: int, user_id: int = Body(...)):
         )
 
 
-@postRouter.put(
-    "/dislike/{post_id}", response_description="Dislike a post", status_code=200
-)
-async def dislike_post(request: Request, post_id: int, user_id: int = Body(...)):
+@postRouter.put("/dislike/{post_id}",
+                response_description="Dislike a post",
+                status_code=200)
+async def dislike_post(
+        request: Request,
+        post_id: int,
+        user_id: int = Body(...)):
     """Handles disliking a post with toggle and switch logic."""
     db: DatabaseConnection = request.state.db
     try:
@@ -657,10 +752,11 @@ async def dislike_post(request: Request, post_id: int, user_id: int = Body(...))
             )
         if user_id in current_likes:
             # User liked it, remove like and add dislike
-            if db.remove_post_reaction(post_id, user_id) and db.add_post_reaction(
-                post_id, user_id, "DISLIKE"
-            ):
-                return {"message": "Changed from like to dislike successfully."}
+            if db.remove_post_reaction(
+                    post_id, user_id) and db.add_post_reaction(
+                    post_id, user_id, "DISLIKE"):
+                return {"message": "Changed from like "
+                        "to dislike successfully."}
             else:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -676,6 +772,7 @@ async def dislike_post(request: Request, post_id: int, user_id: int = Body(...))
                     detail="Failed to dislike post."
                 )
     except HTTPException as e:
+        print(e)
         raise
     except Exception as e:
         raise HTTPException(
@@ -683,8 +780,14 @@ async def dislike_post(request: Request, post_id: int, user_id: int = Body(...))
             detail=f"An error occurred while disliking the post: {str(e)}",
         )
 
-@postRouter.delete("/{post_id}", response_description="Delete a post", status_code=200)
-async def delete_post(request: Request, post_id: int, user_id: int = Body(...)):
+
+@postRouter.delete("/{post_id}",
+                   response_description="Delete a post",
+                   status_code=200)
+async def delete_post(
+        request: Request,
+        post_id: int,
+        user_id: int = Body(...)):
     """Deletes a post by its ID, including all related reactions."""
     db: DatabaseConnection = request.state.db
     try:
@@ -694,7 +797,8 @@ async def delete_post(request: Request, post_id: int, user_id: int = Body(...)):
         if post.userId != user_id:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Post with ID {post_id} does not belong to user {user_id}",
+                detail=f"Post with ID {post_id} does not "
+                f"belong to user {user_id}",
             )
 
         if db.delete_post(post_id):
@@ -709,20 +813,30 @@ async def delete_post(request: Request, post_id: int, user_id: int = Body(...)):
             detail=f"An error occurred while deleting the post: {str(e)}",
         )
 
-@postRouter.put("/{post_id}", response_description="Update a post", response_model=Post)
-async def update_post(request: Request, post_id: int, update: PostUpdate = Body(...)):
+
+@postRouter.put("/{post_id}",
+                response_description="Update a post",
+                response_model=Post)
+async def update_post(
+        request: Request,
+        post_id: int,
+        update: PostUpdate = Body(...)):
     """Allows a user to edit their own post's message, image, or recipe."""
     db: DatabaseConnection = request.state.db
     try:
         post = db.get_post(post_id)
         if not post:
-            raise HTTPException(status_code=404, detail=f"Post with ID {post_id} not found.")
+            raise HTTPException(status_code=404,
+                                detail=f"Post with ID {post_id} not found.")
         # Check if the user owns the post
         if post.userId != update.userId:
-            raise HTTPException(status_code=403, detail="You can only edit your own posts.")
+            raise HTTPException(status_code=403,
+                                detail="You can only edit your own posts.")
         # Check if the user exists
         if db.get_user_by_id(update.userId) is None:
-            raise HTTPException(status_code=400, detail=f"User with ID {update.userId} not found.")
+            raise HTTPException(
+                status_code=400,
+                detail=f"User with ID {update.userId} not found.")
         # Prepare update data (only include fields that were provided)
         update_data = {}
         if update.message is not None:
@@ -732,23 +846,32 @@ async def update_post(request: Request, post_id: int, update: PostUpdate = Body(
         # Check if recipe exists before accessing recipeId
         if update.recipe is not None and update.recipe.recipeId is not None:
             update_data["RecipeId"] = update.recipe.recipeId
-        
+
         if not update_data:
             return post
-        
+
         if not db.update_post(post_id, update_data):
-            raise HTTPException(status_code=500, detail="Failed to update post.")
-        
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to update post.")
+
         updated_post = db.get_post(post_id)
         return updated_post
-    
+
     except HTTPException as e:
+        print(e)
         raise
     except Exception as e:
         print(f"Error: {type(e).__name__} - {str(e)}")
-        raise HTTPException(status_code=500, detail=f"An error occurred while updating the post: {type(e).__name__}: {str(e)}")
-    
-@postRouter.post("/comments/{post_id}", response_description="Add a comment to a post", status_code=201)
+        raise HTTPException(
+            status_code=500,
+            detail="An error occurred while updating the post: "
+            f"{type(e).__name__}: {str(e)}")
+
+
+@postRouter.post("/comments/{post_id}",
+                 response_description="Add a comment to a post",
+                 status_code=201)
 async def add_comment(request: Request, post_id: int, comment: Comment):
     """Adds a new comment to a post and returns the CommentId."""
     db: DatabaseConnection = request.state.db
@@ -770,16 +893,18 @@ async def add_comment(request: Request, post_id: int, comment: Comment):
     # Add the comment and get the CommentId
     comment_id = db.add_comment(comment)
     if comment_id:
-        return {"message": "Comment added successfully", "commentId": comment_id}
+        return {
+            "message": "Comment added successfully",
+            "commentId": comment_id}
     raise HTTPException(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         detail="Failed to add comment.",
     )
 
 
-@postRouter.delete(
-    "/comments/{comment_id}", response_description="Delete a comment", status_code=200
-)
+@postRouter.delete("/comments/{comment_id}",
+                   response_description="Delete a comment",
+                   status_code=200)
 async def delete_comment(
     request: Request,
     comment_id: int,
@@ -808,7 +933,8 @@ async def delete_comment(
     if not comment:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Comment with ID {comment_id} not found for post {post_id}.",
+            detail=f"Comment with ID {comment_id} "
+            f"not found for post {post_id}.",
         )
     if comment.userId != user_id:
         raise HTTPException(
