@@ -485,6 +485,7 @@ async def create_post(request: Request, post: Post):
     """Creates a new post in the database."""
     db: DatabaseConnection = request.state.db
     try:
+        print(post)
         if db.add_post(post):
             return {"message": "Post created successfully."}
         raise HTTPException(
@@ -520,6 +521,7 @@ async def list_posts(
     """Retrieves all posts from the database."""
     db: DatabaseConnection = request.state.db
     posts = db.get_all_posts()
+    print(posts)
     return posts
 
 
@@ -659,6 +661,7 @@ async def delete_post(request: Request, post_id: int, user_id: int = Body(...)):
     db: DatabaseConnection = request.state.db
     try:
         post = db.get_post(post_id)
+        print(post)
 
         if post.userId != user_id:
             raise HTTPException(

@@ -773,6 +773,7 @@ class DatabaseConnection:
                 else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             )
             recipe_id = post_data[4]
+            recipe_obj = None
             if recipe_id is not None:
                 try:
                     recipe_id = int(recipe_id)
@@ -784,17 +785,17 @@ class DatabaseConnection:
                     recipe_name = None
 
                 recipe_obj = PostRecipe(recipeId=recipe_id, name=recipe_name)
-                return Post(
-                    postId=post_data[0],
-                    userId=post_data[1],
-                    message=post_data[2],
-                    image=post_data[3],
-                    recipe=recipe_obj,
-                    date=date_value,
-                    likes=likes,
-                    dislikes=dislikes,
-                    comments=comments,
-                )
+            return Post(
+                postId=post_data[0],
+                userId=post_data[1],
+                message=post_data[2],
+                image=post_data[3],
+                recipe=recipe_obj,
+                date=date_value,
+                likes=likes,
+                dislikes=dislikes,
+                comments=comments,
+            )
         return None
 
     def get_all_posts(self) -> list[Post]:
@@ -829,19 +830,19 @@ class DatabaseConnection:
 
                 recipe_obj = PostRecipe(recipeId=recipe_id, name=recipe_name)
 
-                posts.append(
-                    Post(
-                        postId=post_data[0],
-                        userId=post_data[1],
-                        message=post_data[2],
-                        image=post_data[3],
-                        recipe=recipe_obj,
-                        date=date_value,
-                        likes=likes,
-                        dislikes=dislikes,
-                        comments=comments,
-                    )
+            posts.append(
+                Post(
+                    postId=post_data[0],
+                    userId=post_data[1],
+                    message=post_data[2],
+                    image=post_data[3],
+                    recipe=recipe_obj,
+                    date=date_value,
+                    likes=likes,
+                    dislikes=dislikes,
+                    comments=comments,
                 )
+            )
         return posts
 
     def get_post_reactions(self, post_id: int, reaction_type: str) -> list[int]:
