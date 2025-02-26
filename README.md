@@ -230,6 +230,57 @@ To set up the front end React app, do:
 
 CookBook has been upgraded with exciting new features to make your cooking experience smarter, more interactive, and hassle-free! Below are the highlights of the latest functionalities added:
 
+### 🔑 User Accounts: Your Personalized Cooking Hub
+
+Now you can **log in and create your own CookBook experience**!  
+Save your favorite recipes, manage your posts, and customize your settings—all in one place.  
+Your kitchen, your way! 👨‍🍳📖✨
+
+![User Accounts Screenshot](https://github.com/user-attachments/assets/user-accounts.png)
+
+---
+
+### 🍳 Custom Recipes: Your Creations, Your Rules
+
+Got a secret family recipe? Or just experimenting with flavors?  
+**Create and save your own recipes**—add ingredients, write step-by-step instructions, and keep them private or share them with the world!  
+CookBook is now truly yours. 📝🥘🔥
+
+![Custom Recipes Screenshot](https://github.com/user-attachments/assets/custom-recipes.png)
+
+---
+
+### 🌍 Social Media Forum: Connect with Fellow Foodies
+
+Cooking is more fun together! 🎉  
+Post your latest kitchen creations, share tips, swap recipes, and chat with other passionate cooks in a lively foodie community.  
+It’s like your favorite social platform, but just for food! 🍔💬
+
+![Social Media Forum Screenshot](https://github.com/user-attachments/assets/social-forum.png)
+
+---
+
+### ⭐ Favorite Recipes: Never Lose That Perfect Dish
+
+Found a **recipe you love**?  
+Now you can **favorite** your top picks for quick access anytime.  
+No more digging through search results—your go-to dishes are just a click away! ❤️🍛
+
+![Favorite Recipes Screenshot](https://github.com/user-attachments/assets/favorite-recipes.png)
+
+---
+
+### 🚀 Refactored APIs: Faster, Smoother, Better
+
+We’ve upgraded the **backend for blazing-fast performance**!  
+Enjoy **smoother recipe searches, quicker posting, and an overall better user experience**—with no annoying slowdowns.  
+CookBook now works harder, so you can cook smarter! ⚡👨‍🍳  
+
+![API Performance Screenshot](https://github.com/user-attachments/assets/api-performance.png)
+
+
+## Old Functions
+
 ### 🎤 Multiple Voice-Guided Recipes
 
 A fresh addition! Choose from multiple voice options to guide you through cooking, enhancing convenience and enabling hands-free operation.
@@ -283,8 +334,6 @@ Share your favorite recipes instantly via Discord, Slack, or other social media 
 ![FAQ Screenshot](https://github.com/user-attachments/assets/df62d5e3-fed0-4946-9b15-b6609aa46698)
 
 ---
-
-## Old Functions
 
 - This is the CookBook HomePage that should automatically open in a browser after executing the command: 'npm start'
   <br><br>
