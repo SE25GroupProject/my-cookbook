@@ -231,7 +231,7 @@ Now you can **log in and create your own CookBook experience**!
 Save your favorite recipes, manage your posts, and customize your settings—all in one place.  
 Your kitchen, your way! 👨‍🍳📖✨
 
-![User Accounts Screenshot](https://github.com/SE25GroupProject/my-cookbook/assets/user-accounts.png)
+![User Accounts Screenshot](https://github.com/SE25GroupProject/my-cookbook/blob/main/assets/user-accounts.png)
 
 ---
 
@@ -241,7 +241,7 @@ Got a secret family recipe? Or just experimenting with flavors?
 **Create and save your own recipes**—add ingredients, write step-by-step instructions, and keep them private or share them with the world!  
 CookBook is now truly yours. 📝🥘🔥
 
-![Custom Recipes Screenshot](https://github.com/SE25GroupProject/my-cookbook/assets/custom-recipes.png)
+![Custom Recipes Screenshot](https://github.com/SE25GroupProject/my-cookbook/blob/main/assets/custom-recipes.png)
 
 ---
 
@@ -251,7 +251,7 @@ Cooking is more fun together! 🎉
 Post your latest kitchen creations, share tips, swap recipes, and chat with other passionate cooks in a lively foodie community.  
 It’s like your favorite social platform, but just for food! 🍔💬
 
-![Social Media Forum Screenshot](https://github.com/SE25GroupProject/my-cookbook/assets/social-forum.png)
+![Social Media Forum Screenshot](https://github.com/SE25GroupProject/my-cookbook/blob/main/assets/social-forum.png)
 
 ---
 
@@ -261,7 +261,7 @@ Found a **recipe you love**?
 Now you can **favorite** your top picks for quick access anytime.  
 No more digging through search results—your go-to dishes are just a click away! ❤️🍛
 
-![Favorite Recipes Screenshot](https://github.com/SE25GroupProject/my-cookbook/assets/favorite-recipes.png)
+![Favorite Recipes Screenshot](https://github.com/SE25GroupProject/my-cookbook/blob/main/assets/favorite-recipes.png)
 
 ---
 
