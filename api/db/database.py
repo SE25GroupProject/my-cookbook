@@ -429,7 +429,7 @@ class DatabaseConnection:
             print(e)
             return None
 
-    def get_recipes_owned_by_user_id(self, user_id: int):
+    def get_recipes_owned_by_userId(self, user_id: int):
         """Gets the owner of the recipe"""
         try:
             command_string: str = (
