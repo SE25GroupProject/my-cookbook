@@ -33,7 +33,7 @@ export const apiSlice = createApi({
     }),
     // Get Recipe will return a Recipe, but takes a string
     getRecipe: builder.query<Recipe, string>({
-      query: (recipeId) => `/recipe/${recipeId}`,
+      query: (recipeId) => `/recipe/${recipeId}?recipe_id=${recipeId}`,
       providesTags: (result, error, arg) => [{ type: 'Recipe', id: arg }],
     }),
     addNewRecipe: builder.mutation<Recipe, Recipe>({
